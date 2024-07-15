@@ -21,13 +21,18 @@ services:
     depends_on:
       - db
     environment:
-      - DATABASE_URL=postgresql://postgres:kido2000@db:5432/CLVproject
+      - DATABASE_URL=postgresql://postgres:password@db:5432/CLVproject
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=CLVproject
 
   db:
     image: postgres:13
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: kido2000
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: CLVproject
     ports:
       - '5432:5432'

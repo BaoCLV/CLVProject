@@ -22,7 +22,7 @@ exports.AppModule = AppModule = __decorate([
                 host: 'localhost',
                 port: 5432,
                 username: 'postgres',
-                password: 'kido2000',
+                password: 'password',
                 database: 'CLVproject',
                 entities: [user_entity_1.User],
                 synchronize: true,
