@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  nextjs:
+    build:
+      context: ./client/frontend
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api
+    environment:
+      - API_URL=http://api:3001
+
+  api:
+    build:
+      context: ./server/nestjs
+      dockerfile: dockerfile
+    ports:
+      - '3001:3001'
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://postgres:kido2000@db:5432/CLVproject
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: kido2000
+      POSTGRES_DB: CLVproject
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
