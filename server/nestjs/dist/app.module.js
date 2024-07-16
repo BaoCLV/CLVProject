@@ -9,7 +9,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
+const graphql_1 = require("@nestjs/graphql");
+const app_service_1 = require("./app.service");
+const apollo_1 = require("@nestjs/apollo");
 const user_entity_1 = require("./entities/user.entity");
+const gateway_1 = require("@apollo/gateway");
 const user_module_1 = require("./user.module");
 let AppModule = class AppModule {
 };
@@ -17,9 +21,19 @@ exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            graphql_1.GraphQLModule.forRoot({
+                driver: apollo_1.ApolloGatewayDriver,
+                gateway: {
+                    supergraphSdl: new gateway_1.IntrospectAndCompose({
+                        subgraphs: [
+                            { name: 'users', url: 'http://localhost:3001/graphql' },
+                        ],
+                    }),
+                },
+            }),
             typeorm_1.TypeOrmModule.forRoot({
                 type: 'postgres',
-                host: 'localhost',
+                host: 'db',
                 port: 5432,
                 username: 'postgres',
                 password: 'password',
@@ -29,6 +43,8 @@ exports.AppModule = AppModule = __decorate([
             }),
             user_module_1.UsersModule,
         ],
+        controllers: [],
+        providers: [app_service_1.AppService],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

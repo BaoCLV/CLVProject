@@ -10,15 +10,27 @@ exports.UsersModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const users_service_1 = require("./users.service");
+const graphql_1 = require("@nestjs/graphql");
 const users_controller_1 = require("./users.controller");
 const user_entity_1 = require("./entities/user.entity");
+const config_1 = require("@nestjs/config");
+const jwt_1 = require("@nestjs/jwt");
+const apollo_1 = require("@nestjs/apollo");
 let UsersModule = class UsersModule {
 };
 exports.UsersModule = UsersModule;
 exports.UsersModule = UsersModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User])],
-        providers: [users_service_1.UsersService],
+        imports: [
+            typeorm_1.TypeOrmModule.forFeature([user_entity_1.User]),
+            graphql_1.GraphQLModule.forRoot({
+                driver: apollo_1.ApolloFederationDriver,
+                autoSchemaFile: {
+                    federation: 2,
+                },
+            }),
+        ],
+        providers: [users_service_1.UsersService, config_1.ConfigService, jwt_1.JwtService],
         controllers: [users_controller_1.UsersController],
     })
 ], UsersModule);

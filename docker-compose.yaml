@@ -4,7 +4,7 @@ services:
   nextjs:
     build:
       context: ./client/frontend
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     ports:
       - '3000:3000'
     depends_on:
@@ -24,7 +24,7 @@ services:
       - DATABASE_URL=postgresql://postgres:password@db:5432/CLVproject
       - DB_USER=postgres
       - DB_PASSWORD=password
-      - DB_HOST=db
+      - DB_HOST=localhost
       - DB_PORT=5432
       - DB_NAME=CLVproject
 
