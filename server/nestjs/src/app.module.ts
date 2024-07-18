@@ -1,35 +1,39 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
-import { AppService } from './app.service';
-import { ApolloGatewayDriver, ApolloGatewayDriverConfig } from '@nestjs/apollo';
-import { User } from './entities/user.entity';
-import { IntrospectAndCompose } from '@apollo/gateway';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './user.module';
+import { User } from './entities/user.entity';
 
 @Module({
   imports: [
-    // GraphQLModule.forRoot<ApolloGatewayDriverConfig>({
-    //   driver: ApolloGatewayDriver,
-    //   gateway: {
-    //     supergraphSdl: new IntrospectAndCompose({
-    //       subgraphs: [],
-    //     }),
-    //   },
-    // }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST || 'db', 
-      port: parseInt(process.env.DB_PORT, 10) || 5432,
-      username: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || 'password',
-      database: process.env.DB_NAME || 'CLVproject',
-      entities: [User],
-      synchronize: false,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        const url = configService.get<string>('DATABASE_URL');
+        return {
+          type: 'postgres',
+          url: url,
+          host: url ? undefined : configService.get<string>('DB_HOST'),
+          port: url ? undefined : +configService.get<number>('DB_PORT'),
+          username: url ? undefined : configService.get<string>('DB_USER'),
+          password: url ? undefined : configService.get<string>('DB_PASSWORD'),
+          database: url ? undefined : configService.get<string>('DB_NAME'),
+          entities: [User],
+          synchronize: true,
+        };
+      },
+      inject: [ConfigService],
+    }),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: true,
     }),
     UsersModule,
   ],
-  controllers: [],
-  providers: [AppService],
 })
 export class AppModule {}

@@ -1,36 +1,29 @@
-import { BadRequestException, UseFilters } from "@nestjs/common";
-import { Args, Query, Mutation ,Resolver } from "@nestjs/graphql";
-import { UsersService } from "./users.service";
-import { RegisterResponse } from "./types/user.types";
-import { RegisterDto } from "./dto/user.dto";
-import { User } from "./entities/user.entity";
+import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { UsersService } from './users.service';
+import { RegisterResponse, LoginResponse } from './dto/response.dto';
+import { RegisterDto, LoginDto } from './dto/user.dto';
+import { User } from './entities/user.entity';
 
-
-
-@Resolver('User')
-@UseFilters()
+@Resolver()
 export class UsersResolver {
-    constructor (
-        private readonly userService: UsersService
-    ) {}
+  constructor(private readonly usersService: UsersService) {}
 
-    @Mutation(() => RegisterResponse)
-    async register(
-        @Args('registerInput') RegisterDto: RegisterDto,
-        //@Context() context: {res: Response},
+  @Query(() => [User])
+  async users(): Promise<User[]> {
+    return this.usersService.getUser();
+  }
 
-    ): Promise<RegisterResponse> {
-        if(!RegisterDto.name || !RegisterDto.email || !RegisterDto.password) {
-            throw new BadRequestException('Please enter all the field');
-        }
+  @Mutation(() => RegisterResponse)
+  async register(
+    @Args('registerDto') registerDto: RegisterDto,
+  ): Promise<RegisterResponse> {
+    return this.usersService.register(registerDto);
+  }
 
-        const user = await this.userService.register(RegisterDto);
-
-        return { user };
-    }
-
-    @Query(() => [User])
-    async getUsers() {
-        return this.userService.getUser();
-    }
+  @Mutation(() => LoginResponse)
+  async login(
+    @Args('loginDto') loginDto: LoginDto,
+  ): Promise<LoginResponse> {
+    return this.usersService.login(loginDto);
+  }
 }
