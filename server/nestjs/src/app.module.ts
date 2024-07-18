@@ -9,26 +9,23 @@ import { UsersModule } from './user.module';
 
 @Module({
   imports: [
-    GraphQLModule.forRoot<ApolloGatewayDriverConfig>({
-      driver: ApolloGatewayDriver,
-      gateway: {
-        supergraphSdl: new IntrospectAndCompose({
-          subgraphs: [
-            { name: 'users', url: 'http://localhost:3001/graphql' },
-            // Add other subgraphs here
-          ],
-        }),
-      },
-    }),
+    // GraphQLModule.forRoot<ApolloGatewayDriverConfig>({
+    //   driver: ApolloGatewayDriver,
+    //   gateway: {
+    //     supergraphSdl: new IntrospectAndCompose({
+    //       subgraphs: [],
+    //     }),
+    //   },
+    // }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'password',
-      database: 'CLVproject',
+      host: process.env.DB_HOST || 'db', 
+      port: parseInt(process.env.DB_PORT, 10) || 5432,
+      username: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASSWORD || 'password',
+      database: process.env.DB_NAME || 'CLVproject',
       entities: [User],
-      synchronize: true,
+      synchronize: false,
     }),
     UsersModule,
   ],

@@ -1,17 +1,16 @@
 version: '3.8'
 
 services:
-  nextjs:
-    build:
-      context: ./client/frontend
-      dockerfile: dockerfile
-    ports:
-      - '3000:3000'
-    depends_on:
-      - api
-    environment:
-      - API_URL=http://api:3001
-
+#   nextjs:
+#     build:
+#       context: ./client/frontend
+#       dockerfile: dockerfile
+#     ports:
+#       - '3000:3000'
+#     depends_on:
+#       - api
+#     environment:
+#       - API_URL=http://api:3001
   api:
     build:
       context: ./server/nestjs
@@ -24,7 +23,7 @@ services:
       - DATABASE_URL=postgresql://postgres:password@db:5432/CLVproject
       - DB_USER=postgres
       - DB_PASSWORD=password
-      - DB_HOST=localhost
+      - DB_HOST=db
       - DB_PORT=5432
       - DB_NAME=CLVproject
 

@@ -11,12 +11,12 @@ import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/ap
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
-    GraphQLModule.forRoot<ApolloFederationDriverConfig>({
-      driver: ApolloFederationDriver,
-      autoSchemaFile: {
-        federation: 2,
-      },
-    }),
+    // GraphQLModule.forRoot<ApolloFederationDriverConfig>({
+    //   driver: ApolloFederationDriver,
+    //   autoSchemaFile: {
+    //     federation: 2,
+    //   },
+    // }),
   ],
   providers: [UsersService, ConfigService, JwtService],
   controllers: [UsersController],

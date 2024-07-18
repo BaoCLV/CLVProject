@@ -25,21 +25,19 @@ exports.AppModule = AppModule = __decorate([
                 driver: apollo_1.ApolloGatewayDriver,
                 gateway: {
                     supergraphSdl: new gateway_1.IntrospectAndCompose({
-                        subgraphs: [
-                            { name: 'users', url: 'http://localhost:3001/graphql' },
-                        ],
+                        subgraphs: [],
                     }),
                 },
             }),
             typeorm_1.TypeOrmModule.forRoot({
                 type: 'postgres',
-                host: 'db',
-                port: 5432,
-                username: 'postgres',
-                password: 'password',
-                database: 'CLVproject',
+                host: process.env.DATABASE_HOST || 'db',
+                port: parseInt(process.env.DATABASE_PORT, 10) || 5432,
+                username: process.env.DATABASE_USER || 'postgres',
+                password: process.env.DATABASE_PASSWORD || 'password',
+                database: process.env.DATABASE_NAME || 'CLVproject',
                 entities: [user_entity_1.User],
-                synchronize: true,
+                synchronize: false,
             }),
             user_module_1.UsersModule,
         ],
