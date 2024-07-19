@@ -1,16 +1,6 @@
 version: '3.8'
 
 services:
-#   nextjs:
-#     build:
-#       context: ./client/frontend
-#       dockerfile: dockerfile
-#     ports:
-#       - '3000:3000'
-#     depends_on:
-#       - api
-#     environment:
-#       - API_URL=http://api:3001
   api:
     build:
       context: ./server/nestjs
