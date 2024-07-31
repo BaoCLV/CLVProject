@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LoginDto = exports.RegisterDto = void 0;
+exports.LoginDto = exports.ActivationDto = exports.RegisterDto = void 0;
 const graphql_1 = require("@nestjs/graphql");
 let RegisterDto = class RegisterDto {
 };
@@ -26,9 +26,31 @@ __decorate([
     (0, graphql_1.Field)(),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "password", void 0);
+__decorate([
+    (0, graphql_1.Field)(),
+    __metadata("design:type", Number)
+], RegisterDto.prototype, "phone_number", void 0);
+__decorate([
+    (0, graphql_1.Field)(),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "address", void 0);
 exports.RegisterDto = RegisterDto = __decorate([
     (0, graphql_1.InputType)()
 ], RegisterDto);
+let ActivationDto = class ActivationDto {
+};
+exports.ActivationDto = ActivationDto;
+__decorate([
+    (0, graphql_1.Field)(),
+    __metadata("design:type", String)
+], ActivationDto.prototype, "ActivationToken", void 0);
+__decorate([
+    (0, graphql_1.Field)(),
+    __metadata("design:type", String)
+], ActivationDto.prototype, "ActivationCode", void 0);
+exports.ActivationDto = ActivationDto = __decorate([
+    (0, graphql_1.InputType)()
+], ActivationDto);
 let LoginDto = class LoginDto {
 };
 exports.LoginDto = LoginDto;

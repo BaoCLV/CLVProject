@@ -4,7 +4,11 @@ export declare class ErrorType {
     code?: string;
 }
 export declare class RegisterResponse {
-    user?: User | any;
+    activation_token: string;
+    error?: ErrorType;
+}
+export declare class ActivationResponse {
+    user: User | unknown;
     error?: ErrorType;
 }
 export declare class LoginResponse {
@@ -12,4 +16,7 @@ export declare class LoginResponse {
     accessToken?: string;
     refreshToken?: string;
     error?: ErrorType;
+}
+export declare class LogOutResponse {
+    message?: string;
 }

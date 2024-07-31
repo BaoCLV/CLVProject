@@ -10,6 +10,20 @@ export class RegisterDto {
 
   @Field()
   password: string;
+
+  @Field()
+  phone_number: number;
+  @Field()
+  address: string;
+}
+
+@InputType()
+export class ActivationDto{
+  @Field()
+  ActivationToken: string;
+
+  @Field()
+  ActivationCode: string;
 }
 
 @InputType()

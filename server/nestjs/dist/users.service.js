@@ -18,58 +18,127 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const user_entity_1 = require("./entities/user.entity");
 const bcrypt = require("bcrypt");
+const jwt_1 = require("@nestjs/jwt");
+const config_1 = require("@nestjs/config");
+const email_service_1 = require("./email/email.service");
+const sendToken_1 = require("./utils/sendToken");
 let UsersService = class UsersService {
-    constructor(userRepository) {
+    constructor(userRepository, configService, jwtService, emailService) {
         this.userRepository = userRepository;
+        this.configService = configService;
+        this.jwtService = jwtService;
+        this.emailService = emailService;
     }
-    async register(registerDto) {
-        const { name, email, password } = registerDto;
+    async register(registerDto, res) {
+        const { name, email, password, phone_number, address } = registerDto;
         const existingUser = await this.userRepository.findOne({ where: { email } });
+        const existingPhone = await this.userRepository.findOne({ where: { phone_number } });
         if (existingUser) {
-            return {
-                error: {
-                    message: 'User with this email already exists',
-                    code: 'USER_EXISTS',
-                },
-            };
+            throw new common_1.BadRequestException('user with this email already exist');
+        }
+        if (existingPhone) {
+            throw new common_1.BadRequestException('user with this phone number already exist');
         }
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = this.userRepository.create({
             name,
             email,
             password: hashedPassword,
+            phone_number,
+            address,
             role: 'user',
         });
-        const savedUser = await this.userRepository.save(user);
+        const ActivationToken = await this.CreateActivationToken(user);
+        const ActivationCode = ActivationToken.ActivationCode;
+        const activation_token = ActivationToken.Token;
+        await this.emailService.sendMail({
+            email,
+            subject: 'Activate your account!',
+            template: './activation-mail',
+            name,
+            ActivationCode,
+        });
         return {
-            user: savedUser,
+            activation_token,
         };
+    }
+    async CreateActivationToken(user) {
+        const ActivationCode = Math.floor(1000 + Math.random() * 9000).toString();
+        const Token = this.jwtService.sign({
+            user,
+            ActivationCode,
+        }, {
+            secret: this.configService.get('ACTIVATION_SECRET'),
+            expiresIn: '10m'
+        });
+        return { Token, ActivationCode };
+    }
+    async activateUser(activationDto, response) {
+        const { ActivationToken, ActivationCode } = activationDto;
+        const newUser = this.jwtService.verify(ActivationToken, {
+            secret: this.configService.get('ACTIVATION_SECRET'),
+        });
+        if (newUser.ActivationCode !== ActivationCode) {
+            throw new common_1.BadRequestException('Invalid activation code');
+        }
+        const { name, email, password, phone_number } = newUser.user;
+        const existingUser = await this.userRepository.findOne({
+            where: { email },
+        });
+        if (existingUser) {
+            throw new common_1.BadRequestException('User already exists with this email!');
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = this.userRepository.create({
+            name,
+            email,
+            password: hashedPassword,
+            phone_number,
+        });
+        await this.userRepository.save(user);
+        return { user, response };
     }
     async login(loginDto) {
         const { email, password } = loginDto;
         const user = await this.userRepository.findOne({ where: { email } });
         if (user && (await bcrypt.compare(password, user.password))) {
-            return {
-                user: user,
-            };
+            const tokenSender = new sendToken_1.TokenSender(this.configService, this.jwtService, this.userRepository);
+            return tokenSender.sendToken(user);
         }
         else {
             return {
+                user: null,
+                accessToken: null,
+                refreshToken: null,
                 error: {
-                    message: 'Invalid credentials',
-                    code: 'INVALID_CREDENTIALS',
+                    message: 'Invalid email or password',
                 },
             };
         }
     }
-    async getUser() {
-        return this.userRepository.find();
+    async getLoggedInUser(req) {
+        const user = req.user;
+        const refreshToken = req.refreshtoken;
+        const accessToken = req.accesstoken;
+        return { user, refreshToken, accessToken };
+    }
+    async Logout(req) {
+        req.user = null;
+        req.refreshtoken = null;
+        req.accesstoken = null;
+        return { message: 'Logged out successfully!' };
+    }
+    async getUsers() {
+        return this.userRepository.find({});
     }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        config_1.ConfigService,
+        jwt_1.JwtService,
+        email_service_1.EmailService])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map

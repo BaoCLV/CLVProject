@@ -12,14 +12,30 @@ const typeorm_1 = require("@nestjs/typeorm");
 const users_service_1 = require("./users.service");
 const users_resolver_1 = require("./users.resolver");
 const user_entity_1 = require("./entities/user.entity");
+const config_1 = require("@nestjs/config");
+const email_module_1 = require("./email/email.module");
+const jwt_1 = require("@nestjs/jwt");
+const email_service_1 = require("./email/email.service");
 let UsersModule = class UsersModule {
 };
 exports.UsersModule = UsersModule;
 exports.UsersModule = UsersModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User])],
-        providers: [users_service_1.UsersService, users_resolver_1.UsersResolver],
-        exports: [users_service_1.UsersService],
+        imports: [
+            config_1.ConfigModule.forRoot({
+                isGlobal: true,
+            }),
+            typeorm_1.TypeOrmModule.forFeature([user_entity_1.User]),
+            email_module_1.EmailModule,
+        ],
+        providers: [
+            users_service_1.UsersService,
+            users_resolver_1.UsersResolver,
+            config_1.ConfigService,
+            jwt_1.JwtService,
+            email_service_1.EmailService
+        ],
+        exports: [users_service_1.UsersService]
     })
 ], UsersModule);
 //# sourceMappingURL=user.module.js.map

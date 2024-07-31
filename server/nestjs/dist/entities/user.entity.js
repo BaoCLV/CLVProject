@@ -9,36 +9,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = exports.Avatars = void 0;
+exports.User = void 0;
 const graphql_1 = require("@nestjs/graphql");
 const typeorm_1 = require("typeorm");
-let Avatars = class Avatars {
-};
-exports.Avatars = Avatars;
-__decorate([
-    (0, graphql_1.Field)(),
-    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
-    __metadata("design:type", String)
-], Avatars.prototype, "id", void 0);
-__decorate([
-    (0, graphql_1.Field)(),
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", String)
-], Avatars.prototype, "public_id", void 0);
-__decorate([
-    (0, graphql_1.Field)(),
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", String)
-], Avatars.prototype, "url", void 0);
-__decorate([
-    (0, graphql_1.Field)(),
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", String)
-], Avatars.prototype, "userId", void 0);
-exports.Avatars = Avatars = __decorate([
-    (0, graphql_1.ObjectType)(),
-    (0, typeorm_1.Entity)()
-], Avatars);
 let User = class User {
 };
 exports.User = User;
@@ -63,13 +36,8 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "password", void 0);
 __decorate([
-    (0, graphql_1.Field)(() => Avatars, { nullable: true }),
-    (0, typeorm_1.JoinColumn)(),
-    __metadata("design:type", Avatars)
-], User.prototype, "avatar", void 0);
-__decorate([
     (0, graphql_1.Field)(),
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ default: 'user' }),
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);
 __decorate([

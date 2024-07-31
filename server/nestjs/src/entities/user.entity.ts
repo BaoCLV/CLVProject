@@ -1,28 +1,5 @@
 import { ObjectType, Field } from '@nestjs/graphql';
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-
-
-
-@ObjectType()
-@Entity()
-export class Avatars {
-  @Field()
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Field()
-  @Column()
-  public_id: string;
-
-  @Field()
-  @Column()
-  url: string;
-
-  @Field()
-  @Column()
-  userId: string;
-
-}
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @ObjectType()
 @Entity()
@@ -43,12 +20,8 @@ export class User {
   @Column()
   password: string;
 
-  @Field(() => Avatars, { nullable: true })
-  @JoinColumn()
-  avatar?: Avatars | null;
-
   @Field()
-  @Column()
+  @Column( {default: 'user'})
   role: string;
 
   @Field({ nullable: true })
