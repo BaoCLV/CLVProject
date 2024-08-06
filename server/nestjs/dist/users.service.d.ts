@@ -10,6 +10,7 @@ interface UserData {
     email: string;
     password: string;
     phone_number: number;
+    address: string;
 }
 export declare class UsersService {
     private readonly userRepository;

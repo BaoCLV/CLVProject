@@ -14,7 +14,8 @@ interface UserData{
   name: string;
   email: string
   password: string;
-  phone_number: number
+  phone_number: number;
+  address: string;
 }
 
 @Injectable()
@@ -58,7 +59,7 @@ async register(registerDto: RegisterDto, res: Response): Promise<RegisterRespons
     await this.emailService.sendMail({
       email,
       subject: 'Activate your account!',
-      template: './activation-mail',
+      template: 'activation-mail',
       name,
       ActivationCode,
     });
@@ -99,7 +100,7 @@ async activateUser(activationDto: ActivationDto, response: Response) {
     throw new BadRequestException('Invalid activation code');
   }
 
-  const { name, email, password, phone_number } = newUser.user;
+  const { name, email, password, phone_number, address } = newUser.user;
 
   // Check if the user already exists in the database
   const existingUser = await this.userRepository.findOne({
@@ -117,6 +118,7 @@ async activateUser(activationDto: ActivationDto, response: Response) {
     email,
     password: hashedPassword,
     phone_number,
+    address,
   });
 
   await this.userRepository.save(user);

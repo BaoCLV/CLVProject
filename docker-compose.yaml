@@ -8,16 +8,32 @@ services:
     ports:
       - '3000:3000'
     depends_on:
-      - api
+      - api-user
     environment:
       - API_URL=http://api:3001
 
-  api:
+  api-user:
     build:
       context: ./server/nestjs
       dockerfile: dockerfile
     ports:
       - '3001:3001'
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/CLVproject
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=CLVproject
+
+  api-route:
+    build:
+      context: ./server/route
+      dockerfile: dockerfile
+    ports:
+      - '4000:4000'
     depends_on:
       - db
     environment:

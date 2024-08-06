@@ -54,7 +54,7 @@ let UsersService = class UsersService {
         await this.emailService.sendMail({
             email,
             subject: 'Activate your account!',
-            template: './activation-mail',
+            template: 'activation-mail',
             name,
             ActivationCode,
         });
@@ -81,7 +81,7 @@ let UsersService = class UsersService {
         if (newUser.ActivationCode !== ActivationCode) {
             throw new common_1.BadRequestException('Invalid activation code');
         }
-        const { name, email, password, phone_number } = newUser.user;
+        const { name, email, password, phone_number, address } = newUser.user;
         const existingUser = await this.userRepository.findOne({
             where: { email },
         });
@@ -94,6 +94,7 @@ let UsersService = class UsersService {
             email,
             password: hashedPassword,
             phone_number,
+            address,
         });
         await this.userRepository.save(user);
         return { user, response };
