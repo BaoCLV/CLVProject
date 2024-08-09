@@ -14,7 +14,9 @@ const users_resolver_1 = require("./users.resolver");
 const user_entity_1 = require("./entities/user.entity");
 const config_1 = require("@nestjs/config");
 const email_module_1 = require("./email/email.module");
+const graphql_1 = require("@nestjs/graphql");
 const jwt_1 = require("@nestjs/jwt");
+const apollo_1 = require("@nestjs/apollo");
 const email_service_1 = require("./email/email.service");
 let UsersModule = class UsersModule {
 };
@@ -26,6 +28,12 @@ exports.UsersModule = UsersModule = __decorate([
                 isGlobal: true,
             }),
             typeorm_1.TypeOrmModule.forFeature([user_entity_1.User]),
+            graphql_1.GraphQLModule.forRoot({
+                driver: apollo_1.ApolloFederationDriver,
+                autoSchemaFile: {
+                    federation: 2
+                }
+            }),
             email_module_1.EmailModule,
         ],
         providers: [

@@ -11,27 +11,36 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LoginDto = exports.ActivationDto = exports.RegisterDto = void 0;
 const graphql_1 = require("@nestjs/graphql");
+const class_validator_1 = require("class-validator");
 let RegisterDto = class RegisterDto {
 };
 exports.RegisterDto = RegisterDto;
 __decorate([
     (0, graphql_1.Field)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'Name is required.' }),
+    (0, class_validator_1.IsString)({ message: 'Name must need to be one string.' }),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "name", void 0);
 __decorate([
     (0, graphql_1.Field)(),
-    __metadata("design:type", String)
-], RegisterDto.prototype, "email", void 0);
-__decorate([
-    (0, graphql_1.Field)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'Password is required.' }),
+    (0, class_validator_1.MinLength)(8, { message: 'Password must be at least 8 characters.' }),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "password", void 0);
 __decorate([
     (0, graphql_1.Field)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'Email is required.' }),
+    (0, class_validator_1.IsEmail)({}, { message: 'Email is invalid.' }),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "email", void 0);
+__decorate([
+    (0, graphql_1.Field)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'Phone Number is required.' }),
     __metadata("design:type", Number)
 ], RegisterDto.prototype, "phone_number", void 0);
 __decorate([
     (0, graphql_1.Field)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'Phone Number is required.' }),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "address", void 0);
 exports.RegisterDto = RegisterDto = __decorate([
@@ -42,10 +51,12 @@ let ActivationDto = class ActivationDto {
 exports.ActivationDto = ActivationDto;
 __decorate([
     (0, graphql_1.Field)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'Activation Token is required.' }),
     __metadata("design:type", String)
 ], ActivationDto.prototype, "ActivationToken", void 0);
 __decorate([
     (0, graphql_1.Field)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'Activation Code is required.' }),
     __metadata("design:type", String)
 ], ActivationDto.prototype, "ActivationCode", void 0);
 exports.ActivationDto = ActivationDto = __decorate([
@@ -56,10 +67,13 @@ let LoginDto = class LoginDto {
 exports.LoginDto = LoginDto;
 __decorate([
     (0, graphql_1.Field)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'Email is required.' }),
+    (0, class_validator_1.IsEmail)({}, { message: 'Email must be valid.' }),
     __metadata("design:type", String)
 ], LoginDto.prototype, "email", void 0);
 __decorate([
     (0, graphql_1.Field)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'Password is required.' }),
     __metadata("design:type", String)
 ], LoginDto.prototype, "password", void 0);
 exports.LoginDto = LoginDto = __decorate([

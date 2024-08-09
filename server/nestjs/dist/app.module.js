@@ -8,8 +8,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
-const graphql_1 = require("@nestjs/graphql");
-const apollo_1 = require("@nestjs/apollo");
 const typeorm_1 = require("@nestjs/typeorm");
 const config_1 = require("@nestjs/config");
 const user_module_1 = require("./user.module");
@@ -41,10 +39,6 @@ exports.AppModule = AppModule = __decorate([
                     };
                 },
                 inject: [config_1.ConfigService],
-            }),
-            graphql_1.GraphQLModule.forRoot({
-                driver: apollo_1.ApolloDriver,
-                autoSchemaFile: true,
             }),
             user_module_1.UsersModule,
             email_module_1.EmailModule,

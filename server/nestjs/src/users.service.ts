@@ -129,7 +129,7 @@ async activateUser(activationDto: ActivationDto, response: Response) {
 async login(loginDto: LoginDto): Promise<LoginResponse> {
     const { email, password } = loginDto;
     const user = await this.userRepository.findOne({ where: { email } });
-
+    console.log(user)
     if (user && (await bcrypt.compare(password, user.password))) {
       const tokenSender = new TokenSender(this.configService, this.jwtService, this.userRepository);
       return tokenSender.sendToken(user);

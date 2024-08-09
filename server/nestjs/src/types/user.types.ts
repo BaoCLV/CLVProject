@@ -31,7 +31,7 @@ export class ActivationResponse {
 @ObjectType()
 export class LoginResponse {
   @Field(() => User, { nullable: true })
-  user?: User | any;
+  user?: User | unknown;
 
   @Field({ nullable: true })
   accessToken?: string;
@@ -46,6 +46,5 @@ export class LoginResponse {
 @ObjectType()
 export class LogOutResponse {
   @Field()
-  message?: string
-
+  message?: string;
 }

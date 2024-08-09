@@ -12,7 +12,7 @@ export declare class ActivationResponse {
     error?: ErrorType;
 }
 export declare class LoginResponse {
-    user?: User | any;
+    user?: User | unknown;
     accessToken?: string;
     refreshToken?: string;
     error?: ErrorType;

@@ -1,7 +1,7 @@
 export declare class RegisterDto {
     name: string;
-    email: string;
     password: string;
+    email: string;
     phone_number: number;
     address: string;
 }

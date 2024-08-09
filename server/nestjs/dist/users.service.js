@@ -102,6 +102,7 @@ let UsersService = class UsersService {
     async login(loginDto) {
         const { email, password } = loginDto;
         const user = await this.userRepository.findOne({ where: { email } });
+        console.log(user);
         if (user && (await bcrypt.compare(password, user.password))) {
             const tokenSender = new sendToken_1.TokenSender(this.configService, this.jwtService, this.userRepository);
             return tokenSender.sendToken(user);

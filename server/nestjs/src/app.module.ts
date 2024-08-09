@@ -30,10 +30,6 @@ import { EmailModule } from './email/email.module';
       },
       inject: [ConfigService],
     }),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      autoSchemaFile: true,
-    }),
     UsersModule,
     EmailModule,
   ],

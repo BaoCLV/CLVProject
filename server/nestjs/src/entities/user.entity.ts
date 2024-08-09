@@ -1,8 +1,10 @@
 import { ObjectType, Field } from '@nestjs/graphql';
+import { Directive } from '@nestjs/graphql';
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @ObjectType()
 @Entity()
+@Directive('@key(fields: "id")')
 export class User {
   @Field()
   @PrimaryGeneratedColumn('uuid')

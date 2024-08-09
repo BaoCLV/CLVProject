@@ -16,12 +16,12 @@ import { EmailService } from './email/email.service';
       isGlobal: true,
     }),
     TypeOrmModule.forFeature([User]),
-    // GraphQLModule.forRoot<ApolloFederationDriverConfig>({
-    //   driver: ApolloFederationDriver,
-    //   autoSchemaFile: {
-    //     federation:2
-    //   }
-    // }),
+    GraphQLModule.forRoot<ApolloFederationDriverConfig>({
+      driver: ApolloFederationDriver,
+      autoSchemaFile: {
+        federation:2
+      }
+    }),
     EmailModule,
   ],
   providers: [
