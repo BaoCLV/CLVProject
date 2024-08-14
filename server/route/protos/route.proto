@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package route;
+
+service RoutesService {
+  rpc FindOne (RouteById) returns (RouteData);
+}
+
+message RouteById {
+  int32 id = 1;
+}
+
+message RouteData {
+  int32 id = 1;
+  string name = 2;
+  string startLocation = 3;
+  string endLocation = 4;
+  double distance = 5;
+}
