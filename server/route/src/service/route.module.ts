@@ -4,11 +4,21 @@ import { Route } from '../entities/route.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RoutesService } from './route.service';
 import { RoutesController } from './route.controller';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
+import { RouteResolver } from './route.resolver';
 
 @Module({
   imports: [    
     ConfigModule.forRoot({
     isGlobal: true,
+  }),
+  TypeOrmModule.forFeature([Route]),
+  GraphQLModule.forRoot<ApolloFederationDriverConfig>({
+    driver: ApolloFederationDriver,
+    autoSchemaFile: {
+      federation:2
+    }
   }),
   TypeOrmModule.forRootAsync({
     imports: [ConfigModule],
@@ -29,6 +39,8 @@ import { RoutesController } from './route.controller';
     inject: [ConfigService],
   }),],
   controllers: [RoutesController],
-  providers: [ RoutesService],
+  providers: [ RoutesService,
+    RouteResolver
+  ],
 })
 export class RouteModule {}

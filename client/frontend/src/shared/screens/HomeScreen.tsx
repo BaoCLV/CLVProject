@@ -6,9 +6,11 @@ const HomeScreen = () => {
   return (
     <div>
       <Header />
-      <Dashboard/>
+      <main>
+        <Dashboard /> 
+      </main>
     </div>
-  )
+  );
 }
 
-export default HomeScreen
+export default HomeScreen;

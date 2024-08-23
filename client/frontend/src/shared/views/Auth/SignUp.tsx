@@ -11,7 +11,7 @@ import {
 import { FcGoogle } from "react-icons/fc";
 import { useState } from "react";
 import { useMutation } from "@apollo/client";
-import { REGISTER_USER } from "../../../graphql/Actions/register.action";
+import { REGISTER_USER } from "../../../graphql/auth/Actions/register.action";
 import toast from "react-hot-toast";
 
 const formSchema = z.object({

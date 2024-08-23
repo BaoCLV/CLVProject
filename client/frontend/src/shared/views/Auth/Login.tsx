@@ -9,7 +9,7 @@ import {
 import { FcGoogle } from "react-icons/fc";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { LOGIN_USER } from "../../../graphql/Actions/login.action";
+import { LOGIN_USER } from "../../../graphql/auth/Actions/login.action";
 import { useMutation } from "@apollo/client";
 import Cookies from "js-cookie";
 import { signIn } from "next-auth/react"
@@ -44,17 +44,20 @@ const Login = ({
     const loginData = {
       email: data.email,
       password: data.password,
+      
     };
     const response = await Login({
       variables: loginData,
     });
+    console.log(data)
     if (response.data.login.user) {
       toast.success("Login Successful!");
       Cookies.set("refresh_token", response.data.login.refreshToken);
       Cookies.set("access_token", response.data.login.accessToken);
       setOpen(false);
       reset();
-      window.location.reload();
+      //window.location.reload();
+      
     } else {
       toast.error(response.data.login.error.message);
     }

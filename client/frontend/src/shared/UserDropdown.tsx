@@ -1,4 +1,5 @@
 "use client";
+
 import {
   Avatar,
   Dropdown,
@@ -14,12 +15,14 @@ import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import { signOut, useSession } from "next-auth/react";
 import { registerUser } from "../actions/register";
+import { useRouter } from "next/navigation";
 
 const UserDropDown = () => {
   const [signedIn, setsignedIn] = useState(false);
   const [open, setOpen] = useState(false);
   const { user, loading } = useUser();
   const { data } = useSession();
+  const router = useRouter(); // Initialize useRouter
 
   useEffect(() => {
     if (!loading) {
@@ -46,6 +49,14 @@ const UserDropDown = () => {
     await registerUser(user);
   };
 
+  const handleNavigation = (key: string) => {
+    if (key === "createRoute") {
+      router.push("/routes/createRoute"); // Navigate to CreateRoutePage
+    } else if (key === "team_settings") {
+      router.push("/routes"); // Navigate to All Routes page (if available)
+    }
+  };
+
   return (
     <div className="flex items-center gap-4">
       {signedIn ? (
@@ -57,7 +68,7 @@ const UserDropDown = () => {
               src={data?.user ? data.user.image : user.image}
             />
           </DropdownTrigger>
-          <DropdownMenu aria-label="Profile Actions" variant="flat">
+          <DropdownMenu aria-label="Profile Actions" variant="flat" onAction={handleNavigation}>
             <DropdownItem key="profile" className="h-14 gap-2">
               <p className="font-semibold">Signed in as</p>
               <p className="font-semibold">
@@ -65,7 +76,7 @@ const UserDropDown = () => {
               </p>
             </DropdownItem>
             <DropdownItem key="settings">My Profile</DropdownItem>
-            <DropdownItem key="all_orders">All Orders</DropdownItem>
+            <DropdownItem key="createRoute">Create new Route</DropdownItem>
             <DropdownItem key="team_settings">
               All Routes
             </DropdownItem>

@@ -1,14 +1,15 @@
-import { Pool } from 'pg'
+import { Pool } from 'pg';
 
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: Number(process.env.DB_PORT),
+  connectionString: process.env.DATABASE_URL, // Set this environment variable in .env
 });
 
 export async function query(text: string, params?: any[]) {
-  const res = await pool.query(text, params);
-  return res.rows;
+  const client = await pool.connect();
+  try {
+    const res = await client.query(text, params);
+    return res.rows;
+  } finally {
+    client.release();
+  }
 }

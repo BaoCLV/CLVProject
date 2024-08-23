@@ -25,7 +25,7 @@ const authMiddleware = new ApolloLink((operation, forward) => {
 });
 
 // Initialize the Apollo Client
-export const graphqlClient = new ApolloClient({
+export const authClient = new ApolloClient({
   link: authMiddleware.concat(httpLink),
   cache: new InMemoryCache(),
 });

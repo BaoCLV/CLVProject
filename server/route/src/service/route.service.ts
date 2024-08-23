@@ -1,53 +1,60 @@
+// src/routes/routes.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Route } from 'src/entities/route.entity';
 import { CreateRouteDto, UpdateRouteDto } from 'src/dto/route.dto';
-import { RouteDto } from 'src/dto/route.dto';
 
 @Injectable()
 export class RoutesService {
-  private routes: RouteDto[] = [];
-  private idCounter = 1;
+  constructor(
+    @InjectRepository(Route)
+    private readonly routeRepository: Repository<Route>,
+  ) {}
 
-  create(createRouteDto: CreateRouteDto): RouteDto {
-    const newRoute: RouteDto = {
-      id: this.idCounter++,
-      ...createRouteDto,
-    };
-    this.routes.push(newRoute);
-    return newRoute;
+  async create(data: CreateRouteDto): Promise<Route> {
+    const newRoute = this.routeRepository.create(data);
+    return this.routeRepository.save(newRoute);
   }
 
-  findAll(query?: string, limit?: number, offset?: number): RouteDto[] {
-    // Apply search filtering
-    let filteredRoutes = this.routes;
+  async findAll({
+    query,
+    limit,
+    offset,
+  }: { query?: string; limit?: number; offset?: number }): Promise<Route[]> {
+    const qb = this.routeRepository.createQueryBuilder('route');
+
     if (query) {
-      filteredRoutes = filteredRoutes.filter(route =>
-        route.name.toLowerCase().includes(query.toLowerCase())
-      );
+      qb.where('LOWER(route.name) LIKE LOWER(:query)', { query: `%${query}%` });
     }
 
-    // Apply pagination
-    const start = offset || 0;
-    const end = limit ? start + limit : undefined;
-    return filteredRoutes.slice(start, end);
+    if (offset) {
+      qb.skip(offset);
+    }
+
+    if (limit) {
+      qb.take(limit);
+    }
+
+    return qb.getMany();
   }
 
-  findOne(id: number): RouteDto {
-    const route = this.routes.find(route => route.id === id);
+  async findOneByName(name: string): Promise<Route> {
+    const route = await this.routeRepository.findOne({ where: { name } });
     if (!route) {
-      throw new NotFoundException(`Route with id ${id} not found`);
+      throw new NotFoundException(`Route with name "${name}" not found`);
     }
     return route;
   }
 
-  update(id: number, updateRouteDto: UpdateRouteDto): RouteDto {
-    const route = this.findOne(id);
-    const updatedRoute = { ...route, ...updateRouteDto };
-    this.routes = this.routes.map(r => (r.id === id ? updatedRoute : r));
-    return updatedRoute;
+  async updateByName(name: string, data: UpdateRouteDto): Promise<Route> {
+    const route = await this.findOneByName(name);
+    Object.assign(route, data); // Merge updates into the existing route
+    return this.routeRepository.save(route);
   }
 
-  remove(id: number): void {
-    const route = this.findOne(id);
-    this.routes = this.routes.filter(r => r.id !== id);
+  async removeByName(name: string): Promise<void> {
+    const route = await this.findOneByName(name);
+    await this.routeRepository.remove(route);
   }
 }

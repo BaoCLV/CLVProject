@@ -1,44 +1,46 @@
-import { IsString, IsEmail, IsNotEmpty } from 'class-validator';
+import { ObjectType, Field, Int, InputType } from '@nestjs/graphql';
 
-  export class CreateRouteDto {
-    @IsString()
-    @IsNotEmpty()
-    name: string;
-  
-    @IsEmail()
-    @IsNotEmpty()
-    start_location: string;
-  
-    @IsString()
-    @IsNotEmpty()
-    end_location: string;
+@ObjectType()
+export class RouteDto {
+  @Field(() => Int)
+  id: number;
 
-    @IsString()
-    @IsNotEmpty()
-    distance: number;
-  }
-  
-  export class UpdateRouteDto {
-    @IsString()
-    @IsNotEmpty()
-    name: string;
-  
-    @IsEmail()
-    @IsNotEmpty()
-    start_location: string;
-  
-    @IsString()
-    @IsNotEmpty()
-    end_location: string;
+  @Field()
+  name: string;
 
-    @IsString()
-    @IsNotEmpty()
-    distance: number;
-  }
+  @Field()
+  start_location: string;
 
-  export class RouteDto {
-    readonly id: number;
-    readonly name: string;
-    readonly distance: number;
-  }
-  
+  @Field()
+  end_location: string;
+
+  @Field(() => Int)
+  distance: number;
+}
+
+@InputType()
+export class CreateRouteDto {
+  @Field()
+  name: string;
+
+  @Field()
+  start_location: string;
+
+  @Field()
+  end_location: string;
+
+  @Field(() => Int)
+  distance: number;
+}
+
+@InputType()
+export class UpdateRouteDto {
+  @Field({ nullable: true })
+  start_location?: string;
+
+  @Field({ nullable: true })
+  end_location?: string;
+
+  @Field(() => Int, { nullable: true })
+  distance?: number;
+}

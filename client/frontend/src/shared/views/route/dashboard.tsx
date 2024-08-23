@@ -1,43 +1,41 @@
 "use client";
 
-import {
-  useInfiniteQuery,
-  QueryClient,
-  QueryClientProvider,
-} from "react-query";
-import { useRef, useCallback } from "react";
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  Divider,
-  Link,
-  Spacer,
-  Spinner,
-} from "@nextui-org/react";
-import SearchBar from "@/src/hooks/searchBar";
+import { useInfiniteQuery, QueryClient, QueryClientProvider } from 'react-query';
+import { useRef, useCallback, useState } from 'react';
+import { Card, CardHeader, CardBody, CardFooter, Divider, Link, Spacer, Spinner } from '@nextui-org/react';
+import SearchBar from '../../components/searchBar'; // Adjust the import path
 
-
-// Initialize QueryClient
 const queryClient = new QueryClient();
 
-const fetchRoutes = async ({ pageParam = 0 }) => {
-  const res = await fetch(`/api/routes?limit=10&offset=${pageParam}`);
+const fetchRoutes = async ({ pageParam = 0, query = "" }) => {
+  const res = await fetch(
+    `/api/routes?limit=10&offset=${pageParam}&query=${encodeURIComponent(query)}`
+  );
   if (!res.ok) {
-    throw new Error("Failed to fetch routes");
+    throw new Error('Failed to fetch routes');
   }
   return res.json();
 };
 
 function Dashboard() {
-  const { data, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteQuery("routes", fetchRoutes, {
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const {
+    data,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery(
+    ["routes", searchQuery],
+    ({ pageParam = 0 }) => fetchRoutes({ pageParam, query: searchQuery }),
+    {
       getNextPageParam: (lastPage, pages) => {
-        if (lastPage.length < 10) return undefined; // No more pages if less than 10 results
-        return pages.length * 10; // Offset for the next page
+        if (lastPage.length < 10) return undefined;
+        return pages.length * 10;
       },
-    });
+    }
+  );
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastRouteElementRef = useCallback(
@@ -54,29 +52,31 @@ function Dashboard() {
     [isFetchingNextPage, fetchNextPage, hasNextPage]
   );
 
+  const handleSearchResults = (query: string) => {
+    setSearchQuery(query);
+  };
+
   if (error instanceof Error) return <p>Error: {error.message}</p>;
 
   return (
-    <div className=" dark min-h-screen h-screen p-0 bg-gray-100">
+    <div className="dark min-h-screen h-screen p-0 bg-gray-100">
       <div className="h-full p-8">
-        <h1
-          style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "2rem" }}
-        >
+        <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '2rem' }}>
           Dashboard
         </h1>
+        <SearchBar getSearchResults={handleSearchResults} />
         <div className="flex flex-wrap gap-4 justify-start">
           {data?.pages.map((page, pageIndex) =>
             page.map((route: any, index: number) => {
               const isLastElement =
-                pageIndex === data.pages.length - 1 &&
-                index === page.length - 1;
+                pageIndex === data.pages.length - 1 && index === page.length - 1;
               return (
                 <div
                   key={route.id}
                   ref={isLastElement ? lastRouteElementRef : null}
                   style={{
-                    flex: "1 1 calc(33.333% - 1rem)",
-                    minWidth: "300px",
+                    flex: '1 1 calc(33.333% - 1rem)',
+                    minWidth: '300px',
                   }}
                 >
                   <Card>

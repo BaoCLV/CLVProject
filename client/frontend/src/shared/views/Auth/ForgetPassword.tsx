@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import { useMutation } from "@apollo/client";
-import { FORGOT_PASSWORD } from "../../../graphql/Actions/forgot-password.action";
+import { FORGOT_PASSWORD } from "../../../graphql/auth/Actions/forgot-password.action";
 
 const formSchema = z.object({
   email: z.string().email(),

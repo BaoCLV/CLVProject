@@ -1,8 +1,13 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { UsersModule } from './user.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(UsersModule);
+
+  app.enableCors({
+    origin: '*',
+  });
   await app.listen(3001);
 }
 bootstrap();
