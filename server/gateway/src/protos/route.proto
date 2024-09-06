@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package route;
+
+// Define the gRPC service with the CRUD operations
+service RouteService {
+  rpc CreateRoute(CreateRouteRequest) returns (CreateRouteResponse) {}
+  rpc FindAllRoutes(FindAllRoutesRequest) returns (FindAllRoutesResponse) {}
+  rpc FindOneRoute(FindOneRouteRequest) returns (FindOneRouteResponse) {}
+  rpc UpdateRoute(UpdateRouteRequest) returns (UpdateRouteResponse) {}
+  rpc DeleteRoute(DeleteRouteRequest) returns (DeleteRouteResponse) {}
+}
+
+// Messages for creating a route
+message CreateRouteRequest {
+  string name = 1;
+  string start_location = 2;
+  string end_location = 3;
+  float distance = 4;
+}
+
+message CreateRouteResponse {
+  string id = 1;
+  string message = 2;
+  string error = 3;
+}
+
+// Messages for finding all routes
+message FindAllRoutesRequest {}
+
+message FindAllRoutesResponse {
+  repeated Route routes = 1;
+  string error = 2;
+}
+
+// Messages for finding a single route
+message FindOneRouteRequest {
+  string id = 1;
+}
+
+message FindOneRouteResponse {
+  Route route = 1;
+  string error = 2;
+}
+
+// Messages for updating a route
+message UpdateRouteRequest {
+  string id = 1;
+  string name = 2;
+  string start_location = 3;
+  string end_location = 4;
+  float distance = 5;
+}
+
+message UpdateRouteResponse {
+  Route route = 1;
+  string message = 2;
+  string error = 3;
+}
+
+// Messages for deleting a route
+message DeleteRouteRequest {
+  string id = 1;
+}
+
+message DeleteRouteResponse {
+  string message = 1;
+  string error = 2;
+}
+
+// Common Route message format
+message Route {
+  string id = 1;
+  string name = 2;
+  string start_location = 3;
+  string end_location = 4;
+  float distance = 5;
+  string created_at = 6;
+  string updated_at = 7;
+}

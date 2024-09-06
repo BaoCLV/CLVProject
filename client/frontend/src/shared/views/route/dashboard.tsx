@@ -1,42 +1,26 @@
-"use client";
+'use client';
 
-import { useInfiniteQuery, QueryClient, QueryClientProvider } from 'react-query';
 import { useRef, useCallback, useState } from 'react';
+import { QueryClient, QueryClientProvider } from 'react-query';
 import { Card, CardHeader, CardBody, CardFooter, Divider, Link, Spacer, Spinner } from '@nextui-org/react';
 import SearchBar from '../../components/searchBar'; // Adjust the import path
+import { useGetRoutes } from '../../../hooks/useRoute'; // Adjust the path to where your hooks are located
 
 const queryClient = new QueryClient();
 
-const fetchRoutes = async ({ pageParam = 0, query = "" }) => {
-  const res = await fetch(
-    `/api/routes?limit=10&offset=${pageParam}&query=${encodeURIComponent(query)}`
-  );
-  if (!res.ok) {
-    throw new Error('Failed to fetch routes');
-  }
-  return res.json();
-};
-
 function Dashboard() {
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
+  // Use the useGetRoutes hook that integrates GraphQL with useInfiniteQuery
   const {
     data,
     error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useInfiniteQuery(
-    ["routes", searchQuery],
-    ({ pageParam = 0 }) => fetchRoutes({ pageParam, query: searchQuery }),
-    {
-      getNextPageParam: (lastPage, pages) => {
-        if (lastPage.length < 10) return undefined;
-        return pages.length * 10;
-      },
-    }
-  );
+  } = useGetRoutes(searchQuery); // Pass the search query to your hook
 
+  // Use IntersectionObserver to implement infinite scrolling
   const observer = useRef<IntersectionObserver | null>(null);
   const lastRouteElementRef = useCallback(
     (node: HTMLDivElement) => {
@@ -52,10 +36,12 @@ function Dashboard() {
     [isFetchingNextPage, fetchNextPage, hasNextPage]
   );
 
+  // Handler to update search query based on input from SearchBar
   const handleSearchResults = (query: string) => {
     setSearchQuery(query);
   };
 
+  // Render an error message if the query fails
   if (error instanceof Error) return <p>Error: {error.message}</p>;
 
   return (
@@ -91,7 +77,7 @@ function Dashboard() {
                     </CardBody>
                     <Divider />
                     <CardFooter>
-                      <Link href={`/routes/${route.id}`}>View Details</Link>
+                      <Link href={`/api/route/${route.name}`}>View Details</Link>
                     </CardFooter>
                   </Card>
                 </div>

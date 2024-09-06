@@ -35,6 +35,9 @@ export class CreateRouteDto {
 
 @InputType()
 export class UpdateRouteDto {
+  @Field()
+  name: string;
+
   @Field({ nullable: true })
   start_location?: string;
 

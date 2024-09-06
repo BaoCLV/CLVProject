@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package user;
+
+// Define the gRPC service
+service UserService {
+  rpc Register (RegisterRequest) returns (RegisterResponse);
+  rpc Login (LoginRequest) returns (LoginResponse);
+  rpc ActivateUser (ActivationRequest) returns (ActivationResponse);
+  rpc GetUsers (EmptyRequest) returns (UserListResponse);
+  rpc Logout (EmptyRequest) returns (LogoutResponse);
+  rpc GetLoggedInUser (EmptyRequest) returns (GetLoggedInUserResponse);
+}
+
+// Define the User message
+message User {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  string password = 4;
+  string role = 5;
+  string address = 6;
+  int64 phone_number = 7;
+  string refreshToken = 8;
+  string createdAt = 9;
+  string updatedAt = 10;
+}
+
+// Define request and response messages
+message RegisterRequest {
+  string name = 1;
+  string email = 2;
+  string password = 3;
+  int64 phone_number = 4;
+  string address = 5;
+}
+
+message RegisterResponse {
+  string activation_token = 1;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  User user = 1;
+  string accessToken = 2;
+  string refreshToken = 3;
+  ErrorResponse error = 4;
+}
+
+message ActivationRequest {
+  string activationToken = 1;
+  string activationCode = 2;
+}
+
+message ActivationResponse {
+  string message = 1;
+}
+
+message LogoutResponse {
+  string message = 1;
+}
+
+message GetLoggedInUserResponse {
+  User user = 1;
+  string accessToken = 2;
+  string refreshToken = 3;
+}
+
+message EmptyRequest {}
+
+message UserListResponse {
+  repeated User users = 1;
+}
+
+message ErrorResponse {
+  string message = 1;
+}

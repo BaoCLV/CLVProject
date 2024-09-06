@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { createProxyMiddleware, responseInterceptor } from 'http-proxy-middleware';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 import { ConfigService } from '@nestjs/config';
+import { GatewayModule } from './gateway/gateway.module';
 
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(GatewayModule);
   const configService = app.get(ConfigService);
   // Enable CORS
   app.enableCors({ credentials: true });
@@ -13,6 +13,7 @@ async function bootstrap() {
   // Logging middleware
   app.use((req, _, next) => {
     console.log(`Got invoked: '${req.originalUrl}'`);
+    console.log('hello')
     next();
   });
   // Proxy middleware with error handling and response interception
@@ -20,15 +21,16 @@ async function bootstrap() {
     target: configService.get<string>('AUTH_SERVICE_URL'),
     changeOrigin: true,
     selfHandleResponse: true,
+    
   }));
-  app.use('/api/v1/notification-api', createProxyMiddleware({
-    target: configService.get<string>('NOTIFICATION_SERVICE_URL'),
+  app.use('/api/v1/route-api', createProxyMiddleware({
+    target: configService.get<string>('ROUTE_SERVICE_URL'),
     changeOrigin: true,
     selfHandleResponse: true,
   }));
 
   // Start the server
-  await app.listen(4000);
+  await app.listen(5000);
 }
 
 bootstrap();

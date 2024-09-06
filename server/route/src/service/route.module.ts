@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Route } from '../entities/route.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RoutesService } from './route.service';
-import { RoutesController } from './route.controller';
+import { RouteController } from './route.controller';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
 import { RouteResolver } from './route.resolver';
@@ -38,7 +38,7 @@ import { RouteResolver } from './route.resolver';
     },
     inject: [ConfigService],
   }),],
-  controllers: [RoutesController],
+  controllers: [RouteController],
   providers: [ RoutesService,
     RouteResolver
   ],
