@@ -4,11 +4,11 @@ import { UsersService } from './users.service';
 import { UsersResolver } from './users.resolver';
 import { User } from '../entities/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-//import { EmailModule } from '../email/email.module';
+import { EmailModule } from '../email/email.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { JwtService } from "@nestjs/jwt";
 import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
-//import { EmailService } from '../email/email.service';
+// import { EmailService } from '../email/email.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 
@@ -43,7 +43,7 @@ import { join } from 'path';
       inject: [ConfigService],
     }),
   
-    //EmailModule,
+    // EmailModule,
 
   ],
   providers: [
@@ -51,7 +51,7 @@ import { join } from 'path';
     UsersResolver, 
     ConfigService,
     JwtService,
-    //EmailService
+    // EmailService
   ],
 exports: [UsersService]
 })

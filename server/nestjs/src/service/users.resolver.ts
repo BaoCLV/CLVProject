@@ -1,14 +1,14 @@
 import { Resolver, Context, Query, Mutation, Args } from '@nestjs/graphql';
 import { UsersService } from './users.service';
-import { RegisterResponse, LoginResponse, ActivationResponse, LogOutResponse } from '../types/user.types';
-import { RegisterDto, LoginDto, ActivationDto } from '../dto/user.dto';
+import { RegisterResponse, LoginResponse, ActivationResponse, LogOutResponse, ForgotPasswordResponse, ResetPasswordResponse } from '../types/user.types';
+import { RegisterDto, LoginDto, ActivationDto, ForgotPasswordDto, ResetPasswordDto } from '../dto/user.dto';
 import { User } from '../entities/user.entity';
 import { BadRequestException, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../guards/auth.guard';
 
 @Resolver()
 export class UsersResolver {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Query(() => [User])
   async users(): Promise<User[]> {
@@ -20,7 +20,7 @@ export class UsersResolver {
     @Args('registerDto') registerDto: RegisterDto,
     @Context() context: { res: Response },
   ): Promise<RegisterResponse> {
-    if (!registerDto.name || !registerDto.email || !registerDto.password) {
+    if (!registerDto.name || !registerDto.email || !registerDto.password || !registerDto.address) {
       throw new BadRequestException('Please fill the all fields');
     }
 
@@ -50,13 +50,28 @@ export class UsersResolver {
 
   @Query(() => LoginResponse)
   @UseGuards(AuthGuard)
-  async getLoggedInUser(@Context() context: {req: Request}) {
+  async getLoggedInUser(@Context() context: { req: Request }) {
     return await this.usersService.getLoggedInUser(context.req)
   }
 
   @Query(() => LogOutResponse)
   @UseGuards(AuthGuard)
-  async LogOutUser(@Context() context: {req: Request}) {
+  async LogOutUser(@Context() context: { req: Request }) {
     return await this.usersService.Logout(context.req)
+  }
+
+
+  @Mutation(() => ForgotPasswordResponse)
+  async forgotPassword(
+    @Args('forgotPasswordDto') forgotPasswordDto: ForgotPasswordDto,
+  ): Promise<ForgotPasswordResponse> {
+    return await this.usersService.forgotPassword(forgotPasswordDto);
+  }
+
+  @Mutation(() => ResetPasswordResponse)
+  async resetPassword(
+    @Args('resetPasswordDto') resetPasswordDto: ResetPasswordDto,
+  ): Promise<ResetPasswordResponse> {
+    return await this.usersService.resetPassword(resetPasswordDto);
   }
 }
