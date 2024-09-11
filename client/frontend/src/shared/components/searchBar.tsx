@@ -30,8 +30,8 @@ export default function SearchBar({ getSearchResults }: SearchBarProps) {
   return (
     <div className="flex items-center gap-2 mb-4">
       <Input
-        clearable
-        underlined
+        isClearable
+        variant="underlined"
         fullWidth
         placeholder="Search routes..."
         value={query}

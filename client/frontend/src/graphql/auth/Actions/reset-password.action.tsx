@@ -9,11 +9,8 @@ export const RESET_PASSWORD: DocumentNode = gql`
       }
     ) {
       user {
-        id
         name
         email
-        role
-        password
       }
     }
   }

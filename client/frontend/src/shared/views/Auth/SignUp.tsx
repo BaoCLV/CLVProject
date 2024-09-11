@@ -13,6 +13,7 @@ import { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { REGISTER_USER } from "../../../graphql/auth/Actions/register.action";
 import toast from "react-hot-toast";
+import { authClient } from "@/src/graphql/auth/auth.gql.setup";
 
 const formSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters long!"),
@@ -31,7 +32,7 @@ const Signup = ({
 }: {
   setActiveState: (e: string) => void;
 }) => {
-  const [registerUserMutation, { loading }] = useMutation(REGISTER_USER);
+  const [registerUserMutation, { loading }] = useMutation(REGISTER_USER, {client: authClient});
 
   const {
     register,

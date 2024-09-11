@@ -5,6 +5,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import { useMutation } from "@apollo/client";
 import { FORGOT_PASSWORD } from "../../../graphql/auth/Actions/forgot-password.action";
+import { unauthClient } from "../../../graphql/auth/auth.gql.setup"
+import { useRouter } from "next/navigation";
+
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -17,7 +20,11 @@ const ForgotPassword = ({
 }: {
   setActiveState: (e: string) => void;
 }) => {
-  const [forgotPassword, { loading }] = useMutation(FORGOT_PASSWORD);
+  const [forgotPassword, { loading }] = useMutation(FORGOT_PASSWORD, {
+    client: unauthClient,
+  });
+
+  const useRoute = useRouter();
 
   const {
     register,
@@ -30,15 +37,20 @@ const ForgotPassword = ({
 
   const onSubmit = async (data: ForgotPasswordSchema) => {
     try {
-       await forgotPassword({
+      const response = await forgotPassword({
         variables: {
           email: data.email,
         },
       });
+      //link to change password, should change it to email activation
+      const nextUrl = response.data.forgotPassword.message;
+
+      useRoute.push(nextUrl);
       toast.success("Please check your email to reset your password!");
       reset();
     } catch (error: any) {
-      console.log(error);
+      console.error("GraphQL error:", error.graphQLErrors);
+      console.error("Network error:", error.networkError);
       toast.error(error.message);
     }
   };

@@ -29,3 +29,8 @@ export const authClient = new ApolloClient({
   link: authMiddleware.concat(httpLink),
   cache: new InMemoryCache(),
 });
+
+export const unauthClient = new ApolloClient({
+  link: httpLink,
+  cache: new InMemoryCache(),
+});

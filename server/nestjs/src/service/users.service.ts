@@ -185,7 +185,8 @@ export class UsersService {
     //   name: user.name,
     //   ActivationCode: resetPasswordUrl,
     // });
-    return { message: `Your forgot password request succesful at ${resetPasswordUrl}` };
+    //should change to email activation
+    return { message: resetPasswordUrl };
   }
 
   //reset password

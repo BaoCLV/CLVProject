@@ -49,7 +49,7 @@ const UserDropDown = () => {
     await registerUser(user);
   };
 
-  const handleNavigation = (key: string) => {
+  const handleNavigation = (key: any) => {
     if (key === "createRoute") {
       router.push("/api/route/createRoute");
     } else if (key === "team_settings") {
