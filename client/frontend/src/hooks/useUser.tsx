@@ -35,7 +35,7 @@ export const useGetUser = (email: string) => {
 export const useCreateUserSocial = (userData: any) => {
   const authClient = useGraphQLClient('auth');
   const [createUser] = useMutation(REGISTER_USER, { client: authClient });
-  const isUserExist = useGetUser(userData.email);
+  const isUserExist = useGetUser(userData?.email);
   // const usertest = useUser()
   // console.log("usertest",usertest)
   // console.log("user existed:", isUserExist)
@@ -60,7 +60,6 @@ export const useCreateUserSocial = (userData: any) => {
   const handlecreateUserSocial = async () => {
 
     if (isUserExist) {
-      console.log("user existed:", isUserExist)
       return isUserExist;
     }
 
