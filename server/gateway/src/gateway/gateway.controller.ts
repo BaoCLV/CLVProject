@@ -47,6 +47,12 @@ export class GatewayController {
     return this.authApiClient.send({ cmd: 'getLoggedInUser' }, {});
   }
 
+  @Get('user/:email')
+  getUserByEmail(@Param('email') email: string): Observable<any> {
+    return this.authApiClient.send({ cmd: 'getUserByEmail' }, { email });
+  }
+
+
   // Methods for RouteService (SERVICE_TWO)
 
   // Create a new route

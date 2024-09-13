@@ -1,22 +1,23 @@
-import { BadRequestException, Injectable, Inject } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { ActivationDto, ForgotPasswordDto, LoginDto, RegisterDto, ResetPasswordDto } from '../dto/user.dto';
 import * as bcrypt from 'bcrypt';
-import { RegisterResponse, LoginResponse } from '../types/user.types';
+import { RegisterResponse, LoginResponse, GetUserByEmailResponse } from '../types/user.types';
 import { JwtService, JwtVerifyOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 // import { EmailService } from '../email/email.service';
 import { TokenSender } from '../utils/sendToken';
 import { GrpcMethod } from '@nestjs/microservices';
 import { Observable } from 'rxjs';
+import { error } from 'console';
 
 interface UserData {
   name: string;
   email: string;
   password: string;
-  phone_number: number;
+  phone_number: string;
   address: string;
 }
 
@@ -134,6 +135,28 @@ export class UsersService {
     const accessToken = req.accesstoken;
     return { user, refreshToken, accessToken };
   }
+
+  // @GrpcMethod('UserService', 'GetUserByEmail')
+  // async getUserByEmail(req: { email: string }) {
+  //   const email = req.email;
+
+  //   const userFound = await this.userRepository.findOne({ where: { email } });
+  //   if (!userFound) {
+  //     return { userFound, error:{message:"user not found"} };
+  //   }
+  //   return { userFound };
+
+  // }
+
+  async getUserByEmail(email: string): Promise<GetUserByEmailResponse> {
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) {
+      return { user, error: { message: `user with ${email} not found` } };
+    }
+    return { user }
+  }
+
+
   @GrpcMethod('UserService', 'Logout')
   async Logout(req: any) {
     req.user = null;
@@ -192,27 +215,27 @@ export class UsersService {
   //reset password
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
     const { password, activationToken } = resetPasswordDto;
-  
+
     const decoded = await this.jwtService.decode(activationToken);
-  
+
     if (!decoded || decoded?.exp * 1000 < Date.now()) {
       throw new BadRequestException('Invalid token!');
     }
-  
+
     // const hashedPassword = await bcrypt.hash(password, 10);
-  
+
     await this.userRepository.update(
       { id: decoded.user.id },
       { password: password }
     );
-  
+
     // Fetch the updated user
     const user = await this.userRepository.findOne({ where: { id: decoded.user.id } });
-  
+
     if (!user) {
       throw new Error('User not found');
     }
-  
+
     return { user };
   }
 }

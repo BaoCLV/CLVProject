@@ -6,7 +6,7 @@ export const REGISTER_USER: DocumentNode = gql`
     $name: String!
     $password: String!
     $email: String!
-    $phone_number: Float!
+    $phone_number: String!
     $address: String!
   ) {
     register(

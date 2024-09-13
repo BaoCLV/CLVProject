@@ -12,6 +12,7 @@ import { useMutation } from "@apollo/client";
 import Cookies from "js-cookie";
 import { signIn } from "next-auth/react";
 import { useGraphQLClient } from "../../../hooks/useGraphql";
+import { FcGoogle } from "react-icons/fc";
 
 // Define the form schema using Zod for validation
 const formSchema = z.object({
@@ -131,12 +132,16 @@ const Login = ({
             className={`${styles.button} mt-3`}
           />
         </div>
-        <div
-          className="flex items-center justify-center my-3"
+        <br />
+        <h5 className="text-center pt-4 font-Poppins text-[16px] text-white">
+          Or join with
+        </h5>
+        <div className="flex items-center justify-center my-3"
           onClick={() => signIn()}
         >
-          {/* Google Sign-In Button */}
+          <FcGoogle size={30} className="cursor-pointer mr-2" />
         </div>
+
         <h5 className="text-center pt-4 font-Poppins text-[14px]">
           Not have any account?
           <span

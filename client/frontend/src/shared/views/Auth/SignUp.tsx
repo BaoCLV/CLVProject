@@ -20,8 +20,9 @@ const formSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8, "Password must be at least 8characters long!"),
   phone_number: z
-    .number()
-    .min(10, "Phone number must be at least 11 characters!"),
+    .string()
+    .min(10, "Phone number must be at least 10 characters!")
+    .regex(/^\d+$/, "Phone number must contain only numbers!"),
   address: z.string(),
 });
 
@@ -89,8 +90,8 @@ const Signup = ({
         <div className="w-full relative mt-3">
           <label className={`${styles.label}`}>Enter your Phone Number</label>
           <input
-            {...register("phone_number", { valueAsNumber: true })}
-            type="number"
+            {...register("phone_number")}
+            type="text"
             placeholder="number"
             className={`${styles.input}`}
           />
