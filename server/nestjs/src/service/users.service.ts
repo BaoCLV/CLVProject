@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { ActivationDto, ForgotPasswordDto, LoginDto, RegisterDto, ResetPasswordDto } from '../dto/user.dto';
 import * as bcrypt from 'bcrypt';
-import { RegisterResponse, LoginResponse } from '../types/user.types';
+import { RegisterResponse, LoginResponse, GetUserByEmailResponse } from '../types/user.types';
 import { JwtService, JwtVerifyOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { TokenSender } from '../utils/sendToken';
@@ -16,7 +16,7 @@ interface UserData {
   name: string;
   email: string;
   password: string;
-  phone_number: number;
+  phone_number: string;
   address: string;
 }
 
@@ -92,13 +92,10 @@ export class UsersService {
       }
   
       const { name, email, password, phone_number, address } = newUser.user;
-      const saltRounds = 10;
-      const salt = await bcrypt.genSalt(saltRounds);
-      const hashedPassword = await bcrypt.hash(password, salt);
       const user = this.userRepository.create({
         name,
         email,
-        password: hashedPassword,
+        password,
         phone_number,
         address,
       });
@@ -164,6 +161,15 @@ async comparePassword(
     const accessToken = req.accesstoken;
     return { user, refreshToken, accessToken };
   }
+
+  async getUserByEmail(email: string): Promise<GetUserByEmailResponse> {
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) {
+      return { user, error: { message: `user with ${email} not found` } };
+    }
+    return { user }
+  }
+
   @GrpcMethod('UserService', 'Logout')
   async Logout(req: any) {
     req.user = null;
@@ -180,7 +186,7 @@ async comparePassword(
   async generateForgotPasswordLink(user: User) {
     const forgotPasswordToken = this.jwtService.sign(
       {
-        user,
+        userId: user.id,
       },
       {
         secret: this.configService.get<string>('FORGOT_PASSWORD_SECRET'),
@@ -208,13 +214,11 @@ async comparePassword(
       this.configService.get<string>('CLIENT_SIDE_URI') +
       `/reset-password?verify=${forgotPasswordToken}`;
 
-    // await this.emailService.sendMail({
-    //   email,
-    //   subject: 'Reset your Password!',
-    //   template: './forgot-password',
-    //   name: user.name,
-    //   ActivationCode: resetPasswordUrl,
-    // });
+    await this.kafkaProducerService.sendUserForgotPasswordEvent({
+        email:user.email,
+        name: user.name,
+        activationCode: resetPasswordUrl,
+      });
     return { message: `Your forgot password request succesful at ${resetPasswordUrl}` };
   }
 
@@ -222,26 +226,37 @@ async comparePassword(
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
     const { password, activationToken } = resetPasswordDto;
   
-    const decoded = await this.jwtService.decode(activationToken);
-  
-    if (!decoded || decoded?.exp * 1000 < Date.now()) {
-      throw new BadRequestException('Invalid token!');
+    // Verify the JWT token, which checks the expiration and validity
+    let decoded;
+    try {
+      decoded = this.jwtService.verify(activationToken, {
+        secret: this.configService.get<string>('FORGOT_PASSWORD_SECRET'),
+      });
+    } catch (error) {
+      throw new BadRequestException('Invalid or expired token!');
     }
   
-    // const hashedPassword = await bcrypt.hash(password, 10);
+    // Proceed with password reset only if token is valid
+    if (!decoded || !decoded.userId) {
+      throw new BadRequestException('Invalid token payload!');
+    }
   
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+  
+    // Update the user's password in the database
     await this.userRepository.update(
-      { id: decoded.user.id },
-      { password: password }
+      { id: decoded.userId },
+      { password: hashedPassword },
     );
   
     // Fetch the updated user
-    const user = await this.userRepository.findOne({ where: { id: decoded.user.id } });
+    const user = await this.userRepository.findOne({ where: { id: decoded.userId } });
   
     if (!user) {
       throw new Error('User not found');
     }
   
-    return { user };
+    return { message: 'Password has been successfully reset.' };
   }
-}
+}  

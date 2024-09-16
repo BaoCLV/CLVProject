@@ -20,4 +20,10 @@ export class KafkaProducerService implements OnModuleInit {
       messages: [{ value: JSON.stringify(data) }],
     });
   }
+  async sendUserForgotPasswordEvent(data: any) {
+    await this.producer.send({
+      topic: 'user-forgot-password',
+      messages: [{ value: JSON.stringify(data) }],
+    });
+  }
 }

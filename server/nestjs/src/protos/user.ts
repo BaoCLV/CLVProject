@@ -41,7 +41,7 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  user: User | undefined;
+  savedUser: User | undefined;
   accessToken: string;
   refreshToken: string;
   error: ErrorResponse | undefined;

@@ -95,7 +95,7 @@ export class GatewayController {
   // }
 
 
-  // Methods for RouteService (SERVICE_TWO)
+  // Methods for RouteService
 
   @Post('route')
   async createRoute(@Body() data: CreateRouteRequest) {

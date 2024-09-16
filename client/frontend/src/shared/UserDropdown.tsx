@@ -49,8 +49,8 @@ const UserDropDown = () => {
   const handleNavigation = (key: any) => {
     if (key === "createRoute") {
       router.push("/api/route/createRoute");
-    } else if (key === "team_settings") {
-      router.push("/");
+    } else if (key === "settings") {
+      router.push(`/api/profile/${user.id}`);
     }
   };
 

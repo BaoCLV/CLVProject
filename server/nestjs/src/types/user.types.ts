@@ -62,6 +62,9 @@ export class ForgotPasswordResponse {
 export class ResetPasswordResponse {
   @Field(() => User)
   user?: User | unknown;
+  
+  @Field()
+  message: string;
 
   @Field(() => ErrorType, { nullable: true })
   error?: ErrorType;

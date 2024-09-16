@@ -45,7 +45,6 @@ const ForgotPassword = ({
       //link to change password, should change it to email activation
       const nextUrl = response.data.forgotPassword.message;
 
-      useRoute.push(nextUrl);
       toast.success("Please check your email to reset your password!");
       reset();
     } catch (error: any) {

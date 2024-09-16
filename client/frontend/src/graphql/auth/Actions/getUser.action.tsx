@@ -11,7 +11,6 @@ export const GET_USER: DocumentNode = gql`
         email
         address
         phone_number
-        password
       }
       accessToken
       refreshToken
