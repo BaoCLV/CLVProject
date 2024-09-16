@@ -18,6 +18,7 @@ type VerifyNumber = {
 };
 
 const Verification: FC<Props> = ({ setActiveState }) => {
+
   const authClient = useGraphQLClient("auth");
   const [ActivateUser, { loading }] = useMutation(ACTIVATE_USER, {client: authClient});
 

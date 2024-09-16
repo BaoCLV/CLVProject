@@ -15,13 +15,15 @@ import { REGISTER_USER } from "../../../graphql/auth/Actions/register.action";
 import toast from "react-hot-toast";
 import { useGraphQLClient } from "../../../hooks/useGraphql";
 
+
 const formSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters long!"),
   email: z.string().email(),
   password: z.string().min(8, "Password must be at least 8characters long!"),
   phone_number: z
-    .number()
-    .min(10, "Phone number must be at least 11 characters!"),
+    .string()
+    .min(10, "Phone number must be at least 10 characters!")
+    .regex(/^\d+$/, "Phone number must contain only numbers!"),
   address: z.string(),
 });
 
@@ -32,8 +34,10 @@ const Signup = ({
 }: {
   setActiveState: (e: string) => void;
 }) => {
+
   const authClient = useGraphQLClient("auth");
   const [registerUserMutation, { loading }] = useMutation(REGISTER_USER, { client: authClient });
+
   const {
     register,
     handleSubmit,
@@ -89,8 +93,8 @@ const Signup = ({
         <div className="w-full relative mt-3">
           <label className={`${styles.label}`}>Enter your Phone Number</label>
           <input
-            {...register("phone_number", { valueAsNumber: true })}
-            type="number"
+            {...register("phone_number")}
+            type="text"
             placeholder="number"
             className={`${styles.input}`}
           />

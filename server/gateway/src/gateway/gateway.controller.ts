@@ -89,6 +89,13 @@ export class GatewayController {
   }
 
   // RouteService Methods
+  // @Get('user/:email')
+  // getUserByEmail(@Param('email') email: string): Observable<any> {
+  //   return this.authClient.send({ cmd: 'getUserByEmail' }, { email });
+  // }
+
+
+  // Methods for RouteService (SERVICE_TWO)
 
   @Post('route')
   async createRoute(@Body() data: CreateRouteRequest) {

@@ -1,8 +1,12 @@
-import { useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { GET_USER } from "../graphql/auth/Actions/getUser.action";
 import { useGraphQLClient } from "../hooks/useGraphql";
+import { REGISTER_USER } from "../graphql/auth/Actions/register.action";
+import toast from "react-hot-toast";
+import { GET_SOCIAL_USER } from "../graphql/auth/Actions/getSocialUser.action";
 
-const useUser = () => {
+
+export const useUser = () => {
   const authClient = useGraphQLClient('auth'); // Use the auth client
   const { loading, data } = useQuery(GET_USER, { client: authClient });
 
@@ -12,4 +16,76 @@ const useUser = () => {
   };
 };
 
-export default useUser;
+export const useGetUser = (email: string) => {
+  const authClient = useGraphQLClient('auth'); // Use the auth client
+  const { data, loading, error } = useQuery(GET_SOCIAL_USER, {
+    variables: { email },
+    client: authClient,
+  });
+
+  const user = data?.getUserByEmail?.user;
+  return {
+    loading,
+    error,
+    user: user
+  };
+};
+
+
+export const useCreateUserSocial = (userData: any) => {
+  const authClient = useGraphQLClient('auth');
+  const [createUser] = useMutation(REGISTER_USER, { client: authClient });
+  const isUserExist = useGetUser(userData?.email);
+  // const usertest = useUser()
+  // console.log("usertest",usertest)
+  // console.log("user existed:", isUserExist)
+
+  const randomPassword = () => {
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()-_=+";
+    const charactersLength = 8;
+
+    const uniqueCharacters = [...Array.from(new Set(characters))];
+
+    let password = "";
+
+    for (let i = 0; i < charactersLength; i++) {
+      const randomIndex = Math.floor(Math.random() * uniqueCharacters.length);
+      password += uniqueCharacters[randomIndex];
+    }
+
+    return password;
+  };
+
+  const handlecreateUserSocial = async () => {
+
+    if (isUserExist) {
+      return isUserExist;
+    }
+
+    const data = {
+      name: userData.name,
+      email: userData.email,
+      password: randomPassword(),
+      phone_number: userData.phone_number, // Provide a default value if phone_number is not available
+      address: userData.address || 'No address provided', // Provide a default value if address is not available
+    }
+    console.log("input data:", data)
+
+    try {
+      const response = await createUser({
+        variables: data,
+      });
+      console.log("register:", data)
+      localStorage.setItem(
+        "activation_token",
+        response.data.register.activation_token
+      );
+      toast.success("Register successfully");
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  }
+
+  return { handlecreateUserSocial };
+};

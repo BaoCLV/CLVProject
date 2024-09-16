@@ -31,8 +31,8 @@ export class User {
   address: string;
 
   @Field({ nullable: true })
-  @Column({ nullable: true, type: 'bigint' })
-  phone_number: number;
+  @Column({ nullable: true })
+  phone_number: string;
 
   @Field({ nullable: true })
   @Column({ nullable: true })

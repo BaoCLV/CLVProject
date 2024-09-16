@@ -66,3 +66,12 @@ export class ResetPasswordResponse {
   @Field(() => ErrorType, { nullable: true })
   error?: ErrorType;
 }
+
+@ObjectType()
+export class GetUserByEmailResponse {
+  @Field(() => User)
+  user?: User | unknown;
+
+  @Field(() => ErrorType, { nullable: true })
+  error?: ErrorType;
+}

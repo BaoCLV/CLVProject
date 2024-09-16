@@ -10,11 +10,10 @@ import {
 import { useEffect, useState } from "react";
 import { CgProfile } from "react-icons/cg";
 import AuthScreen from "../shared/screens/AuthScreen";
-import useUser from "../hooks/useUser";
+import { useCreateUserSocial, useUser } from "../hooks/useUser";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import { signOut, useSession } from "next-auth/react";
-import { registerUser } from "../actions/register";
 import { useRouter } from "next/navigation";
 
 const UserDropDown = () => {
@@ -23,6 +22,8 @@ const UserDropDown = () => {
   const { user, loading } = useUser();
   const { data } = useSession();
   const router = useRouter(); // Initialize useRouter
+  const { handlecreateUserSocial } = useCreateUserSocial(data?.user);
+
 
   useEffect(() => {
     if (!loading) {
@@ -30,7 +31,7 @@ const UserDropDown = () => {
     }
     if (data?.user) {
       setsignedIn(true);
-      addUser(data?.user);
+      handlecreateUserSocial();
     }
   }, [loading, user, open, data]);
 
@@ -45,15 +46,11 @@ const UserDropDown = () => {
     }
   };
 
-  const addUser = async (user: any) => {
-    await registerUser(user);
-  };
-
-  const handleNavigation = (key: string) => {
+  const handleNavigation = (key: any) => {
     if (key === "createRoute") {
       router.push("/api/route/createRoute");
     } else if (key === "team_settings") {
-      router.push("/"); 
+      router.push("/");
     }
   };
 
