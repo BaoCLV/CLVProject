@@ -33,9 +33,9 @@ export class ActivationDto {
   @IsNotEmpty({ message: 'Activation Token is required.' })
   ActivationToken: string;
 
-  // @Field()
-  // @IsNotEmpty({ message: 'Activation Code is required.' })
-  // ActivationCode: string;
+  @Field()
+  @IsNotEmpty({ message: 'Activation Code is required.' })
+  ActivationCode: string;
 }
 
 @InputType()

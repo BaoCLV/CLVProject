@@ -10,24 +10,23 @@ export class RouteController {
 
   @GrpcMethod('RouteService', 'CreateRoute')
   async createRoute(data: CreateRouteDto) {
+    console.log('Data received in gRPC:', data); // Log the data received in the gRPC method
+    if (!data.startLocation || !data.endLocation) {
+      return { error: 'Start location and end location are required' };
+    }
+    const newRoute = await this.routesService.create(data);
+    return { id: newRoute.id, message: 'Route created successfully!' };
+  }
+
+  @GrpcMethod('RouteService', 'FindAllRoutes')
+  async findAllRoutes() {
     try {
-      const newRoute = await this.routesService.create(data);
-      return { id: newRoute.id, message: 'Route created successfully!' };
+      const routes = await this.routesService.findAll({});
+      return { routes };
     } catch (error) {
       return { error: error.message };
     }
   }
-
-  // Updated method to call findAll without parameters
-  // @GrpcMethod('RouteService', 'FindAllRoutes')
-  // async findAllRoutes() {
-  //   try {
-  //     const routes = await this.routesService.findAll();
-  //     return { routes };
-  //   } catch (error) {
-  //     return { error: error.message };
-  //   }
-  // }
 
   @GrpcMethod('RouteService', 'FindOneRoute')
   async findOneRoute(data: { name: string }) {

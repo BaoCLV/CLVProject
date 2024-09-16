@@ -4,6 +4,7 @@ import { useMutation } from "@apollo/client";
 import { FC, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { VscWorkspaceTrusted } from "react-icons/vsc";
+import { useGraphQLClient } from "../../../hooks/useGraphql";
 
 type Props = {
   setActiveState: (route: string) => void;
@@ -17,7 +18,9 @@ type VerifyNumber = {
 };
 
 const Verification: FC<Props> = ({ setActiveState }) => {
-  const [ActivateUser, { loading }] = useMutation(ACTIVATE_USER);
+  const authClient = useGraphQLClient("auth");
+  const [ActivateUser, { loading }] = useMutation(ACTIVATE_USER, {client: authClient});
+
   const [invalidError, setInvalidError] = useState(false);
 
   const inputRefs = [

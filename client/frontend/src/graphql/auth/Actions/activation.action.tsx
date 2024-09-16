@@ -9,7 +9,7 @@ export const ACTIVATE_USER: DocumentNode = gql`
         ActivationCode: $ActivationCode
       }
     ) {
-      user {
+      savedUser {
         name
         email
         phone_number

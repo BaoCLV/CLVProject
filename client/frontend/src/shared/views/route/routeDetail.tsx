@@ -48,10 +48,10 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
           <hr className="border-t border-gray-300 mb-4" />
           <div className="space-y-4">
             <p>
-              <span className="font-semibold">Start Location:</span> {route.start_location}
+              <span className="font-semibold">Start Location:</span> {route.startLocation}
             </p>
             <p>
-              <span className="font-semibold">End Location:</span> {route.end_location}
+              <span className="font-semibold">End Location:</span> {route.endLocation}
             </p>
             <p>
               <span className="font-semibold">Distance:</span> {route.distance} km

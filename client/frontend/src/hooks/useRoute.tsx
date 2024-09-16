@@ -15,8 +15,8 @@ export const useCreateRoute = () => {
 
   const handleCreateRoute = async (data: {
     name: string;
-    start_location: string;
-    end_location: string;
+    startLocation: string;
+    endLocation: string;
     distance: number;
   }) => {
     try {
@@ -60,8 +60,8 @@ export const useUpdateRoute = () => {
 
   const handleUpdateRoute = async (name: string, data: { 
     name: string;
-    start_location: string; 
-    end_location: string; 
+    startLocation: string; 
+    endLocation: string; 
     distance: number; 
   }) => {
     try {

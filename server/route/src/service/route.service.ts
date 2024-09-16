@@ -15,6 +15,7 @@ export class RoutesService {
   // Create a new route
   async create(data: CreateRouteDto): Promise<Route> {
     const newRoute = this.routeRepository.create(data);
+    console.log(newRoute)
     return this.routeRepository.save(newRoute);
   }
 
@@ -28,7 +29,7 @@ export class RoutesService {
     // Apply query filtering if provided
     if (query) {
       qb.where(
-        'route.name LIKE :query OR route.start_location LIKE :query OR route.end_location LIKE :query',
+        'route.name LIKE :query OR route.startLocation LIKE :query OR route.endLocation LIKE :query',
         {
           query: `%${query}%`,
         },

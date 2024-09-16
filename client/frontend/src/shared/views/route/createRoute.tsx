@@ -7,8 +7,8 @@ import { useCreateRoute } from '../../../hooks/useRoute'; // Ensure the correct 
 // Define the form state interface
 interface CreateRouteForm {
   name: string;
-  start_location: string;
-  end_location: string;
+  startLocation: string;
+  endLocation: string;
   distance: number;
 }
 
@@ -17,8 +17,8 @@ export default function CreateRoute() {
 
   const [form, setForm] = useState<CreateRouteForm>({
     name: '',
-    start_location: '',
-    end_location: '',
+    startLocation: '',
+    endLocation: '',
     distance: 0,
   });
 
@@ -45,14 +45,14 @@ export default function CreateRoute() {
       // Use the create route mutation
       await handleCreateRoute({
         name: form.name,
-        start_location: form.start_location,
-        end_location: form.end_location,
+        startLocation: form.startLocation,
+        endLocation: form.endLocation,
         distance: form.distance,
       });
       router.push('/');
       setMessage('Route created successfully.');
       setError('');
-      setForm({ name: '', start_location: '', end_location: '', distance: 0 }); // Reset form on success
+      setForm({ name: '', startLocation: '', endLocation: '', distance: 0 }); // Reset form on success
     } catch (err) {
       setError('Failed to create route.');
       setMessage('');
@@ -73,8 +73,8 @@ export default function CreateRoute() {
       />
       <input
         type="text"
-        name="start_location"
-        value={form.start_location}
+        name="startLocation"
+        value={form.startLocation}
         onChange={handleChange}
         placeholder="Start Location"
         required
@@ -82,8 +82,8 @@ export default function CreateRoute() {
       />
       <input
         type="text"
-        name="end_location"
-        value={form.end_location}
+        name="endLocation"
+        value={form.endLocation}
         onChange={handleChange}
         placeholder="End Location"
         required

@@ -1,26 +1,24 @@
+// pages/dashboard.tsx
 'use client';
 
 import { useRef, useCallback, useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { Card, CardHeader, CardBody, CardFooter, Divider, Link, Spacer, Spinner } from '@nextui-org/react';
-import SearchBar from '../../components/searchBar'; // Adjust the import path
-import { useGetRoutes } from '../../../hooks/useRoute'; // Adjust the path to where your hooks are located
+import SearchBar from '../../components/searchBar'; 
+import { useGetRoutes } from '../../../hooks/useRoute'; 
 
 const queryClient = new QueryClient();
 
 function Dashboard() {
   const [searchQuery, setSearchQuery] = useState<string>('');
-
-  // Use the useGetRoutes hook that integrates GraphQL with useInfiniteQuery
   const {
     data,
     error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useGetRoutes(searchQuery); // Pass the search query to your hook
+  } = useGetRoutes(searchQuery);
 
-  // Use IntersectionObserver to implement infinite scrolling
   const observer = useRef<IntersectionObserver | null>(null);
   const lastRouteElementRef = useCallback(
     (node: HTMLDivElement) => {
@@ -36,12 +34,12 @@ function Dashboard() {
     [isFetchingNextPage, fetchNextPage, hasNextPage]
   );
 
-  // Handler to update search query based on input from SearchBar
+
   const handleSearchResults = (query: string) => {
     setSearchQuery(query);
   };
 
-  // Render an error message if the query fails
+
   if (error instanceof Error) return <p>Error: {error.message}</p>;
 
   return (
@@ -71,8 +69,8 @@ function Dashboard() {
                     </CardHeader>
                     <Divider />
                     <CardBody>
-                      <p>Start Location: {route.start_location}</p>
-                      <p>End Location: {route.end_location}</p>
+                      <p>Start Location: {route.startLocation}</p>
+                      <p>End Location: {route.endLocation}</p>
                       <p>Distance: {route.distance} km</p>
                     </CardBody>
                     <Divider />

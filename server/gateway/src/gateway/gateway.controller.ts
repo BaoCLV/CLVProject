@@ -1,81 +1,124 @@
-import { Controller, Get, Post, Body, Inject, Param, Patch, Delete } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+// src/gateway/gateway.controller.ts
+import { Controller, Get, Post, Body, Param, Put, Delete, Inject } from '@nestjs/common';
+import { ClientGrpc } from '@nestjs/microservices';
 import { Observable } from 'rxjs';
+import { lastValueFrom } from 'rxjs';
+
+// Import the generated gRPC types
+import { 
+  RegisterRequest, RegisterResponse, LoginRequest, LoginResponse, ActivationRequest, 
+  ActivationResponse, EmptyRequest, UserListResponse, LogoutResponse, GetLoggedInUserResponse 
+} from '../protos/user';
+
+import { 
+  CreateRouteRequest, CreateRouteResponse, FindAllRoutesRequest, FindAllRoutesResponse, 
+  FindOneRouteRequest, FindOneRouteResponse, UpdateRouteRequest, UpdateRouteResponse, 
+  DeleteRouteRequest, DeleteRouteResponse 
+} from '../protos/route';
+
+// Define interfaces for gRPC services based on your proto files
+interface UserService {
+  register(data: RegisterRequest): Observable<RegisterResponse>;
+  login(data: LoginRequest): Observable<LoginResponse>;
+  activateUser(data: ActivationRequest): Observable<ActivationResponse>;
+  getUsers(data: EmptyRequest): Observable<UserListResponse>;
+  logout(data: EmptyRequest): Observable<LogoutResponse>;
+  getLoggedInUser(data: EmptyRequest): Observable<GetLoggedInUserResponse>;
+}
+
+interface RouteService {
+  createRoute(data: CreateRouteRequest): Observable<CreateRouteResponse>;
+  findAllRoutes(data: FindAllRoutesRequest): Observable<FindAllRoutesResponse>;
+  findOneRoute(data: FindOneRouteRequest): Observable<FindOneRouteResponse>;
+  updateRoute(data: UpdateRouteRequest): Observable<UpdateRouteResponse>;
+  deleteRoute(data: DeleteRouteRequest): Observable<DeleteRouteResponse>;
+}
 
 @Controller('gateway')
 export class GatewayController {
+  private userService: UserService;
+  private routeService: RouteService;
+
   constructor(
-    @Inject('AUTH_SERVICE') private readonly authApiClient: ClientProxy,
-    @Inject('ROUTE_SERVICE') private readonly routeServiceClient: ClientProxy,
+    @Inject('AUTH_SERVICE') private readonly authClient: ClientGrpc,
+    @Inject('ROUTE_SERVICE') private readonly routeClient: ClientGrpc,
   ) {}
 
-  // Methods for UserService (AUTH_SERVICE)
-
-  // Register a new user
-  @Post('auth/register')
-  registerUser(@Body() data: any): Observable<any> {
-    return this.authApiClient.send({ cmd: 'register' }, data);
+  onModuleInit() {
+    // Initialize gRPC service instances
+    this.userService = this.authClient.getService<UserService>('UserService');
+    this.routeService = this.routeClient.getService<RouteService>('RouteService');
   }
 
-  // Login user
-  @Post('auth/login')
-  loginUser(@Body() data: any): Observable<any> {
-    return this.authApiClient.send({ cmd: 'login' }, data);
+  // UserService Methods
+
+  @Post('user/register')
+  async registerUser(@Body() data: RegisterRequest) {
+    // Calls Register RPC of UserService
+    return await lastValueFrom(this.userService.register(data));
   }
 
-  // Activate a user
-  @Post('auth/activate')
-  activateUser(@Body() data: any): Observable<any> {
-    return this.authApiClient.send({ cmd: 'activateUser' }, data);
+  @Post('user/login')
+  async loginUser(@Body() data: LoginRequest) {
+    // Calls Login RPC of UserService
+    return await lastValueFrom(this.userService.login(data));
   }
 
-  // Get all users
-  @Get('auth/users')
-  getAllUsers(): Observable<any> {
-    return this.authApiClient.send({ cmd: 'getUsers' }, {});
+  @Post('user/activate')
+  async activateUser(@Body() data: ActivationRequest) {
+    // Calls ActivateUser RPC of UserService
+    return await lastValueFrom(this.userService.activateUser(data));
   }
 
-  // Logout user
-  @Post('auth/logout')
-  logoutUser(): Observable<any> {
-    return this.authApiClient.send({ cmd: 'logout' }, {});
+  @Get('user/logout')
+  async logoutUser() {
+    // Calls Logout RPC of UserService
+    return await lastValueFrom(this.userService.logout({}));
   }
 
-  // Get logged in user details
-  @Get('auth/loggedin-user')
-  getLoggedInUser(): Observable<any> {
-    return this.authApiClient.send({ cmd: 'getLoggedInUser' }, {});
+  @Get('user')
+  async getUsers() {
+    // Calls GetUsers RPC of UserService
+    return await lastValueFrom(this.userService.getUsers({}));
   }
 
-  // Methods for RouteService (SERVICE_TWO)
+  @Get('user/logged-in')
+  async getLoggedInUser() {
+    // Calls GetLoggedInUser RPC of UserService
+    return await lastValueFrom(this.userService.getLoggedInUser({}));
+  }
 
-  // Create a new route
+  // RouteService Methods
+
   @Post('route')
-  createRoute(@Body() data: any): Observable<any> {
-    return this.routeServiceClient.send({ cmd: 'createRoute' }, data);
+  async createRoute(@Body() data: CreateRouteRequest) {
+    console.log(data)
+    return await lastValueFrom(this.routeService.createRoute(data));
   }
 
-  // Get all routes
-  @Get('routes')
-  getAllRoutes(): Observable<any> {
-    return this.routeServiceClient.send({ cmd: 'findAllRoutes' }, {});
+  @Get('route')
+  async findAllRoutes() {
+    // Calls FindAllRoutes RPC of RouteService
+    return await lastValueFrom(this.routeService.findAllRoutes({}));
   }
 
-  // Get a single route by ID
   @Get('route/:id')
-  getOneRoute(@Param('id') id: string): Observable<any> {
-    return this.routeServiceClient.send({ cmd: 'findOneRoute' }, { id });
+  async findOneRoute(@Param('id') id: string) {
+    // Calls FindOneRoute RPC of RouteService
+    return await lastValueFrom(this.routeService.findOneRoute({ id }));
   }
 
-  // Update a route by ID
-  @Patch('route/:id')
-  updateRoute(@Param('id') id: string, @Body() data: any): Observable<any> {
-    return this.routeServiceClient.send({ cmd: 'updateRoute' }, { id, ...data });
+  @Put('route/:id')
+  async updateRoute(@Param('id') id: string, @Body() data: UpdateRouteRequest) {
+    // Calls UpdateRoute RPC of RouteService
+    return await lastValueFrom(this.routeService.updateRoute({ ...data, id }));
   }
 
-  // Delete a route by ID
   @Delete('route/:id')
-  deleteRoute(@Param('id') id: string): Observable<any> {
-    return this.routeServiceClient.send({ cmd: 'deleteRoute' }, { id });
+  async deleteRoute(@Param('id') id: string) {
+    // Calls DeleteRoute RPC of RouteService
+    return await lastValueFrom(this.routeService.deleteRoute({ id }));
   }
 }
+
+

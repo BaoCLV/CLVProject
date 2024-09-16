@@ -6,8 +6,8 @@ mutation CreateRoute($data: CreateRouteDto!) {
   createRoute(data: $data) {
     id
     name
-    start_location
-    end_location
+    startLocation
+    endLocation
     distance
   }
 }

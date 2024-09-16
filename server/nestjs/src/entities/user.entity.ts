@@ -37,12 +37,12 @@ export class User {
   @Field({ nullable: true })
   @Column({ nullable: true })
   refreshToken: string;
-  
-  @Field()
-  @CreateDateColumn()
-  createdAt: Date;
 
   @Field()
-  @UpdateDateColumn()
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
+  
+  @Field()
+  @CreateDateColumn({ type: 'timestamp', onUpdate: 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 }

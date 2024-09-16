@@ -4,25 +4,31 @@ package route;
 
 // Define the gRPC service with the CRUD operations
 service RouteService {
-  rpc CreateRoute(CreateRouteRequest) returns (CreateRouteResponse) {}
-  rpc FindAllRoutes(FindAllRoutesRequest) returns (FindAllRoutesResponse) {}
-  rpc FindOneRoute(FindOneRouteRequest) returns (FindOneRouteResponse) {}
-  rpc UpdateRoute(UpdateRouteRequest) returns (UpdateRouteResponse) {}
-  rpc DeleteRoute(DeleteRouteRequest) returns (DeleteRouteResponse) {}
+  rpc CreateRoute(CreateRouteRequest) returns (CreateRouteResponse);
+  rpc FindAllRoutes(FindAllRoutesRequest) returns (FindAllRoutesResponse);
+  rpc FindOneRoute(FindOneRouteRequest) returns (FindOneRouteResponse);
+  rpc UpdateRoute(UpdateRouteRequest) returns (UpdateRouteResponse);
+  rpc DeleteRoute(DeleteRouteRequest) returns (DeleteRouteResponse);
 }
 
 // Messages for creating a route
 message CreateRouteRequest {
   string name = 1;
-  string start_location = 2;
-  string end_location = 3;
+  string startLocation = 2;
+  string endLocation = 3;
   float distance = 4;
 }
 
 message CreateRouteResponse {
-  string id = 1;
-  string message = 2;
-  string error = 3;
+  string id = 1; // gRPC uses string for ID for compatibility
+  string name = 2;
+  string startLocation = 3;
+  string endLocation = 4;
+  float distance = 5;
+  string created_at = 6; // Include timestamps to match Entity
+  string updated_at = 7;
+  string message = 8;
+  string error = 9;
 }
 
 // Messages for finding all routes
@@ -47,8 +53,8 @@ message FindOneRouteResponse {
 message UpdateRouteRequest {
   string id = 1;
   string name = 2;
-  string start_location = 3;
-  string end_location = 4;
+  string startLocation = 3;
+  string endLocation = 4;
   float distance = 5;
 }
 
@@ -70,11 +76,11 @@ message DeleteRouteResponse {
 
 // Common Route message format
 message Route {
-  string id = 1;
+  string id = 1; // Use string for IDs in gRPC for consistency
   string name = 2;
-  string start_location = 3;
-  string end_location = 4;
+  string startLocation = 3;
+  string endLocation = 4;
   float distance = 5;
-  string created_at = 6;
+  string created_at = 6; // Use string format for dates in gRPC
   string updated_at = 7;
 }

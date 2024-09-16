@@ -1,4 +1,5 @@
 import { ObjectType, Field, Int, InputType } from '@nestjs/graphql';
+import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
 
 @ObjectType()
 export class RouteDto {
@@ -9,10 +10,10 @@ export class RouteDto {
   name: string;
 
   @Field()
-  start_location: string;
+  startLocation: string;
 
   @Field()
-  end_location: string;
+  endLocation: string;
 
   @Field(() => Int)
   distance: number;
@@ -21,29 +22,41 @@ export class RouteDto {
 @InputType()
 export class CreateRouteDto {
   @Field()
+  @IsNotEmpty() // Ensures the field is not empty
+  @IsString()
   name: string;
 
   @Field()
-  start_location: string;
+  @IsNotEmpty()
+  @IsString()
+  startLocation: string; // Ensures start_location is provided and is a string
 
   @Field()
-  end_location: string;
+  @IsNotEmpty()
+  @IsString()
+  endLocation: string;
 
   @Field(() => Int)
+  @IsNotEmpty()
+  @IsNumber()
   distance: number;
 }
 
 @InputType()
 export class UpdateRouteDto {
-  @Field()
-  name: string;
+  @Field({ nullable: true })
+  @IsString()
+  name?: string;
 
   @Field({ nullable: true })
-  start_location?: string;
+  @IsString()
+  startLocation?: string;
 
   @Field({ nullable: true })
-  end_location?: string;
+  @IsString()
+  endLocation?: string;
 
   @Field(() => Int, { nullable: true })
+  @IsNumber()
   distance?: number;
 }

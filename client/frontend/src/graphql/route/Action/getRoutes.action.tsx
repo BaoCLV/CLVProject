@@ -5,8 +5,8 @@ export const GET_ROUTES_QUERY = gql`
     routes(query: $query, limit: $limit, offset: $offset) {
       id
       name
-      start_location
-      end_location
+      startLocation
+      endLocation
       distance
     }
   }

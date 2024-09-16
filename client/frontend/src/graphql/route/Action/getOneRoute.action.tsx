@@ -5,8 +5,8 @@ query GetRoute($name: String!) {
     route(name: $name) {
       id
       name
-      start_location
-      end_location
+      startLocation
+      endLocation
       distance
       createdAt
       updatedAt

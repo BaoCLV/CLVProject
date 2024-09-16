@@ -10,6 +10,6 @@ COPY . .
 
 RUN pnpm build
 
-EXPOSE 3001
+EXPOSE 4000
 
-CMD ["pnpm", "start:prod"]
+CMD ["pnpm", "start:dev"]

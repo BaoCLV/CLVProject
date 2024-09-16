@@ -5,8 +5,8 @@ import { useGetRoute, useUpdateRoute } from '../../../hooks/useRoute'; // Ensure
 
 interface UpdateRouteForm {
   name: string;
-  start_location: string;
-  end_location: string;
+  startLocation: string;
+  endLocation: string;
   distance: number;
 }
 
@@ -17,8 +17,8 @@ interface UpdateRouteProps {
 export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   const [form, setForm] = useState<UpdateRouteForm>({
     name: '',
-    start_location: '',
-    end_location: '',
+    startLocation: '',
+    endLocation: '',
     distance: 0,
   });
   const [message, setMessage] = useState<string>('');
@@ -34,8 +34,8 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
     if (route) {
       setForm({
         name: route.name,
-        start_location: route.start_location,
-        end_location: route.end_location,
+        startLocation: route.startLocation,
+        endLocation: route.endLocation,
         distance: route.distance,
       });
     }
@@ -53,8 +53,8 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
       // Use the update route mutation with routeId
       await handleUpdateRoute(routeId, {
         name: form.name,
-        start_location: form.start_location,
-        end_location: form.end_location,
+        startLocation: form.startLocation,
+        endLocation: form.endLocation,
         distance: form.distance,
       });
 
@@ -83,8 +83,8 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
       />
       <input
         type="text"
-        name="start_location"
-        value={form.start_location}
+        name="startLocation"
+        value={form.startLocation}
         onChange={handleChange}
         placeholder="Start Location"
         className="p-2 border border-white-300 text-white rounded"
@@ -92,8 +92,8 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
       />
       <input
         type="text"
-        name="end_location"
-        value={form.end_location}
+        name="endLocation"
+        value={form.endLocation}
         onChange={handleChange}
         placeholder="End Location"
         className="p-2 border border-gray-300 text-white rounded"

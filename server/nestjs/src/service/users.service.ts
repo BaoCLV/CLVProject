@@ -7,10 +7,10 @@ import * as bcrypt from 'bcrypt';
 import { RegisterResponse, LoginResponse } from '../types/user.types';
 import { JwtService, JwtVerifyOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-// import { EmailService } from '../email/email.service';
 import { TokenSender } from '../utils/sendToken';
 import { GrpcMethod } from '@nestjs/microservices';
 import { Observable } from 'rxjs';
+import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
 
 interface UserData {
   name: string;
@@ -26,16 +26,13 @@ interface RoleService {
 
 @Injectable()
 export class UsersService {
-  activateUser(activationDto: ActivationDto, res: Response): import("../types/user.types").ActivationResponse | PromiseLike<import("../types/user.types").ActivationResponse> {
-    throw new Error('Method not implemented.');
-  }
-  private roleService: RoleService;
 
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly kafkaProducerService: KafkaProducerService,
     // private readonly emailService: EmailService,
   ) { }
 
@@ -53,39 +50,63 @@ export class UsersService {
       throw new BadRequestException('User with this phone number already exists');
     }
 
-    // const hashedPassword = await bcrypt.hash(password, 10);
-    const user = this.userRepository.create({
-      name,
-      email,
-      password,
-      phone_number,
-      address,
-    });
+
 
     // Assign role via gRPC
     // const roleResponse = await this.roleService.getRoleById({ userId: user.name }).toPromise();
     // user.role = roleResponse.role || 'user'; // Default to 'user' if no role is provided
-
-    await this.userRepository.save(user);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = ({
+      name,
+      email,
+      password: hashedPassword,
+      phone_number,
+      address,
+    });
 
     const activationToken = await this.createActivationToken(user);
 
+    await this.kafkaProducerService.sendUserRegisteredEvent({
+      email: user.email,
+      name: user.name,
+      activation_token: activationToken.Token, // Send the token
+      activation_code: activationToken.ActivationCode,
+    });
     // const activationCode = activationToken.ActivationCode;
     const activation_token = activationToken.Token;
-    console.log(user)
-    // await this.emailService.sendMail({
-    //   email,
-    //   subject: 'Activate your account!',
-    //   template: 'activation-mail',
-    //   name,
-    //   ActivationCode: activationCode,
-    // });
 
     return {
       activation_token,
     };
   }
+  //activate user
+  async activateUser(activationDto: ActivationDto, response: Response){
+    const {ActivationToken, ActivationCode } = activationDto;
 
+    const newUser: {user: UserData; ActivationCode: string} =
+      this.jwtService.verify(ActivationToken, {
+        secret: this.configService.get<string>('ACTIVATION_SECRET'),
+      } as JwtVerifyOptions) as {user:UserData; ActivationCode: string};
+      if (newUser.ActivationCode !== ActivationCode) {
+        throw new BadRequestException('Invalid activation code');
+      }
+  
+      const { name, email, password, phone_number, address } = newUser.user;
+      const saltRounds = 10;
+      const salt = await bcrypt.genSalt(saltRounds);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      const user = this.userRepository.create({
+        name,
+        email,
+        password: hashedPassword,
+        phone_number,
+        address,
+      });
+
+      const savedUser = await this.userRepository.save(user);
+      console.log(savedUser)
+      return { savedUser, response };
+      }
   // Create activation token
   async createActivationToken(user: UserData) {
     const ActivationCode = Math.floor(1000 + Math.random() * 9000).toString();
@@ -93,7 +114,7 @@ export class UsersService {
     const Token = this.jwtService.sign(
       {
         user,
-        // ActivationCode,
+        ActivationCode,
       },
       {
         secret: this.configService.get<string>('ACTIVATION_SECRET'),
@@ -102,21 +123,21 @@ export class UsersService {
     );
     return {
       Token,
-      // ActivationCode 
+      ActivationCode 
     };
   }
   @GrpcMethod('UserService', 'Login')
   async login(loginDto: LoginDto): Promise<LoginResponse> {
     const { email, password } = loginDto;
     const user = await this.userRepository.findOne({ where: { email } });
-    if (user &&
-      // (await bcrypt.compare(password, user.password))
-      password == user.password
+    if (user && (await this.comparePassword(password, user.password))
     ) {
       const tokenSender = new TokenSender(this.configService, this.jwtService, this.userRepository);
       console.log(user)
       return tokenSender.sendToken(user);
     } else {
+      console.log(password);
+      console.log(user.password)
       return {
         user: null,
         accessToken: null,
@@ -127,6 +148,15 @@ export class UsersService {
       };
     }
   }
+ 
+async comparePassword(
+  password: string,
+  hashedPassword: string,
+): Promise<boolean> {
+    console.log('Comparing:', password, hashedPassword);
+
+    return await  bcrypt.compare(password, hashedPassword);
+  }  
   @GrpcMethod('UserService', 'GetLoggedInUser')
   async getLoggedInUser(req: any) {
     const user = req.user;

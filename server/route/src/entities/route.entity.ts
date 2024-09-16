@@ -16,11 +16,11 @@ export class Route {
   
   @Field()
   @Column()
-  start_location: string;
+  startLocation: string;
 
   @Field()
   @Column()
-  end_location: string;
+  endLocation: string;
 
   @Field()
   @Column('float')

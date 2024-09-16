@@ -5,8 +5,8 @@ mutation UpdateRoute($name: String!, $data: UpdateRouteDto!) {
   updateRoute(name: $name, data: $data) {
     id
     name
-    start_location
-    end_location
+    startLocation
+    endLocation
     distance
   }
 }
