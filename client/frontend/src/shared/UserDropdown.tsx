@@ -24,7 +24,6 @@ const UserDropDown = () => {
   const router = useRouter(); // Initialize useRouter
   const { handlecreateUserSocial } = useCreateUserSocial(data?.user);
 
-
   useEffect(() => {
     if (!loading) {
       setsignedIn(!!user);
@@ -42,20 +41,21 @@ const UserDropDown = () => {
       Cookies.remove("access_token");
       Cookies.remove("refresh_token");
       toast.success("Log out successful!");
-      window.location.reload();
     }
+    window.location.reload();
+    router.push("/");
   };
 
   const handleNavigation = (key: any) => {
     if (key === "createRoute") {
-      router.push("/api/route/createRoute");
+      router.push("/");
     } else if (key === "settings") {
       router.push(`/api/profile/${user.id}`);
     }
   };
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-4 ml-auto"> {/* Changed to ml-auto */}
       {signedIn ? (
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
@@ -66,21 +66,23 @@ const UserDropDown = () => {
             />
           </DropdownTrigger>
           <DropdownMenu aria-label="Profile Actions" variant="flat" onAction={handleNavigation}>
-            <DropdownItem key="profile" className="h-14 gap-2">
-              <p className="font-semibold">Signed in as</p>
-              <p className="font-semibold">
+            <DropdownItem key="settings" className="h-14 gap-2">
+              <p className="font-semibold text-white">Signed in as</p>
+              <p className="font-semibold text-white">
                 {data?.user ? data.user.email : user.email}
               </p>
             </DropdownItem>
-            <DropdownItem key="settings">My Profile</DropdownItem>
-            <DropdownItem key="createRoute">Create new Route</DropdownItem>
-            <DropdownItem key="team_settings">
-              All Routes
+            <DropdownItem className="font-semibold text-white" key="settings">
+              My Profile
             </DropdownItem>
+            {/* <DropdownItem className="font-semibold text-white" key="team_settings">
+              All Routes
+            </DropdownItem> */}
             <DropdownItem
               key="logout"
               color="danger"
-              onClick={() => logoutHandler()}
+              className="font-semibold text-white"
+              onClick={logoutHandler}
             >
               Log Out
             </DropdownItem>

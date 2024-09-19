@@ -5,6 +5,7 @@ import { useState, ChangeEvent, FormEvent } from "react";
 import { Input, Button } from "@nextui-org/react";
 import { useLazyQuery } from '@apollo/client';
 import { GET_ROUTES_QUERY } from "@/src/graphql/route/Action/getRoutes.action";
+import { useRouter } from "next/navigation";
 interface SearchBarProps {
   getSearchResults: (results: any) => void;
 }
@@ -13,6 +14,8 @@ export default function SearchBar({ getSearchResults }: SearchBarProps) {
   const [query, setQuery] = useState<string>("");
   const [limit, setLimit] = useState<number>(10); // Default limit
   const [offset, setOffset] = useState<number>(0); // Default offset
+
+  const router = useRouter();
 
   const [fetchRoutes, { loading, data, error }] = useLazyQuery(GET_ROUTES_QUERY, {
     onCompleted: (data) => {
@@ -29,6 +32,7 @@ export default function SearchBar({ getSearchResults }: SearchBarProps) {
         offset,
       },
     });
+    router.push(`/api/search?query=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}`);
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -36,7 +40,7 @@ export default function SearchBar({ getSearchResults }: SearchBarProps) {
   };
 
   return (
-    <div className="flex items-center gap-2 mb-4">
+    <div className="flex items-center">
       <Input
         isClearable
         variant="underlined"

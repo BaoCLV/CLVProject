@@ -6,6 +6,7 @@ import { GET_ROUTE } from "../graphql/route/Action/getOneRoute.action";
 import { GET_ROUTES_QUERY } from "../graphql/route/Action/getRoutes.action";
 import { useGraphQLClient } from "../hooks/useGraphql";
 import { useInfiniteQuery } from 'react-query';
+import { number } from "zod";
 
 
 // Hook for creating a route
@@ -38,10 +39,10 @@ export const useDeleteRoute = () => {
   const routeClient = useGraphQLClient('route');
   const [deleteRoute] = useMutation(DELETE_ROUTE_MUTATION, { client: routeClient });
 
-  const handleDeleteRoute = async (name: string) => {
+  const handleDeleteRoute = async (id: number) => {
     try {
       const response = await deleteRoute({
-        variables: { name },
+        variables: { id },
       });
       return response.data.deleteRoute;
     } catch (error) {
@@ -58,7 +59,7 @@ export const useUpdateRoute = () => {
   const routeClient = useGraphQLClient('route');
   const [updateRoute] = useMutation(UPDATE_ROUTE_MUTATION, { client: routeClient });
 
-  const handleUpdateRoute = async (name: string, data: { 
+  const handleUpdateRoute = async (id: number, data: { 
     name: string;
     startLocation: string; 
     endLocation: string; 
@@ -66,7 +67,7 @@ export const useUpdateRoute = () => {
   }) => {
     try {
       const response = await updateRoute({
-        variables: { name, data },
+        variables: { id, data },
       });
       return response.data.updateRoute;
     } catch (error) {
@@ -79,10 +80,10 @@ export const useUpdateRoute = () => {
 };
 
 // Hook for getting a single route by name
-export const useGetRoute = (name: string) => {
+export const useGetRoute = (id: number) => {
   const routeClient = useGraphQLClient('route');
   const { data, loading, error } = useQuery(GET_ROUTE, {
-    variables: { name },
+    variables: { id },
     client: routeClient,
   });
 
@@ -94,31 +95,36 @@ export const useGetRoute = (name: string) => {
 };
 
 // Hook for getting a list of routes with optional query, limit, and offset
-export const useGetRoutes = (query = "") => {
-  const routeClient = useGraphQLClient("route");
+export const useGetRoutes = (currentPage: number, itemsPerPage: number) => {
+  const routeClient = useGraphQLClient('route');
 
   return useInfiniteQuery(
-    ["routes", query],
-    async ({ pageParam = 0 }) => {
+    ['routes', currentPage], // Use currentPage in the query key for caching
+    async ({ pageParam = currentPage }) => {
+      const offset = (pageParam - 1) * itemsPerPage;
+
       const { data } = await routeClient.query({
         query: GET_ROUTES_QUERY,
         variables: {
-          query,
-          limit: 10.0,
-          offset: pageParam * 1.0,
+          limit: itemsPerPage,
+          offset: offset,
         },
       });
 
       if (!data?.routes) {
-        throw new Error("Failed to fetch routes");
+        throw new Error('Failed to fetch routes');
       }
 
       return data.routes;
     },
     {
-      getNextPageParam: (lastPage, pages) => {
-        if (lastPage.length < 10) return undefined;
-        return pages.length * 10;
+      getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.length < itemsPerPage) return undefined; // No more pages
+        return allPages.length + 1;
+      },
+      getPreviousPageParam: (firstPage, allPages) => {
+        if (allPages.length === 1) return undefined;
+        return allPages.length - 1;
       },
     }
   );

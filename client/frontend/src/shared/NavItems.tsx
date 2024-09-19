@@ -3,20 +3,20 @@ import Link from "next/link";
 
 const navItems = [
   {
-    title: "Routes",
-    url: "api/routes",
+    title: "About",
+    url: "/",
   },
-  {
-    title: "Track Order",
-    url: "/tracking",
-  },
-  {
-    title: "Orders",
-    url: "/Orders",
-  },
+  // {
+  //   title: "Track Order",
+  //   url: "/tracking",
+  // },
+  // {
+  //   title: "Orders",
+  //   url: "/Orders",
+  // },
   {
     title: "Contact us",
-    url: "/contact",
+    url: "/",
   },
 ];
 

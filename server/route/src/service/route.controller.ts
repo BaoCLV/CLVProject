@@ -29,9 +29,9 @@ export class RouteController {
   }
 
   @GrpcMethod('RouteService', 'FindOneRoute')
-  async findOneRoute(data: { name: string }) {
+  async findOneRoute(data: { id: number }) {
     try {
-      const route = await this.routesService.findOneByName(data.name);
+      const route = await this.routesService.findOneById(data.id);
       return { route };
     } catch (error) {
       return { error: error.message };
@@ -39,9 +39,9 @@ export class RouteController {
   }
 
   @GrpcMethod('RouteService', 'UpdateRoute')
-  async updateRoute(data: UpdateRouteDto & { name: string }) {
+  async updateRoute(data: UpdateRouteDto & { id: number }) {
     try {
-      const updatedRoute = await this.routesService.updateByName(data.name, data);
+      const updatedRoute = await this.routesService.updateById(data.id, data);
       return { route: updatedRoute, message: 'Route updated successfully!' };
     } catch (error) {
       return { error: error.message };
@@ -49,9 +49,9 @@ export class RouteController {
   }
 
   @GrpcMethod('RouteService', 'DeleteRoute')
-  async deleteRoute(data: { name: string }) {
+  async deleteRoute(data: { id: number }) {
     try {
-      await this.routesService.removeByName(data.name);
+      await this.routesService.removeById(data.id);
       return { message: 'Route deleted successfully!' };
     } catch (error) {
       return { error: error.message };

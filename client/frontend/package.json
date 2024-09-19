@@ -14,8 +14,9 @@
     "@grpc/proto-loader": "^0.7.13",
     "@hookform/resolvers": "^3.9.0",
     "@improbable-eng/grpc-web": "^0.15.0",
-    "@nextui-org/react": "^2.4.2",
+    "@nextui-org/react": "^2.4.8",
     "bcrypt": "^5.1.1",
+    "cssnano": "^7.0.6",
     "date-fns": "^4.0.0",
     "framer-motion": "^11.3.5",
     "g": "^2.0.1",
@@ -29,10 +30,14 @@
     "pnpm": "^9.6.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-easy-swipe": "^0.0.23",
     "react-hook-form": "^7.52.1",
     "react-hot-toast": "^2.4.1",
     "react-icons": "^5.2.1",
     "react-query": "^3.39.3",
+    "react-responsive-carousel": "^3.2.23",
+    "swiper": "^11.1.14",
+    "tailwindcss-multi-theme": "^1.0.4",
     "typeorm": "^0.3.20",
     "zod": "^3.23.8"
   },
@@ -46,7 +51,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
     "postcss": "^8.4.40",
-    "tailwindcss": "^3.4.7",
+    "tailwindcss": "^3.4.11",
     "typescript": "^5"
   }
 }

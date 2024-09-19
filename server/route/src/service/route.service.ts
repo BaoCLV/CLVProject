@@ -53,24 +53,24 @@ export class RoutesService {
   
 
   // Find a route by name
-  async findOneByName(name: string): Promise<Route> {
-    const route = await this.routeRepository.findOne({ where: { name } });
+  async findOneById(id: number): Promise<Route> {
+    const route = await this.routeRepository.findOne({ where: { id } });
     if (!route) {
-      throw new NotFoundException(`Route with name "${name}" not found`);
+      throw new NotFoundException(`Route with name "${id}" not found`);
     }
     return route;
   }
 
   // Update a route by name
-  async updateByName(name: string, data: UpdateRouteDto): Promise<Route> {
-    const route = await this.findOneByName(name);
+  async updateById(id: number, data: UpdateRouteDto): Promise<Route> {
+    const route = await this.findOneById(id);
     Object.assign(route, data); // Merge updates into the existing route
     return this.routeRepository.save(route);
   }
 
   // Remove a route by name
-  async removeByName(name: string): Promise<void> {
-    const route = await this.findOneByName(name);
+  async removeById(id: number): Promise<void> {
+    const route = await this.findOneById(id);
     await this.routeRepository.remove(route);
   }
 }

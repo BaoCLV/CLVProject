@@ -1,8 +1,8 @@
 
 import { gql, DocumentNode } from "@apollo/client";
 export const GET_ROUTE = gql`
-query GetRoute($name: String!) {
-    route(name: $name) {
+query GetRoute($id: String!) {
+    route(id: $id) {
       id
       name
       startLocation

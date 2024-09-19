@@ -3,6 +3,7 @@ import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { RoutesService } from './route.service'; // Make sure the import points to the correct service file
 import { CreateRouteDto, UpdateRouteDto } from '../dto/route.dto';
 import { Route } from '../entities/route.entity';
+import { Int } from '@nestjs/graphql';
 
 @Resolver(() => Route)
 export class RouteResolver {
@@ -18,10 +19,10 @@ export class RouteResolver {
     return this.routesService.findAll({ query, limit, offset });
   }
 
-  // Query to get a specific route by name
+  // Query to get a specific route by id
   @Query(() => Route)
-  async route(@Args('name', { type: () => String }) name: string): Promise<Route> {
-    return this.routesService.findOneByName(name);
+  async route(@Args('id', { type: () => String }) id: number): Promise<Route> {
+    return this.routesService.findOneById(id);
   }
 
   // Mutation to create a new route
@@ -33,16 +34,16 @@ export class RouteResolver {
   // Mutation to update an existing route by name
   @Mutation(() => Route)
   async updateRoute(
-    @Args('name') name: string,
+    @Args('id') id: number,
     @Args('data') data: UpdateRouteDto,
   ): Promise<Route> {
-    return this.routesService.updateByName(name, data);
+    return this.routesService.updateById(id, data);
   }
 
   // Mutation to delete a route by name
   @Mutation(() => Boolean)
-  async deleteRoute(@Args('name', { type: () => String }) name: string): Promise<boolean> {
-    await this.routesService.removeByName(name);
+  async deleteRoute(@Args('id', { type: () => String }) id: number): Promise<boolean> {
+    await this.routesService.removeById(id);
     return true;
   }
 }

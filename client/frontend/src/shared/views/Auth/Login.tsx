@@ -67,7 +67,7 @@ const Login = ({
         Cookies.set("refresh_token", response.data.login.refreshToken);
         Cookies.set("access_token", response.data.login.accessToken);
         setOpen(false); // Close login modal
-        reset(); // Reset form fields
+        reset();
       } else {
         toast.error(response.data.login.error.message);
       }

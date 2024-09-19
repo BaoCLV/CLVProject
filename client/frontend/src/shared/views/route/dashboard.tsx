@@ -1,102 +1,144 @@
-// pages/dashboard.tsx
-'use client';
+"use client";
 
-import { useRef, useCallback, useState } from 'react';
-import { QueryClient, QueryClientProvider } from 'react-query';
-import { Card, CardHeader, CardBody, CardFooter, Divider, Link, Spacer, Spinner } from '@nextui-org/react';
-import SearchBar from '../../components/searchBar'; 
-import { useGetRoutes } from '../../../hooks/useRoute'; 
+import { useState, useEffect } from "react";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { useGetRoutes } from "../../../hooks/useRoute";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Spinner } from "@nextui-org/react";
 
 const queryClient = new QueryClient();
-
 function Dashboard() {
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const itemsPerPage = 20;
+
+  // Read page from the URL (or default to 1 if it's not set)
+  const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
+  const [currentPage, setCurrentPage] = useState(pageFromUrl);
+
+  // Sync currentPage state with URL query param
+  useEffect(() => {
+    setCurrentPage(pageFromUrl);
+  }, [pageFromUrl]);
+
+  // Function to update the URL without full page reload
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    router.push(`/?page=${newPage}`); // Update URL with new page, but don't reload the page
+  };
+
+  // Fetch paginated data based on currentPage
   const {
     data,
     error,
-    fetchNextPage,
+    isFetching,
     hasNextPage,
+    hasPreviousPage,
     isFetchingNextPage,
-  } = useGetRoutes(searchQuery);
-
-  const observer = useRef<IntersectionObserver | null>(null);
-  const lastRouteElementRef = useCallback(
-    (node: HTMLDivElement) => {
-      if (isFetchingNextPage) return;
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage) {
-          fetchNextPage();
-        }
-      });
-      if (node) observer.current.observe(node);
-    },
-    [isFetchingNextPage, fetchNextPage, hasNextPage]
-  );
-
-
-  const handleSearchResults = (query: string) => {
-    setSearchQuery(query);
-  };
-
+    isFetchingPreviousPage,
+  } = useGetRoutes(currentPage, itemsPerPage); // Fetch routes based on current page and items per page
 
   if (error instanceof Error) return <p>Error: {error.message}</p>;
 
+  // Aggregate all data from the pages into a single array
+  const allRoutes = data?.pages.flatMap((page) => page) ?? [];
+
   return (
-    <div className="dark min-h-screen h-screen p-0 bg-gray-100">
-      <div className="h-full p-8">
-        <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '2rem' }}>
-          Dashboard
-        </h1>
-        <SearchBar getSearchResults={handleSearchResults} />
-        <div className="flex flex-wrap gap-4 justify-start">
-          {data?.pages.map((page, pageIndex) =>
-            page.map((route: any, index: number) => {
-              const isLastElement =
-                pageIndex === data.pages.length - 1 && index === page.length - 1;
-              return (
-                <div
-                  key={route.id}
-                  ref={isLastElement ? lastRouteElementRef : null}
-                  style={{
-                    flex: '1 1 calc(33.333% - 1rem)',
-                    minWidth: '300px',
-                  }}
-                >
-                  <Card>
-                    <CardHeader>
-                      <h4 style={{ margin: 0 }}>{route.name}</h4>
-                    </CardHeader>
-                    <Divider />
-                    <CardBody>
-                      <p>Start Location: {route.startLocation}</p>
-                      <p>End Location: {route.endLocation}</p>
-                      <p>Distance: {route.distance} km</p>
-                    </CardBody>
-                    <Divider />
-                    <CardFooter>
-                      <Link href={`/api/route/${route.name}`}>View Details</Link>
-                    </CardFooter>
-                  </Card>
-                </div>
-              );
-            })
-          )}
+    <div className="dark  p-4">
+      <h1 className="text-2xl font-bold mb-4 text-yellow-500">Dashboard</h1>
+
+      <div className="w-full overflow-hidden  rounded-lg shadow-xs">
+        <div className="w-full overflow-x-auto">
+          <table className="w-full whitespace-no-wrap border-black bg-gray-900">
+            <thead>
+              <tr className="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 dark:text-gray-400">
+                <th className="px-4 py-3">Route Name</th>
+                <th className="px-4 py-3">Start Location</th>
+                <th className="px-4 py-3">End Location</th>
+                <th className="px-4 py-3">Distance (km)</th>
+                <th className="px-4 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y dark:divide-gray-700 dark:bg-blue-950">
+              {isFetching && (
+                <tr>
+                  <td colSpan={5} className="text-center py-4">
+                    <Spinner label="Loading..." />
+                  </td>
+                </tr>
+              )}
+
+              {allRoutes.length > 0
+                ? allRoutes.map((route: any) => (
+                    <tr
+                      key={route.id}
+                      className="text-blue-700 dark:text-gray-400"
+                    >
+                      <td className="px-4 py-3 text-sm">{route.name}</td>
+                      <td className="px-4 py-3 text-sm">
+                        {route.startLocation}
+                      </td>
+                      <td className="px-4 py-3 text-sm">{route.endLocation}</td>
+                      <td className="px-4 py-3 text-sm">{route.distance}</td>
+                      <td className="px-4 py-3 text-sm">
+                        <a
+                          href={`/api/route/${route.id}`}
+                          className="text-blue-600 hover:underline dark:text-blue-400"
+                        >
+                          View Details
+                        </a>
+                      </td>
+                    </tr>
+                  ))
+                : !isFetching && (
+                    <tr>
+                      <td colSpan={5} className="text-center py-4">
+                        No routes available
+                      </td>
+                    </tr>
+                  )}
+            </tbody>
+          </table>
         </div>
-        <Spacer y={2} />
-        <div className="text-center">
-          {isFetchingNextPage && <Spinner label="Loading more..." />}
-          {!hasNextPage && <p>No more data to load</p>}
+
+        {/* Pagination Controls */}
+        <div className="flex justify-between px-4 py-3 text-xs font-semibold tracking-wide text-gray-500 uppercase border-t dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+          {/* Previous Button */}
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage <= 1 || isFetchingPreviousPage}
+            className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50 flex items-center"
+          >
+            {isFetchingPreviousPage ? (
+              <>
+                <Spinner className="mr-2" /> Loading...
+              </>
+            ) : (
+              "Previous"
+            )}
+          </button>
+
+          {/* Current Page Display */}
+          <span>Showing page {currentPage}</span>
+
+          {/* Next Button */}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={!hasNextPage || isFetchingNextPage}
+            className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50 flex items-center"
+          >
+            {isFetchingNextPage ? (
+              <>
+                <Spinner className="mr-2" /> Loading...
+              </>
+            ) : (
+              "Next"
+            )}
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-export default function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Dashboard />
-    </QueryClientProvider>
-  );
-}
+export default Dashboard;
