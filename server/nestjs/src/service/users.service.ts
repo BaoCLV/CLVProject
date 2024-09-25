@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
-import { ActivationDto, ForgotPasswordDto, LoginDto, RegisterDto, ResetPasswordDto } from '../dto/user.dto';
+import { ActivationDto, ForgotPasswordDto, LoginDto, RegisterDto,UpdateUserDto, ResetPasswordDto } from '../dto/user.dto';
 import * as bcrypt from 'bcrypt';
 import { RegisterResponse, LoginResponse, GetUserByEmailResponse } from '../types/user.types';
 import { JwtService, JwtVerifyOptions } from '@nestjs/jwt';
@@ -258,5 +258,19 @@ async comparePassword(
     }
   
     return { message: 'Password has been successfully reset.' };
+  }
+  async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    // Find the user by ID
+    const user = await this.userRepository.findOne({ where: { id } });
+    
+    if (!user) {
+      throw new BadRequestException(`User with ID ${id} not found`);
+    }
+  
+    // Merge updated data into the existing user entity
+    Object.assign(user, updateUserDto);
+  
+    // Save the updated user entity to the database
+    return await this.userRepository.save(user);
   }
 }  

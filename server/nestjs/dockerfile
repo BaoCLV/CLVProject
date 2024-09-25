@@ -1,12 +1,14 @@
-# Dockerfile for NestJS (server)
-FROM node:latest
+# Use a specific Node.js version for better consistency
+FROM node:18
 
 RUN apt-get update && apt-get install -y postgresql-client
 
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
+
 RUN npm install -g pnpm && pnpm install --frozen-lockfile
+
 
 COPY . .
 
@@ -14,4 +16,4 @@ RUN pnpm build
 
 EXPOSE 3001
 
-CMD ["pnpm", "start:prod"]
+CMD ["pnpm", "start:dev"]

@@ -13,6 +13,7 @@ import Cookies from "js-cookie";
 import { signIn } from "next-auth/react";
 import { useGraphQLClient } from "../../../hooks/useGraphql";
 import { FcGoogle } from "react-icons/fc";
+import { useRouter } from "next/navigation";
 
 // Define the form schema using Zod for validation
 const formSchema = z.object({
@@ -32,7 +33,7 @@ const Login = ({
 }) => {
   // Use authClient for authentication operations
   const authClient = useGraphQLClient("auth");
-
+  const router = useRouter(); 
   // Initialize mutation with authClient
   const [login, { loading }] = useMutation(LOGIN_USER, { client: authClient });
 
@@ -66,8 +67,11 @@ const Login = ({
         // Set authentication tokens in cookies
         Cookies.set("refresh_token", response.data.login.refreshToken);
         Cookies.set("access_token", response.data.login.accessToken);
+        router.push('/');
         setOpen(false); // Close login modal
         reset();
+
+        window.location.reload();
       } else {
         toast.error(response.data.login.error.message);
       }

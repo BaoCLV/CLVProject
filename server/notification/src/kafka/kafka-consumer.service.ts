@@ -31,7 +31,7 @@ export class KafkaConsumerService implements OnModuleInit {
               subject: 'Activate your account!',
               email: event.email,
               name: event.name,
-              ActivationCode: event.activationCode,
+              ActivationCode: event.QctivationCode,
               template: 'activation-mail',
             });
             console.log(`Activation email sent successfully to ${event.email}`);

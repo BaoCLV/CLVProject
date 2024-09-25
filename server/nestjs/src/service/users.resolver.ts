@@ -1,7 +1,7 @@
 import { Resolver, Context, Query, Mutation, Args } from '@nestjs/graphql';
 import { UsersService } from './users.service';
-import { RegisterResponse, LoginResponse, ActivationResponse, LogOutResponse, ForgotPasswordResponse, ResetPasswordResponse, GetUserByEmailResponse } from '../types/user.types';
-import { RegisterDto, LoginDto, ActivationDto, ForgotPasswordDto, ResetPasswordDto } from '../dto/user.dto';
+import { RegisterResponse, LoginResponse, ActivationResponse, LogOutResponse, ForgotPasswordResponse, ResetPasswordResponse, GetUserByEmailResponse, UpdateUserResponse } from '../types/user.types';
+import { RegisterDto, LoginDto, ActivationDto, ForgotPasswordDto, ResetPasswordDto, UpdateUserDto } from '../dto/user.dto';
 import { User } from '../entities/user.entity';
 import { BadRequestException, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../guards/auth.guard';
@@ -80,5 +80,17 @@ export class UsersResolver {
     @Args('resetPasswordDto') resetPasswordDto: ResetPasswordDto,
   ): Promise<ResetPasswordResponse> {
     return await this.usersService.resetPassword(resetPasswordDto);
+  }
+  @Mutation(() => UpdateUserResponse)
+  async updateUser(
+    @Args('id') id: string,
+    @Args('updateUserDto') updateUserDto: UpdateUserDto,
+  ): Promise<UpdateUserResponse> {
+    const updatedUser = await this.usersService.updateUser(id, updateUserDto);
+    
+    return {
+      message: 'User profile updated successfully',
+      user: updatedUser,
+    };
   }
 }

@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { useGetRoutes } from "../../../hooks/useRoute";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Spinner } from "@nextui-org/react";
+import FilterButton from "../../components/FilterDropDown";
+
 
 const queryClient = new QueryClient();
 function Dashboard() {
@@ -15,6 +17,10 @@ function Dashboard() {
   // Read page from the URL (or default to 1 if it's not set)
   const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
   const [currentPage, setCurrentPage] = useState(pageFromUrl);
+
+  // State for filter criteria
+  const [filterType, setFilterType] = useState<string>("name"); // Default filter is "name"
+  const [filterQuery, setFilterQuery] = useState<string>("");
 
   // Sync currentPage state with URL query param
   useEffect(() => {
@@ -27,7 +33,15 @@ function Dashboard() {
     router.push(`/?page=${newPage}`); // Update URL with new page, but don't reload the page
   };
 
-  // Fetch paginated data based on currentPage
+  // Function to handle filtering
+  const handleFilter = (type: string, query: string) => {
+    setFilterType(type);
+    setFilterQuery(query);
+    setCurrentPage(1); // Reset to the first page when applying a new filter
+    router.push(`/?filterType=${type}&filterQuery=${query}&page=1`); // Update URL with filter params
+  };
+
+  // Fetch filtered, paginated data based on currentPage, filterType, and filterQuery
   const {
     data,
     error,
@@ -36,7 +50,7 @@ function Dashboard() {
     hasPreviousPage,
     isFetchingNextPage,
     isFetchingPreviousPage,
-  } = useGetRoutes(currentPage, itemsPerPage); // Fetch routes based on current page and items per page
+  } = useGetRoutes(currentPage, itemsPerPage); // Pass filter to useGetRoutes
 
   if (error instanceof Error) return <p>Error: {error.message}</p>;
 
@@ -47,7 +61,11 @@ function Dashboard() {
     <div className="dark  p-4">
       <h1 className="text-2xl font-bold mb-4 text-yellow-500">Dashboard</h1>
 
+      {/* Filter Button Component */}
+      {/* <FilterButton onFilter={handleFilter} /> Pass filter handler to the FilterButton */}
+
       <div className="w-full overflow-hidden  rounded-lg shadow-xs">
+        
         <div className="w-full overflow-x-auto">
           <table className="w-full whitespace-no-wrap border-black bg-gray-900">
             <thead>

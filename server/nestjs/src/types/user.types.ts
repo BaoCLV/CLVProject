@@ -78,3 +78,15 @@ export class GetUserByEmailResponse {
   @Field(() => ErrorType, { nullable: true })
   error?: ErrorType;
 }
+
+@ObjectType()
+export class UpdateUserResponse {
+  @Field(() => User)
+  user?: User | unknown;
+  
+  @Field()
+  message: string;
+
+  @Field(() => ErrorType, { nullable: true })
+  error?: ErrorType;
+}

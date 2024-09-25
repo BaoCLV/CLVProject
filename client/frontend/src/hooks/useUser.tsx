@@ -4,6 +4,8 @@ import { useGraphQLClient } from "../hooks/useGraphql";
 import { REGISTER_USER } from "../graphql/auth/Actions/register.action";
 import toast from "react-hot-toast";
 import { GET_SOCIAL_USER } from "../graphql/auth/Actions/getSocialUser.action";
+import { UPDATE_USER } from "../graphql/auth/Actions/updateUser";
+
 
 
 export const useUser = () => {
@@ -88,4 +90,41 @@ export const useCreateUserSocial = (userData: any) => {
   }
 
   return { handlecreateUserSocial };
+};
+export const useUpdateUser = () => {
+  const authClient = useGraphQLClient('auth');
+  const [updateUser, { loading, error }] = useMutation(UPDATE_USER, {
+    client: authClient,
+  });
+
+  const handleUpdateUser = async (userId: string, userData: any) => {
+    try {
+      const response = await updateUser({
+        variables: {
+          id: userId,
+          name: userData.name,
+          email: userData.email,
+          phone_number: userData.phone_number,
+          address: userData.address,
+          role: userData.role,
+        },
+      });
+
+      if (response?.data?.updateUser?.user) {
+        toast.success('User updated successfully!');
+        return response.data.updateUser.user;
+      } else {
+        toast.error('Failed to update user.');
+      }
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`);
+      console.error('Error updating user:', err);
+    }
+  };
+
+  return {
+    handleUpdateUser,
+    loading,
+    error,
+  };
 };

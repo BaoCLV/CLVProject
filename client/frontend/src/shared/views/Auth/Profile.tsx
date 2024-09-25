@@ -18,7 +18,7 @@ export default function UserProfile({ userId }: UserDetailProps) {
 
   // Handler for updating user details
   const handleUpdate = () => {
-    router.push(`/api/user/${userId}/update`);
+    router.push(`/api/profile/${userId}/update`);
   };
 
   // Function to safely format the date by replacing the space with 'T'
@@ -37,49 +37,83 @@ export default function UserProfile({ userId }: UserDetailProps) {
 
   return (
     <div className="flex h-screen">
-      <Sidebar/>
+      <Sidebar />
       <div className="flex flex-col flex-1">
-        <Header/>
-      <div className="flex flex-col flex-1">
-        <div className="flex-1 bg-gray-100 dark:bg-gray-600 p-4">
-          <h4 className="mb-4 text-lg font-semibold text-gray-600 dark:text-gray-300">
+        <Header />
+        <div className="flex-1 bg-gray-100 dark:bg-gray-600 p-8"> {/* Increased padding */}
+          <h4 className="mb-6 text-2xl font-bold text-gray-700 dark:text-gray-300">
             User Profile
           </h4>
-          <div className="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800">
-            <div className="space-y-4">
-              <p className="block text-sm">
-                <span className="text-gray-700 dark:text-gray-400 font-semibold">Name:</span> {user.name}
-              </p>
-              <p className="block text-sm">
-                <span className="text-gray-700 dark:text-gray-400 font-semibold">Email:</span> {user.email}
-              </p>
-              <p className="block text-sm">
-                <span className="text-gray-700 dark:text-gray-400 font-semibold">Username:</span> {user.username}
-              </p>
-              <p className="block text-sm">
-                <span className="text-gray-700 dark:text-gray-400 font-semibold">Joined:</span> {formatDate(user.createdAt)}
-              </p>
+          <div className="px-4 py-6 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800 space-y-8"> {/* Increased spacing */}
+            <div className="space-y-8">
+              <div className="block text-lg"> {/* Made text larger */}
+                <span className="text-gray-900 dark:text-gray-100">Name</span>
+                <p className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 text-white rounded-lg">
+                  {user.name}
+                </p>
+              </div>
+
+              <div className="block text-lg">
+                <span className="text-gray-900 dark:text-gray-100">Email</span>
+                <p className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 text-white rounded-lg">
+                  {user.email}
+                </p>
+              </div>
+
+              <div className="block text-lg">
+                <span className="text-gray-900 dark:text-gray-100">Phone Number</span>
+                <p className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 text-white rounded-lg">
+                  {user.phone_number}
+                </p>
+              </div>
+
+              <div className="block text-lg">
+                <span className="text-gray-900 dark:text-gray-100">Address</span>
+                <p className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 text-white rounded-lg">
+                  {user.address}
+                </p>
+              </div>
+
+              <div className="block text-lg">
+                <span className="text-gray-900 dark:text-gray-100">Role</span>
+                <p className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 text-white rounded-lg">
+                  {user.role}
+                </p>
+              </div>
+
+              {/* <div className="block text-lg">
+                <span className="text-gray-900 dark:text-gray-100">Username</span>
+                <p className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 text-white rounded-lg">
+                  {user.username}
+                </p>
+              </div> */}
+
+              <div className="block text-lg">
+                <span className="text-gray-900 dark:text-gray-100">Joined</span>
+                <p className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 text-white rounded-lg">
+                  {formatDate(user.createdAt)}
+                </p>
+              </div>
             </div>
 
-            <hr className="border-t border-gray-300 my-6 dark:border-gray-700" />
-
-            <div className="flex justify-between items-center">
-              <a href="/" className="text-blue-500 hover:underline dark:text-blue-400">
+            {/* Actions */}
+            <div className="flex justify-between items-center mt-8">
+              <a
+                href="/"
+                className="text-blue-500 hover:underline dark:text-blue-400 font-semibold"
+              >
                 Back to Dashboard
               </a>
-              <div className="flex space-x-4">
-                <button
-                  onClick={handleUpdate}
-                  className="px-4 py-2 text-sm font-semibold text-white transition-colors duration-150 bg-green-600 border border-transparent rounded-lg active:bg-green-600 hover:bg-green-700 focus:outline-none focus:shadow-outline-green"
-                >
-                  Update Profile
-                </button>
-              </div>
+              <button
+                onClick={handleUpdate}
+                className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105"
+              >
+                Update Profile
+              </button>
             </div>
           </div>
         </div>
       </div>
-    </div>
     </div>
   );
 }

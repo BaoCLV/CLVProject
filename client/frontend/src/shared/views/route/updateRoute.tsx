@@ -74,78 +74,75 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
 
   return (
     <div className="flex h-screen">
-    <Sidebar/>
-    <div className="flex flex-col flex-1">
-      <Header />
-    <div className="flex-1 bg-gray-100 dark:bg-gray-600 p-4">
-      <h4 className="mb-4 text-lg font-semibold text-gray-600 dark:text-gray-300">
-        Update Route
-      </h4>
-      <div className="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <label className="block text-sm">
-            <span className="text-gray-700 dark:text-gray-400">Route Name</span>
-            <input
-              type="text"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="Enter Route Name"
-              required
-              className="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-            />
-          </label>
-          <label className="block text-sm">
-            <span className="text-gray-700 dark:text-gray-400">Start Location</span>
-            <input
-              type="text"
-              name="startLocation"
-              value={form.startLocation}
-              onChange={handleChange}
-              placeholder="Enter Start Location"
-              required
-              className="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-            />
-          </label>
-          <label className="block text-sm">
-            <span className="text-gray-700 dark:text-gray-400">End Location</span>
-            <input
-              type="text"
-              name="endLocation"
-              value={form.endLocation}
-              onChange={handleChange}
-              placeholder="Enter End Location"
-              required
-              className="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-            />
-          </label>
-          <label className="block text-sm">
-            <span className="text-gray-700 dark:text-gray-400">Distance (km)</span>
-            <input
-              type="number"
-              name="distance"
-              value={form.distance}
-              onChange={handleChange}
-              placeholder="Enter Distance"
-              required
-              min={0}
-              step={0.01}
-              className="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-            />
-          </label>
-          <button
-            type="submit"
-            className="px-4 py-2 text-sm font-semibold text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"
-          >
+      <Sidebar />
+      <div className="flex flex-col flex-1">
+        <Header />
+        <div className="flex-1 bg-gray-100 dark:bg-gray-600 p-8"> {/* Increased padding */}
+          <h4 className="mb-6 text-2xl font-bold text-gray-700 dark:text-gray-300">
             Update Route
-          </button>
-          {message && <p className="mt-2 text-sm text-green-500">{message}</p>}
-          {error && <p className="mt-2 text-sm text-red-500">Error: {error}</p>}
-        </form>
+          </h4>
+          <form onSubmit={handleSubmit} className="space-y-8"> {/* Increased space between fields */}
+            <label className="block text-lg"> {/* Made the text larger */}
+              <span className="text-gray-900 dark:text-gray-100">Route Name</span>
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder="Enter Route Name"
+                required
+                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
+              />
+            </label>
+            <label className="block text-lg">
+              <span className="text-gray-900 dark:text-gray-100">Start Location</span>
+              <input
+                type="text"
+                name="startLocation"
+                value={form.startLocation}
+                onChange={handleChange}
+                placeholder="Enter Start Location"
+                required
+                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
+              />
+            </label>
+            <label className="block text-lg">
+              <span className="text-gray-900 dark:text-gray-100">End Location</span>
+              <input
+                type="text"
+                name="endLocation"
+                value={form.endLocation}
+                onChange={handleChange}
+                placeholder="Enter End Location"
+                required
+                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
+              />
+            </label>
+            <label className="block text-lg">
+              <span className="text-gray-900 dark:text-gray-100">Distance (km)</span>
+              <input
+                type="number"
+                name="distance"
+                value={form.distance}
+                onChange={handleChange}
+                placeholder="Enter Distance"
+                required
+                min={0}
+                step={0.01}
+                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
+              />
+            </label>
+            <button
+              type="submit"
+              className="w-full py-4 text-lg font-semibold text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"
+            >
+              Update Route
+            </button>
+            {message && <p className="mt-4 text-lg text-green-500">{message}</p>}
+            {error && <p className="mt-4 text-lg text-red-500">Error: {error}</p>}
+          </form>
+        </div>
       </div>
     </div>
-    </div>
-    </div>
-    
   );
 }

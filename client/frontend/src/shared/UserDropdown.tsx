@@ -21,17 +21,17 @@ const UserDropDown = () => {
   const [open, setOpen] = useState(false);
   const { user, loading } = useUser();
   const { data } = useSession();
-  const router = useRouter(); // Initialize useRouter
+  const router = useRouter();
   const { handlecreateUserSocial } = useCreateUserSocial(data?.user);
 
   useEffect(() => {
     if (!loading) {
       setsignedIn(!!user);
     }
-    if (data?.user) {
-      setsignedIn(true);
-      handlecreateUserSocial();
-    }
+    // if (data?.user) {
+    //   setsignedIn(true);
+    //   handlecreateUserSocial();
+    // }
   }, [loading, user, open, data]);
 
   const logoutHandler = () => {

@@ -5,7 +5,7 @@ import { GatewayModule } from './gateway/gateway.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(GatewayModule);
-  const configService = app.get(ConfigService);
+  // const configService = app.get(ConfigService);
   // Enable CORS
   app.enableCors({ credentials: true });
 

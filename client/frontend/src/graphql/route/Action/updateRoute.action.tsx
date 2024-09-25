@@ -1,8 +1,8 @@
 import { gql, DocumentNode } from "@apollo/client";
 
 export const UPDATE_ROUTE_MUTATION = gql`
-mutation UpdateRoute($name: String!, $data: UpdateRouteDto!) {
-  updateRoute(name: $name, data: $data) {
+mutation UpdateRoute($id: String!, $data: UpdateRouteDto!) {
+  updateRoute(id: $id, data: $data) {
     id
     name
     startLocation

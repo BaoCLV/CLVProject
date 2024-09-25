@@ -1,12 +1,16 @@
+import Loading from "@/src/shared/components/Loading";
 import HomeScreen from "../../shared/screens/HomeScreen";
-import React from "react";
+import React, { Suspense } from "react";
 
 const Page = () => {
   return (
     <div>
-      <HomeScreen/>
-    </div>
-  )
-}
 
-export default Page
+      <Suspense fallback={<Loading/>}>
+        <HomeScreen />
+      </Suspense>
+    </div>
+  );
+};
+
+export default Page;

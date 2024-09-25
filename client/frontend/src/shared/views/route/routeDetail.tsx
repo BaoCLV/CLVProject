@@ -5,6 +5,7 @@ import { useGetRoute, useDeleteRoute, useUpdateRoute } from '../../../hooks/useR
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
+import { Spinner } from "@nextui-org/react"; // Import the Spinner component
 
 interface RouteDetailProps {
   routeId: number;
@@ -35,7 +36,14 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
     router.push(`/api/route/${routeId}/update`);
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-gray-100 dark:bg-gray-600 items-center justify-center">
+        <Spinner size="lg" label='Loading Route Detail'/>
+      </div>
+    );
+  }
+
   if (error) return <p>Error: {error.message}</p>;
   if (!route) return <p>Route not found</p>;
 
@@ -44,60 +52,70 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
       <Sidebar />
       <div className="flex flex-col flex-1">
         <Header />
-        <main className="flex-1 p-10 bg-[#121212]">
-          <h1 className="text-3xl font-semibold text-yellow-500 mb-8">Route Information</h1>
-          <div className="bg-[#1E1E2F] p-8 rounded-lg shadow-lg">
+        <div className="flex-1 bg-gray-100 dark:bg-gray-600 p-8">
+          <h4 className="mb-6 text-2xl font-bold text-gray-700 dark:text-gray-300">
+            Route Information
+          </h4>
+          <div className="px-4 py-6 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800 space-y-8">
             {/* Route Information */}
-            <div className="space-y-4 mb-6">
-              <div className="col-span-full text-xl font-semibold text-white bg-purple-800 p-2 rounded-t-lg">
-                Route Information
+            <div className="space-y-4">
+              <div className="block text-lg">
+                <span className="text-gray-900 dark:text-gray-100">Route Name</span>
+                <p className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 text-white rounded-lg">
+                  {route.name}
+                </p>
               </div>
-              <div className="text-white">
-                <h3 className="text-gray-400">Start Location</h3>
-                <p className="bg-gray-800 p-3 rounded">{route.startLocation}</p>
+
+              <div className="block text-lg">
+                <span className="text-gray-900 dark:text-gray-100">Start Location</span>
+                <p className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 text-white rounded-lg">
+                  {route.startLocation}
+                </p>
               </div>
-              <div className="text-white">
-                <h3 className="text-gray-400">End Location</h3>
-                <p className="bg-gray-800 p-3 rounded">{route.endLocation}</p>
+
+              <div className="block text-lg">
+                <span className="text-gray-900 dark:text-gray-100">End Location</span>
+                <p className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 text-white rounded-lg">
+                  {route.endLocation}
+                </p>
               </div>
-              <div className="text-white">
-                <h3 className="text-gray-400">Distance</h3>
-                <p className="bg-gray-800 p-3 rounded">{route.distance} km</p>
-              </div>
-              <div className="text-white">
-                <h3 className="text-gray-400">Route Name</h3>
-                <p className="bg-gray-800 p-3 rounded">{route.name}</p>
+
+              <div className="block text-lg">
+                <span className="text-gray-900 dark:text-gray-100">Distance (km)</span>
+                <p className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 text-white rounded-lg">
+                  {route.distance} km
+                </p>
               </div>
             </div>
 
-            <hr className="border-t border-gray-200 mb-6" />
-
             {/* Actions */}
-            <div className="flex justify-between items-center mt-4">
-              <a href="/" className="text-blue-500 hover:underline font-semibold">
+            <div className="flex justify-between items-center mt-8">
+              <button
+                onClick={() => router.push('/')}
+                className="text-blue-500 hover:underline font-semibold"
+              >
                 Back to Dashboard
-              </a>
+              </button>
+
               <div className="flex space-x-4">
                 <button
                   onClick={handleUpdate}
-                  className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105"
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105"
                 >
-                  Update
+                  Update Route
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105"
+                  className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105"
                 >
-                  Delete
+                  Delete Route
                 </button>
               </div>
             </div>
           </div>
-          
-        </main>
+        </div>
         <Footer />
       </div>
     </div>
-    
   );
 }

@@ -52,11 +52,11 @@ export class RoutesService {
   }
   
 
-  // Find a route by name
+  // Find a route by id
   async findOneById(id: number): Promise<Route> {
     const route = await this.routeRepository.findOne({ where: { id } });
     if (!route) {
-      throw new NotFoundException(`Route with name "${id}" not found`);
+      throw new NotFoundException(`Route with id "${id}" not found`);
     }
     return route;
   }

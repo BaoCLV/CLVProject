@@ -34,7 +34,7 @@ export class RouteResolver {
   // Mutation to update an existing route by name
   @Mutation(() => Route)
   async updateRoute(
-    @Args('id') id: number,
+    @Args('id', {type: () =>  String}) id: number,
     @Args('data') data: UpdateRouteDto,
   ): Promise<Route> {
     return this.routesService.updateById(id, data);

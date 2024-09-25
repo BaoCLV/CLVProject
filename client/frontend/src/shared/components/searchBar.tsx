@@ -32,7 +32,7 @@ export default function SearchBar({ getSearchResults }: SearchBarProps) {
         offset,
       },
     });
-    router.push(`/api/search?query=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}`);
+    router.push(`/search?query=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}`);
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {

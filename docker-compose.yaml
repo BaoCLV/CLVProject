@@ -15,23 +15,24 @@ services:
   api-auth:
     build:
       context: ./server/nestjs
-      dockerfile: dockerfile
+      dockerfile: Dockerfile  # Correct capitalization
     ports:
       - '3001:3001'
     depends_on:
       - db
+      - kafka
     environment:
       - DATABASE_URL=postgresql://postgres:password@db:5432/CLVproject
       - DB_USER=postgres
       - DB_PASSWORD=password
-      - DB_HOST=localhost
+      - DB_HOST=db  # Use service name for proper networking
       - DB_PORT=5432
       - DB_NAME=CLVproject
       
   api-route:
     build:
       context: ./server/route
-      dockerfile: dockerfile
+      dockerfile: Dockerfile  # Correct capitalization
     ports:
       - '4000:4000'
     depends_on:
@@ -40,9 +41,10 @@ services:
       - DATABASE_URL=postgresql://postgres:password@db:5432/CLVproject
       - DB_USER=postgres
       - DB_PASSWORD=password
-      - DB_HOST=localhost
+      - DB_HOST=db  # Use service name for proper networking
       - DB_PORT=5432
       - DB_NAME=CLVproject
+
   db:
     image: postgres:13
     environment:
@@ -68,7 +70,7 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-
 volumes:
   postgres_data:
