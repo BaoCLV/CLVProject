@@ -9,7 +9,7 @@ export const ROLE_KEY = 'role';
 export const RequirePermissions = (...role: string[]) =>
   Reflect.metadata(ROLE_KEY, role);
 const rolePermissions = {
-  admin: ['read', 'write', 'delete', 'update'],
+  admin: ['create', 'read', 'update', 'delete'],
   user: ['read', 'update'],
   guest: ['read'],
   // Add more roles and their permissions as needed
@@ -24,6 +24,7 @@ export class PermissionsGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
+    console.log(requiredPermissions)
     if (!requiredPermissions) {
       return true; // No permissions required, allow access
     }
@@ -45,6 +46,7 @@ export class PermissionsGuard implements CanActivate {
     // Check if user has required permissions
     const hasPermission = requiredPermissions.every(permission => permissions.includes(permission));
     if (!hasPermission) {
+      console.log(hasPermission)
       throw new ForbiddenException('Insufficient permissions');
     }
 

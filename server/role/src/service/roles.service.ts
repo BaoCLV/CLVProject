@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { Permissions } from '../enum/permissions.enum';
+import { RoleRequest, RoleResponse } from '../';
 
 @Injectable()
-export class RolesService {
-  // Define roles and their permissions
-  private rolesPermissions = {
-    admin: [Permissions.CREATE, Permissions.READ, Permissions.UPDATE, Permissions.DELETE],
-    user: [Permissions.READ],
+export class RoleService {
+  private readonly rolePermissions = {
+    admin: ['read', 'write', 'delete', 'update'],
+    user: ['read', 'update'],
+    guest: ['read'],
   };
 
-  // Fetch permissions by role
-  getPermissionsByRole(role: string): string[] {
-    return this.rolesPermissions[role] || [];
+  getRolePermissions(request: RoleRequest): RoleResponse {
+    const permissions = this.rolePermissions[request.role] || [];
+    return { permissions };
   }
 }

@@ -9,7 +9,7 @@ async function bootstrap() {
     options: {
       package: 'roles',
       protoPath: join(__dirname, '../src/proto/roles.proto'),
-      url: 'localhost:50051',
+      url: 'localhost:50053',
     },
   });
   await app.listen();
