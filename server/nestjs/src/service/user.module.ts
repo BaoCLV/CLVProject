@@ -22,8 +22,9 @@ import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
     GraphQLModule.forRoot<ApolloFederationDriverConfig>({
       driver: ApolloFederationDriver,
       autoSchemaFile: {
-        federation:2
-      }
+        federation: 2
+      },
+      context: ({ req }) => ({ req })
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -43,18 +44,18 @@ import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
       },
       inject: [ConfigService],
     }),
-  
+
     // EmailModule,
 
   ],
   providers: [
-    UsersService, 
-    UsersResolver, 
+    UsersService,
+    UsersResolver,
     ConfigService,
     JwtService,
     KafkaProducerService
     // EmailService
   ],
-exports: [UsersService]
+  exports: [UsersService]
 })
-export class UsersModule {}
+export class UsersModule { }

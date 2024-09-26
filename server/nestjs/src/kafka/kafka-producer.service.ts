@@ -26,4 +26,10 @@ export class KafkaProducerService implements OnModuleInit {
       messages: [{ value: JSON.stringify(data) }],
     });
   }
+  async sendUserRequsetChangePasswordEvent(data: any) {
+    await this.producer.send({
+      topic: 'user-change-password',
+      messages: [{ value: JSON.stringify(data) }],
+    });
+  }
 }

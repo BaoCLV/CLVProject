@@ -38,9 +38,6 @@ export const useCreateUserSocial = (userData: any) => {
   const authClient = useGraphQLClient('auth');
   const [createUser] = useMutation(REGISTER_USER, { client: authClient });
   const isUserExist = useGetUser(userData?.email);
-  // const usertest = useUser()
-  // console.log("usertest",usertest)
-  // console.log("user existed:", isUserExist)
 
   const randomPassword = () => {
     const characters =
@@ -69,16 +66,14 @@ export const useCreateUserSocial = (userData: any) => {
       name: userData.name,
       email: userData.email,
       password: randomPassword(),
-      phone_number: userData.phone_number, // Provide a default value if phone_number is not available
-      address: userData.address || 'No address provided', // Provide a default value if address is not available
+      phone_number: userData.phone_number, 
+      address: userData.address || 'No address provided', 
     }
-    console.log("input data:", data)
 
     try {
       const response = await createUser({
         variables: data,
       });
-      console.log("register:", data)
       localStorage.setItem(
         "activation_token",
         response.data.register.activation_token
