@@ -64,14 +64,15 @@ const Login = ({
 
       if (response.data.login.user) {
         toast.success("Login Successful!");
+        //handle cookies req.cookies
         // Set authentication tokens in cookies
         Cookies.set("refresh_token", response.data.login.refreshToken);
         Cookies.set("access_token", response.data.login.accessToken);
-        router.push('/');
-        setOpen(false); // Close login modal
+        router.push('/dashboard');
+        setOpen(false); 
         reset();
 
-        window.location.reload();
+        //window.location.reload();
       } else {
         toast.error(response.data.login.error.message);
       }

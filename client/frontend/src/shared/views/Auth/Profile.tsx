@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useUser } from '../../../hooks/useUser';
 import { format } from 'date-fns'; // Ensure date-fns is installed: npm install date-fns
-import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
+import ProfileSidebar from '../../components/ProfileSidebar';
 
 interface UserDetailProps {
   userId: string;
@@ -37,7 +37,7 @@ export default function UserProfile({ userId }: UserDetailProps) {
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
+      <ProfileSidebar />
       <div className="flex flex-col flex-1">
         <Header />
         <div className="flex-1 bg-gray-100 dark:bg-gray-600 p-8"> {/* Increased padding */}

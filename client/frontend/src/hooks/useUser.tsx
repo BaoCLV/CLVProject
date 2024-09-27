@@ -5,11 +5,12 @@ import { REGISTER_USER } from "../graphql/auth/Actions/register.action";
 import toast from "react-hot-toast";
 import { GET_SOCIAL_USER } from "../graphql/auth/Actions/getSocialUser.action";
 import { UPDATE_USER } from "../graphql/auth/Actions/updateUser";
+import { UPDATE_EMAIL } from "../graphql/auth/Actions/change-email.action";
 
 
 
 export const useUser = () => {
-  const authClient = useGraphQLClient('auth'); // Use the auth client
+  const authClient = useGraphQLClient('auth');
   const { loading, data } = useQuery(GET_USER, { client: authClient });
 
   return {
@@ -124,6 +125,48 @@ export const useUpdateUser = () => {
 
   return {
     handleUpdateUser,
+    loading,
+    error,
+  };
+};
+
+export const useUpdateEmail = () => {
+  const authClient = useGraphQLClient('auth');
+  const [updateEmail, { loading, error }] = useMutation(UPDATE_EMAIL, {
+    client: authClient,
+  });
+
+  const handleUpdateEmail = async (oldEmail: string, newEmail: string) => {
+    try {
+      const response = await updateEmail({
+        variables: {
+          oldEmail,
+          newEmail,
+        },
+      });
+
+      const data = response?.data?.updateEmail;
+
+      if (data?.activation_token) {
+        localStorage.setItem('activation_token', data.activation_token);
+        toast.success('Email update initiated. Check your inbox for the activation code!');
+        return data;
+      }
+
+      if (data?.error?.message) {
+        toast.error(data.error.message);
+      } else {
+        toast.error('Failed to update email.');
+      }
+
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`);
+      console.error('Error updating email:', err);
+    }
+  };
+
+  return {
+    handleUpdateEmail,
     loading,
     error,
   };

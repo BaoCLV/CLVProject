@@ -90,3 +90,15 @@ export class UpdateUserResponse {
   @Field(() => ErrorType, { nullable: true })
   error?: ErrorType;
 }
+
+@ObjectType()
+export class ChangeEmailResponse {
+  @Field()
+  message: string;
+
+  @Field({ nullable: true })
+  activation_token?: string;
+
+  @Field(() => ErrorType, { nullable: true })
+  error?: ErrorType;
+}

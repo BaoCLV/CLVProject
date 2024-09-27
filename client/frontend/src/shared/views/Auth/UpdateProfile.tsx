@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser, useUpdateUser } from '../../../hooks/useUser'; // Assuming you have a hook to update the user
-import { format } from 'date-fns';
-import Sidebar from '../../components/Sidebar';
-import Header from '../../components/Header';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useUser, useUpdateUser } from "../../../hooks/useUser";
+import Sidebar from "../../components/Sidebar";
+import Header from "../../components/Header";
+import ProfileSidebar from "../../components/ProfileSidebar";
 
 interface UpdateProfileProps {
   userId: string;
@@ -13,29 +13,28 @@ interface UpdateProfileProps {
 
 export default function UpdateProfile({ userId }: UpdateProfileProps) {
   const router = useRouter();
-  const { loading, user } = useUser(); // Fetch user data using a hook
-  const { handleUpdateUser } = useUpdateUser(); // Hook to update user
+  const { loading, user } = useUser();
+  const { handleUpdateUser } = useUpdateUser();
 
-  // Local form state
   const [form, setForm] = useState({
-    name: '',
-    email: '',
-    phone_number: '',
-    address: '',
-    role: '',
+    name: "",
+    email: "",
+    phone_number: "",
+    address: "",
+    role: "",
   });
-  const [message, setMessage] = useState('');
-  const [submitError, setSubmitError] = useState('');
+  const [message, setMessage] = useState("");
+  const [submitError, setSubmitError] = useState("");
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false); // Toggle for email modal
 
   useEffect(() => {
     if (user) {
-      // Populate the form with user data once it is fetched
       setForm({
         name: user.name,
         email: user.email,
-        phone_number: user.phone_number || '',
-        address: user.address || '',
-        role: user.role || '',
+        phone_number: user.phone_number || "",
+        address: user.address || "",
+        role: user.role || "",
       });
     }
   }, [user]);
@@ -51,26 +50,40 @@ export default function UpdateProfile({ userId }: UpdateProfileProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await handleUpdateUser(userId, form); // Call the update hook with form data
-      setMessage('Profile updated successfully!');
-      setSubmitError('');
+      await handleUpdateUser(userId, form);
+      setMessage("Profile updated successfully!");
+      setSubmitError("");
     } catch (err) {
-      setSubmitError('Failed to update profile.');
-      setMessage('');
-      console.error('Error updating profile:', err);
+      setSubmitError("Failed to update profile.");
+      setMessage("");
+      console.error("Error updating profile:", err);
+    }
+  };
+
+  const handleEmailChangeSubmit = async (newEmail: string) => {
+    try {
+      await handleUpdateUser(userId, { email: newEmail });
+      setMessage("Email updated successfully!");
+      setForm((prev) => ({ ...prev, email: newEmail })); 
+      setIsEmailModalOpen(false);
+    } catch (err) {
+      setSubmitError("Failed to update email.");
+      console.error("Error updating email:", err);
     }
   };
 
   if (loading) return <p>Loading...</p>;
-  //if (error) return <p>Error: {error.message}</p>;
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
+      <ProfileSidebar/>
       <div className="flex flex-col flex-1">
         <Header />
         <div className="flex-1 bg-gray-100 dark:bg-gray-600 p-8">
-          <h4 className="mb-6 text-2xl font-bold text-gray-700 dark:text-gray-300">Update Profile</h4>
+          <h4 className="mb-6 text-2xl font-bold text-gray-700 dark:text-gray-300">
+            Update Profile
+          </h4>
+          {/* Profile update form */}
           <form onSubmit={handleSubmit} className="space-y-8">
             <label className="block text-lg">
               <span className="text-gray-900 dark:text-gray-100">Name</span>
@@ -80,19 +93,6 @@ export default function UpdateProfile({ userId }: UpdateProfileProps) {
                 value={form.name}
                 onChange={handleChange}
                 placeholder="Enter Name"
-                required
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 text-white rounded-lg"
-              />
-            </label>
-
-            <label className="block text-lg">
-              <span className="text-gray-900 dark:text-gray-100">Email</span>
-              <input
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="Enter Email"
                 required
                 className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 text-white rounded-lg"
               />
@@ -122,13 +122,6 @@ export default function UpdateProfile({ userId }: UpdateProfileProps) {
               />
             </label>
 
-            <div className="block text-lg">
-                <span className="text-gray-900 dark:text-gray-100">Role</span>
-                <p className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 text-white rounded-lg">
-                  {user.role}
-                </p>
-              </div>
-
             <button
               type="submit"
               className="w-full py-4 text-lg font-semibold text-white transition-colors duration-150 bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700"
@@ -136,9 +129,13 @@ export default function UpdateProfile({ userId }: UpdateProfileProps) {
               Update Profile
             </button>
 
-            {message && <p className="mt-4 text-lg text-green-500">{message}</p>}
-            {submitError && <p className="mt-4 text-lg text-red-500">Error: {submitError}</p>}
-          </form>
+            {message && (
+              <p className="mt-4 text-lg text-green-500">{message}</p>
+            )}
+            {submitError && (
+              <p className="mt-4 text-lg text-red-500">Error: {submitError}</p>
+            )}
+          </form>         
         </div>
       </div>
     </div>

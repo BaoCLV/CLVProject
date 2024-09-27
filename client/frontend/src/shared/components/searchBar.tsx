@@ -1,11 +1,12 @@
-// components/SearchBar.tsx
 "use client";
 
 import { useState, ChangeEvent, FormEvent } from "react";
-import { Input, Button } from "@nextui-org/react";
-import { useLazyQuery } from '@apollo/client';
+import { Input } from "@nextui-org/react";
+import { AiOutlineSearch } from "react-icons/ai"; // Import the search icon from react-icons
+import { useLazyQuery } from "@apollo/client";
 import { GET_ROUTES_QUERY } from "@/src/graphql/route/Action/getRoutes.action";
 import { useRouter } from "next/navigation";
+
 interface SearchBarProps {
   getSearchResults: (results: any) => void;
 }
@@ -17,14 +18,14 @@ export default function SearchBar({ getSearchResults }: SearchBarProps) {
 
   const router = useRouter();
 
-  const [fetchRoutes, { loading, data, error }] = useLazyQuery(GET_ROUTES_QUERY, {
+  const [fetchRoutes, { loading, error }] = useLazyQuery(GET_ROUTES_QUERY, {
     onCompleted: (data) => {
       getSearchResults(data.findAll);
     },
   });
 
   const handleSearch = (e: FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent default form submission behavior
     fetchRoutes({
       variables: {
         query,
@@ -40,20 +41,21 @@ export default function SearchBar({ getSearchResults }: SearchBarProps) {
   };
 
   return (
-    <div className="flex items-center">
-      <Input
-        isClearable
-        variant="underlined"
-        fullWidth
-        placeholder="Search routes..."
-        value={query}
-        onChange={handleInputChange}
-        aria-label="Search routes"
-      />
-      <Button onClick={handleSearch} disabled={loading}>
-        {loading ? 'Searching...' : 'Search'}
-      </Button>
+    <form onSubmit={handleSearch} className="flex items-center space-x-2 p-2">
+      <div className="flex items-center w-full"> {/* Wrapper to hold icon and input */}
+        <AiOutlineSearch className="text-purple-500 mr-2" size={20} /> {/* Purple search icon */}
+        <Input
+          isClearable
+          variant="underlined"
+          fullWidth
+          placeholder="Search routes..."
+          value={query}
+          onChange={handleInputChange}
+          aria-label="Search routes"
+          className="h-8 bg-gray-300 text-black rounded" // Light green background and black text
+        />
+      </div>
       {error && <p className="text-red-500">Error: {error.message}</p>}
-    </div>
+    </form>
   );
 }

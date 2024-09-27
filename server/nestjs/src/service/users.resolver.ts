@@ -1,14 +1,14 @@
 import { Resolver, Context, Query, Mutation, Args } from '@nestjs/graphql';
 import { UsersService } from './users.service';
-import { RegisterResponse, LoginResponse, ActivationResponse, LogOutResponse, ForgotPasswordResponse, ResetPasswordResponse, GetUserByEmailResponse, UpdateUserResponse } from '../types/user.types';
-import { RegisterDto, LoginDto, ActivationDto, ForgotPasswordDto, ResetPasswordDto, UpdateUserDto } from '../dto/user.dto';
+import { RegisterResponse, LoginResponse, ActivationResponse, LogOutResponse, ForgotPasswordResponse, ResetPasswordResponse, GetUserByEmailResponse, UpdateUserResponse, ChangeEmailResponse } from '../types/user.types';
+import { RegisterDto, LoginDto, ActivationDto, ForgotPasswordDto, ResetPasswordDto, UpdateUserDto, ChangeEmailDto } from '../dto/user.dto';
 import { User } from '../entities/user.entity';
 import { BadRequestException, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../guards/auth.guard';
 
 @Resolver()
 export class UsersResolver {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Query(() => [User])
   async users(): Promise<User[]> {
@@ -21,7 +21,7 @@ export class UsersResolver {
     @Context() context: { res: Response },
   ): Promise<RegisterResponse> {
     if (!registerDto.name || !registerDto.email || !registerDto.password || !registerDto.address) {
-      throw new BadRequestException('Please fill the all fields');
+      throw new BadRequestException('Please fill all fields');
     }
 
     const { activation_token } = await this.usersService.register(
@@ -31,8 +31,6 @@ export class UsersResolver {
 
     return { activation_token };
   }
-
-
 
   @Mutation(() => ActivationResponse)
   async activateUser(
@@ -53,7 +51,7 @@ export class UsersResolver {
   @Query(() => LoginResponse)
   @UseGuards(AuthGuard)
   async getLoggedInUser(@Context() context: { req: Request }) {
-    return await this.usersService.getLoggedInUser(context.req)
+    return await this.usersService.getLoggedInUser(context.req);
   }
 
   @Query(() => GetUserByEmailResponse)
@@ -64,9 +62,8 @@ export class UsersResolver {
   @Query(() => LogOutResponse)
   @UseGuards(AuthGuard)
   async LogOutUser(@Context() context: { req: Request }) {
-    return await this.usersService.Logout(context.req)
+    return await this.usersService.Logout(context.req);
   }
-
 
   @Mutation(() => ForgotPasswordResponse)
   async forgotPassword(
@@ -81,6 +78,7 @@ export class UsersResolver {
   ): Promise<ResetPasswordResponse> {
     return await this.usersService.resetPassword(resetPasswordDto);
   }
+
   @Mutation(() => UpdateUserResponse)
   async updateUser(
     @Args('id') id: string,
@@ -91,6 +89,20 @@ export class UsersResolver {
     return {
       message: 'User profile updated successfully',
       user: updatedUser,
+    };
+  }
+
+  // New Mutation for updating email
+  @Mutation(() => ChangeEmailResponse)
+  async updateEmail(
+    @Args('changeEmailDto') changeEmailDto: ChangeEmailDto,
+    @Context() context: { res: Response },
+  ): Promise<ChangeEmailResponse> {
+    const { activation_token } = await this.usersService.updateEmail(changeEmailDto, context.res);
+
+    return {
+      message: 'Email change initiated, check your inbox for the activation code',
+      activation_token,
     };
   }
 }

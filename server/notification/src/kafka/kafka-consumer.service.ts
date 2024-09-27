@@ -18,6 +18,7 @@ export class KafkaConsumerService implements OnModuleInit {
     await this.consumer.connect();
     await this.consumer.subscribe({ topic: 'user-registered', fromBeginning: true });
     await this.consumer.subscribe({ topic: 'user-forgot-password', fromBeginning: true });
+    await this.consumer.subscribe({ topic: 'user-email-change', fromBeginning: true });
 
     await this.consumer.run({
       eachMessage: async ({ topic, partition, message }: EachMessagePayload) => {
@@ -31,7 +32,7 @@ export class KafkaConsumerService implements OnModuleInit {
               subject: 'Activate your account!',
               email: event.email,
               name: event.name,
-              ActivationCode: event.QctivationCode,
+              ActivationCode: event.activationCode,
               template: 'activation-mail',
             });
             console.log(`Activation email sent successfully to ${event.email}`);
@@ -45,6 +46,15 @@ export class KafkaConsumerService implements OnModuleInit {
               template: 'forgot-password', 
             });
             console.log(`Password reset email sent successfully to ${event.email}`);
+          } else if (topic === 'user-email-change') {
+            await this.emailService.sendActivationEmail({
+              subject: 'Change Your Email',
+              email: event.email,
+              name: event.name,
+              ActivationCode: event.activationCode,
+              template: 'email-change', 
+            });
+            console.log(`Token reset email sent successfully to ${event.email}`);
           }
         } catch (error) {
           console.error(`Error processing event from ${topic}:`, error);

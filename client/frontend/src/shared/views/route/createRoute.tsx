@@ -86,12 +86,12 @@ export default function CreateRoute() {
       <Sidebar />
       <div className="flex flex-col flex-1">
         <Header />
-        <div className="flex-1 bg-gray-100 dark:bg-gray-600 p-8"> {/* Larger padding */}
-          <h4 className="mb-6 text-2xl font-bold text-gray-700 dark:text-gray-300">Create New Route</h4>
+        <div className="flex-1 bg-gray-200 p-8"> {/* Larger padding */}
+          <h4 className="mb-6 text-2xl font-bold text-black">Create New Route</h4>
 
           <form onSubmit={handleSubmit} className="space-y-8"> {/* Increased spacing between form fields */}
             <label className="block text-lg"> {/* Larger text size */}
-              <span className="text-gray-900 dark:text-gray-100">Route Name</span>
+              <span className="text-black font-bold">Route Name</span>
               <input
                 type="text"
                 name="name"
@@ -99,12 +99,12 @@ export default function CreateRoute() {
                 onChange={handleChange}
                 placeholder="Enter Route Name"
                 required
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
+                className="block w-full mt-2 p-4 text-lg bg-white text-black border border-gray-300 rounded focus:border-purple-500 focus:ring-purple-500 focus:outline-none" // White background, black text, purple border on focus
               />
             </label>
 
             <label className="block text-lg">
-              <span className="text-gray-900 dark:text-gray-100">Start Location</span>
+              <span className="text-black font-bold">Start Location</span>
               <input
                 type="text"
                 name="startLocation"
@@ -112,12 +112,12 @@ export default function CreateRoute() {
                 onChange={handleChange}
                 placeholder="Enter Start Location"
                 required
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
+                className="block w-full mt-2 p-4 text-lg bg-white text-black border border-gray-300 rounded focus:border-purple-500 focus:ring-purple-500 focus:outline-none" // White background, black text, purple border on focus
               />
             </label>
 
             <label className="block text-lg">
-              <span className="text-gray-900 dark:text-gray-100">End Location</span>
+              <span className="text-black font-bold">End Location</span>
               <input
                 type="text"
                 name="endLocation"
@@ -125,12 +125,12 @@ export default function CreateRoute() {
                 onChange={handleChange}
                 placeholder="Enter End Location"
                 required
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
+                className="block w-full mt-2 p-4 text-lg bg-white text-black border border-gray-300 rounded focus:border-purple-500 focus:ring-purple-500 focus:outline-none" // White background, black text, purple border on focus
               />
             </label>
 
             <label className="block text-lg">
-              <span className="text-gray-900 dark:text-gray-100">Distance (km)</span>
+              <span className="text-black font-bold">Distance (km)</span>
               <input
                 type="number"
                 name="distance"
@@ -140,7 +140,7 @@ export default function CreateRoute() {
                 required
                 min={0}
                 step={0.01}
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
+                className="block w-full mt-2 p-4 text-lg bg-white text-black border border-gray-300 rounded focus:border-purple-500 focus:ring-purple-500 focus:outline-none" // White background, black text, purple border on focus
               />
             </label>
 
@@ -156,11 +156,11 @@ export default function CreateRoute() {
 
           {/* Display newly created routes */}
           <div className="mt-8">
-            <h4 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-4">Created Routes</h4>
+            <h4 className="text-lg font-semibold text-black mb-4">Created Routes</h4>
             {createdRoutes.length > 0 ? (
               <ul className="space-y-4">
                 {createdRoutes.map((route) => (
-                  <li key={route.id} className="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                  <li key={route.id} className="p-4 bg-gray-300 rounded-lg">
                     <p><strong>Name:</strong> {route.name}</p>
                     <p><strong>Start Location:</strong> {route.startLocation}</p>
                     <p><strong>End Location:</strong> {route.endLocation}</p>
@@ -175,7 +175,7 @@ export default function CreateRoute() {
                 ))}
               </ul>
             ) : (
-              <p className="text-lg text-gray-600 dark:text-gray-300">No routes created yet.</p>
+              <p className="text-lg text-gray-900">No routes created yet.</p>
             )}
           </div>
         </div>

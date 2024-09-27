@@ -26,4 +26,10 @@ export class KafkaProducerService implements OnModuleInit {
       messages: [{ value: JSON.stringify(data) }],
     });
   }
+  async sendUserEmailChangeevent(data: any) {
+    await this.producer.send({
+      topic: 'user-email-change',
+      messages: [{ value: JSON.stringify(data) }],
+    });
+  }
 }

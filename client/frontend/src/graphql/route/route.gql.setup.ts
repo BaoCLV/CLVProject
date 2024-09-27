@@ -1,7 +1,7 @@
 import { ApolloClient, InMemoryCache, ApolloLink, HttpLink } from "@apollo/client";
 import Cookies from "js-cookie";
 
-const httpLink = new HttpLink({ uri: process.env.NEXT_PUBLIC_ROUTE_URI });
+const httpLink = new HttpLink({ uri: process.env.NEXT_PUBLIC_GRAPHQL_API_URL });
 
 const authMiddleware = new ApolloLink((operation, forward) => {
   operation.setContext(({ headers = {} }) => ({
