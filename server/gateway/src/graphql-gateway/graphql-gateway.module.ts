@@ -13,6 +13,7 @@ import { GqlModuleOptions } from '@nestjs/graphql';
             serviceList: [
                 { name: 'authService', url: process.env.AUTH_SERVICE_URL || 'http://localhost:3001/graphql' },
                 { name: 'RouteService', url: process.env.ROUTE_SERVICE_URL || 'http://localhost:4000/graphql' },
+                { name: 'RoleService', url: process.env.ROLE_SERVICE_URL || 'http://localhost:6000/graphql' },
               ],
             });
 

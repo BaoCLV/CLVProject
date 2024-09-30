@@ -24,7 +24,6 @@ export class PermissionsGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    console.log(requiredPermissions)
     if (!requiredPermissions) {
       return true; // No permissions required, allow access
     }
@@ -42,7 +41,6 @@ export class PermissionsGuard implements CanActivate {
     // const permissions = await this.getRolePermissions(user.role);
     const permissions = rolePermissions[user.role];
 
-    console.log("permissions:", permissions);
     // Check if user has required permissions
     const hasPermission = requiredPermissions.every(permission => permissions.includes(permission));
     if (!hasPermission) {
