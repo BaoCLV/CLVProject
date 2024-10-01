@@ -49,16 +49,15 @@ function SearchResults() {
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <div className="flex flex-col bg-gray-100 dark:bg-gray-600 flex-1">
+      <div className="flex flex-col bg-gray-200  flex-1">
         <Header />
-        <div className="dark w-flex h-flex p-4">
-          <h1 className="text-2xl font-bold mb-4 text-yellow-500">Search results</h1>
+          <h1 className="p-4 text-2xl font-bold mb-2 text-black">Search Results</h1>
 
-          <div className="w-full overflow-hidden rounded-lg shadow-xs">
+          <div className="p-2 w-full overflow-hidden rounded-lg shadow-xs">
             <div className="w-full overflow-x-auto">
-              <table className="w-full whitespace-no-wrap bg-gray-900">
+              <table className="w-full whitespace-no-wrap bg-white">
                 <thead>
-                  <tr className="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 dark:text-gray-400">
+                  <tr className="text-xs font-semibold tracking-wide text-left bg-white text-purple-700 uppercase border-b dark:border-black">
                     <th className="px-4 py-3">Route Name</th>
                     <th className="px-4 py-3">Start Location</th>
                     <th className="px-4 py-3">End Location</th>
@@ -66,10 +65,10 @@ function SearchResults() {
                     <th className="px-4 py-3">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y dark:divide-gray-700 dark:bg-blue-950">
+                <tbody className="bg-white divide-y dark:divide-gray-700 dark:bg-white">
                   {routes.length > 0 ? (
                     routes.map((route: any) => (
-                      <tr key={route.id} className="text-blue-700 dark:text-gray-400">
+                      <tr key={route.id} className="text-blue-700 dark:text-black">
                         <td className="px-4 py-3 text-sm">{route.name}</td>
                         <td className="px-4 py-3 text-sm">{route.startLocation}</td>
                         <td className="px-4 py-3 text-sm">{route.endLocation}</td>
@@ -96,12 +95,12 @@ function SearchResults() {
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex justify-between px-4 py-3 text-xs font-semibold tracking-wide text-gray-500 uppercase border-t dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+            <div className="flex justify-between px-4 py-3 text-xs font-semibold tracking-wide text-purple-700 uppercase border-t bg-gray-50 dark:bg-gray-800">
               {/* Previous Button */}
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage <= 1}
-                className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50 flex items-center"
+                className="px-3 py-1 bg-purple-500 text-white rounded disabled:opacity-50 flex items-center"
               >
                 Previous
               </button>
@@ -113,7 +112,7 @@ function SearchResults() {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={routes.length < limit}
-                className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50 flex items-center"
+                className="px-3 py-1 bg-purple-500 text-white rounded disabled:opacity-50 flex items-center"
               >
                 Next
               </button>
@@ -121,7 +120,7 @@ function SearchResults() {
           </div>
         </div>
       </div>
-    </div>
+
   );
 }
 

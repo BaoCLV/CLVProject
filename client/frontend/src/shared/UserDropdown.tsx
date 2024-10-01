@@ -28,10 +28,10 @@ const UserDropDown = () => {
     if (!loading) {
       setsignedIn(!!user);
     }
-    // if (data?.user) {
-    //   setsignedIn(true);
-    //   handlecreateUserSocial();
-    // }
+    if (data?.user) {
+      setsignedIn(true);
+      handlecreateUserSocial();
+    }
   }, [loading, user, open, data]);
 
   const logoutHandler = () => {
@@ -42,7 +42,6 @@ const UserDropDown = () => {
       Cookies.remove("refresh_token");
       toast.success("Log out successful!");
     }
-    window.location.reload();
     router.push("/");
   };
 

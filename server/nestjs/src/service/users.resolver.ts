@@ -9,7 +9,7 @@ import { PermissionsGuard, RequirePermissions, ROLE_KEY } from 'src/guards/permi
 
 @Resolver()
 export class UsersResolver {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Query(() => UserListResponse)
   @UseGuards(AuthGuard, PermissionsGuard)
@@ -27,7 +27,7 @@ export class UsersResolver {
     @Context() context: { res: Response },
   ): Promise<RegisterResponse> {
     if (!registerDto.name || !registerDto.email || !registerDto.password || !registerDto.address) {
-      throw new BadRequestException('Please fill the all fields');
+      throw new BadRequestException('Please fill all fields');
     }
 
     const { activation_token } = await this.usersService.register(
@@ -37,8 +37,6 @@ export class UsersResolver {
 
     return { activation_token };
   }
-
-
 
   @Mutation(() => ActivationResponse)
   async activateUser(
@@ -59,7 +57,7 @@ export class UsersResolver {
   @Query(() => LoginResponse)
   @UseGuards(AuthGuard)
   async getLoggedInUser(@Context() context: { req: Request }) {
-    return await this.usersService.getLoggedInUser(context.req)
+    return await this.usersService.getLoggedInUser(context.req);
   }
 
   @Query(() => GetUserByEmailResponse)
@@ -75,9 +73,8 @@ export class UsersResolver {
   @Query(() => LogOutResponse)
   @UseGuards(AuthGuard)
   async LogOutUser(@Context() context: { req: Request }) {
-    return await this.usersService.Logout(context.req)
+    return await this.usersService.Logout(context.req);
   }
-
 
   @Mutation(() => ForgotPasswordResponse)
   async forgotPassword(

@@ -19,15 +19,6 @@ service UserService {
 // Define the User message
 message User {
   string id = 1;
-  string name = 2;
-  string email = 3;
-  string password = 4;
-  string role = 5;
-  string address = 6;
-  int64 phone_number = 7;
-  string refreshToken = 8;
-  string createdAt = 9;
-  string updatedAt = 10;
 }
 
 // Define request and response messages
@@ -35,7 +26,7 @@ message RegisterRequest {
   string name = 1;
   string email = 2;
   string password = 3;
-  int64 phone_number = 4;
+  string phone_number = 4;
   string address = 5;
 }
 

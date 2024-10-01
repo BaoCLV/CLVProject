@@ -1,5 +1,6 @@
 import styles from "../../../utils/styles";
-import {ACTIVATE_USER} from "../../../graphql/auth/Actions/activation.action";
+import { ACTIVATE_USER } from "../../../graphql/auth/Actions/activation.action";
+import { UPDATE_EMAIL } from "../../../graphql/auth/Actions/change-email.action"; // Assuming this is the mutation for email change
 import { useMutation } from "@apollo/client";
 import { FC, useRef, useState } from "react";
 import toast from "react-hot-toast";
@@ -8,6 +9,7 @@ import { useGraphQLClient } from "../../../hooks/useGraphql";
 
 type Props = {
   setActiveState: (route: string) => void;
+  isEmailChange?: boolean; // Add flag to differentiate between user activation and email verification
 };
 
 type VerifyNumber = {
@@ -17,13 +19,14 @@ type VerifyNumber = {
   "3": string;
 };
 
-const Verification: FC<Props> = ({ setActiveState }) => {
-
+const Verification: FC<Props> = ({ setActiveState, isEmailChange = false }) => {
   const authClient = useGraphQLClient("auth");
-  const [ActivateUser, { loading }] = useMutation(ACTIVATE_USER, {client: authClient});
+
+  // Use the correct mutation based on whether it's an email change or account activation
+  const [ActivateUser, { loading: activateLoading }] = useMutation(ACTIVATE_USER, { client: authClient });
+  const [UpdateEmail, { loading: emailLoading }] = useMutation(UPDATE_EMAIL, { client: authClient });
 
   const [invalidError, setInvalidError] = useState(false);
-
   const inputRefs = [
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
@@ -45,21 +48,33 @@ const Verification: FC<Props> = ({ setActiveState }) => {
     if (verificationNumber.length !== 4) {
       setInvalidError(true);
       return;
-    } else {
-      const data = {
-        ActivationToken,
-        ActivationCode: verificationNumber,
-      };
-      try {
+    }
+
+    const data = {
+      ActivationToken,
+      ActivationCode: verificationNumber,
+    };
+
+    try {
+      if (isEmailChange) {
+        // Handle email change verification
+        await UpdateEmail({
+          variables: data,
+        });
+        toast.success("Email changed successfully!");
+        setActiveState("Complete"); // Transition to "Complete" state after email change
+      } else {
+        // Handle user account activation
         await ActivateUser({
           variables: data,
         });
-        localStorage.removeItem("activation_token");
         toast.success("Account activated successfully!");
-        setActiveState("Login");
-      } catch (error: any) {
-        toast.error(error.message);
+        setActiveState("Login"); // Transition to login after account activation
       }
+
+      localStorage.removeItem("activation_token");
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -77,7 +92,7 @@ const Verification: FC<Props> = ({ setActiveState }) => {
 
   return (
     <div>
-      <h1 className={`${styles.title}`}>Verify Your Account</h1>
+      <h1 className={`${styles.title}`}>Verify {isEmailChange ? "Your Email" : "Your Account"}</h1>
       <br />
       <div className="w-full flex items-center justify-center mt-2">
         <div className="w-[80px] h-[80px] rounded-full bg-[#497DF2] flex items-center justify-center">
@@ -107,10 +122,10 @@ const Verification: FC<Props> = ({ setActiveState }) => {
       <div className="w-full flex justify-center">
         <button
           className={`${styles.button}`}
-          disabled={loading}
+          disabled={activateLoading || emailLoading} // Disable button during mutation
           onClick={verificationHandler}
         >
-          Verify OTP
+          {isEmailChange ? "Verify Email" : "Verify OTP"}
         </button>
       </div>
       <br />

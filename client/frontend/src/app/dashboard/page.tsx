@@ -1,13 +1,13 @@
-import UserProfile from '@/src/shared/views/Auth/Profile'; // Ensure the path is correct
 import Loading from "@/src/shared/components/Loading";
 import React, { Suspense } from "react";
+import Dashboard from "@/src/shared/views/route/dashboard";
 
-function Page({ params }: { params: { userId: string } }) {
+const Page = () => {
   return (
     <div>
 
       <Suspense fallback={<Loading/>}>
-        <UserProfile userId={params.userId} />;
+        <Dashboard />
       </Suspense>
     </div>
   );

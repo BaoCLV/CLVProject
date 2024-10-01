@@ -12,7 +12,7 @@ import { routeClient } from "../graphql/route/route.gql.setup";
 
 //get loggedin user
 export const useUser = () => {
-  const authClient = useGraphQLClient('auth'); // Use the auth client
+  const authClient = useGraphQLClient('auth');
   const { loading, data } = useQuery(GET_USER, { client: authClient });
 
   return {

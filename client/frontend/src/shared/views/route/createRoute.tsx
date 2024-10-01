@@ -1,185 +1,285 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useCreateRoute } from '../../../hooks/useRoute'; // Ensure the correct path to your hook
-import Sidebar from '../../components/Sidebar';
-import Header from '../../components/Header';
+import { useEffect, useState } from "react";
+import { useUser } from "../../../hooks/useUser";
+import Sidebar from "../../components/Sidebar";
+import Header from "../../components/Header";
+import { useCreateRoute } from "../../../hooks/useRoute";
+import * as turf from "@turf/turf";
+import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+// Define your custom marker icon
+const customIcon = L.icon({
+  iconUrl: "/img/map-marker.png", // Make sure to place the image in the public folder
+  iconSize: [38, 38], // size of the icon
+  iconAnchor: [19, 38], // point of the icon which will correspond to marker's location
+  popupAnchor: [0, -30], // point from which the popup should open relative to the iconAnchor
+});
 
 // Define the form state interface
 interface CreateRouteForm {
-  id: number; // This will now come from the database
-  name: string;
   startLocation: string;
   endLocation: string;
   distance: number;
 }
 
 export default function CreateRoute() {
-  const router = useRouter();
-
   const [form, setForm] = useState<CreateRouteForm>({
-    id: 0, // Initialize with placeholder
-    name: '',
-    startLocation: '',
-    endLocation: '',
+    startLocation: "",
+    endLocation: "",
     distance: 0,
   });
 
-  const [message, setMessage] = useState<string>('');
-  const [error, setError] = useState<string>('');
-  const [createdRoutes, setCreatedRoutes] = useState<CreateRouteForm[]>([]); // State to track created routes
+  const [coordinates, setCoordinates] = useState<[number, number][]>([]); // To store the lat/lng of the start and end locations
+  const [error, setError] = useState<string | null>(null);
+  const { handleCreateRoute } = useCreateRoute(); // Mutation to create the route
+  const { user, loading } = useUser(); // Get user and loading state from the useUser hook
 
-  // Use the create route hook
-  const { handleCreateRoute } = useCreateRoute();
+  const OPEN_CAGE_API_KEY = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY;
 
-  // Handle form input changes
+  // Handle input field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: name === 'distance' ? Number(value) : value, // Convert distance to a number
+      [name]: value,
     }));
   };
 
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Calculate distance using Turf.js
+  const calculateDistance = (
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number
+  ) => {
+    const point1 = turf.point([lng1, lat1]);
+    const point2 = turf.point([lng2, lat2]);
+    const distance = turf.distance(point1, point2, { units: "kilometers" });
+    return distance;
+  };
+
+  // Geocode location (city name) to get lat/lng using OpenCage
+  const geocodeLocation = async (
+    location: string
+  ): Promise<[number, number]> => {
+    if (!OPEN_CAGE_API_KEY) {
+      throw new Error("OpenCage API key is missing");
+    }
+
+    const response = await fetch(
+      `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(
+        location
+      )}&key=${OPEN_CAGE_API_KEY}`
+    );
+    const data = await response.json();
+
+    if (data.results.length === 0) {
+      throw new Error("Location not found");
+    }
+
+    const { lat, lng } = data.results[0].geometry;
+    return [lat, lng];
+  };
+
+  // Handle distance calculation
+  const handleCalculateDistance = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    if (loading) {
+      setError("Loading user data...");
+      return;
+    }
+
+    if (!user) {
+      setError("User not logged in");
+      return;
+    }
 
     try {
-      // Use the create route mutation
+      const [lat1, lng1] = await geocodeLocation(form.startLocation);
+      const [lat2, lng2] = await geocodeLocation(form.endLocation);
+
+      // Calculate the distance between the two geocoded locations
+      const calculatedDistance = Math.round(
+        calculateDistance(lat1, lng1, lat2, lng2)
+      );
+
+      // Update form state to include the calculated distance
+      setForm((prev) => ({
+        ...prev,
+        distance: calculatedDistance,
+      }));
+
+      // Update coordinates for the map
+      setCoordinates([
+        [lat1, lng1],
+        [lat2, lng2],
+      ]);
+
+    } catch (error: any) {
+      setError(error.message || "Error geocoding locations");
+    }
+  };
+
+  // Handle place order (create route)
+  const handlePlaceOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!user) {
+      setError("User not logged in");
+      return;
+    }
+
+    if (form.distance === 0) {
+      setError("Please calculate the distance first.");
+      return;
+    }
+
+    try {
+      // Send the route data to the server
       const createdRoute = await handleCreateRoute({
-        name: form.name,
+        userId: user.id,
         startLocation: form.startLocation,
         endLocation: form.endLocation,
         distance: form.distance,
       });
 
-      // Ensure the createdRoute object contains the 'id' returned from the database
-      if (createdRoute?.id) {
-        // Update the list of created routes with the real ID from the database
-        setCreatedRoutes((prevRoutes) => [
-          ...prevRoutes,
-          { id: createdRoute.id, name: createdRoute.name, startLocation: createdRoute.startLocation, endLocation: createdRoute.endLocation, distance: createdRoute.distance },
-        ]);
+      console.log("Route created:", createdRoute);
 
-        setMessage('Route created successfully.');
-        setError('');
-        setForm({ id: 0, name: '', startLocation: '', endLocation: '', distance: 0 }); // Reset form on success
-      } else {
-        throw new Error('Route creation failed: no ID returned.');
-      }
-    } catch (err) {
-      setError('Failed to create route.');
-      setMessage('');
-      console.error('Error creating route:', err);
+      // Show success notification
+      toast.success("Order shipping successful!", {
+        //icon: "🚚", // Success icon (customize it to anything you want)
+      });
+    } catch (error: any) {
+      setError(error.message || "Error creating route");
     }
   };
 
-  // Handle viewing route details
-  const handleViewDetails = (routeId: number) => {
-    router.push(`/api/route/${routeId}`);
-  };
+  // Fit the map bounds to show both markers using the useMap hook
+  function AutoZoom() {
+    const map = useMap();
+    useEffect(() => {
+      if (coordinates.length === 2) {
+        map.fitBounds(coordinates);
+      }
+    }, [coordinates, map]);
+    return null;
+  }
 
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1 bg-gray-200 border-black">
         <Header />
-        <div className="flex-1 bg-gray-100 dark:bg-gray-600 p-8"> {/* Larger padding */}
-          <h4 className="mb-6 text-2xl font-bold text-gray-700 dark:text-gray-300">Create New Route</h4>
+        <div className="flex flex-col h-screen p-8">
+          <h4 className="mb-6 text-2xl font-bold text-black">Create a Route</h4>
 
-          <form onSubmit={handleSubmit} className="space-y-8"> {/* Increased spacing between form fields */}
-            <label className="block text-lg"> {/* Larger text size */}
-              <span className="text-gray-900 dark:text-gray-100">Route Name</span>
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="Enter Route Name"
-                required
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
-              />
-            </label>
-
-            <label className="block text-lg">
-              <span className="text-gray-900 dark:text-gray-100">Start Location</span>
+          <form className="space-y-4">
+            <div>
+              <label
+                htmlFor="startLocation"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Start Location (City Name)
+              </label>
               <input
                 type="text"
                 name="startLocation"
                 value={form.startLocation}
                 onChange={handleChange}
-                placeholder="Enter Start Location"
-                required
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
+                placeholder="Enter city name"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
               />
-            </label>
+            </div>
 
-            <label className="block text-lg">
-              <span className="text-gray-900 dark:text-gray-100">End Location</span>
+            <div>
+              <label
+                htmlFor="endLocation"
+                className="block text-sm font-medium text-gray-700"
+              >
+                End Location (City Name)
+              </label>
               <input
                 type="text"
                 name="endLocation"
                 value={form.endLocation}
                 onChange={handleChange}
-                placeholder="Enter End Location"
-                required
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
+                placeholder="Enter city name"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
               />
-            </label>
-
-            <label className="block text-lg">
-              <span className="text-gray-900 dark:text-gray-100">Distance (km)</span>
-              <input
-                type="number"
-                name="distance"
-                value={form.distance}
-                onChange={handleChange}
-                placeholder="Enter Distance"
-                required
-                min={0}
-                step={0.01}
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
-              />
-            </label>
+            </div>
 
             <button
               type="submit"
-              className="w-full py-4 text-lg font-semibold text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"
+              className="w-full py-2 text-lg font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              onClick={handleCalculateDistance}
             >
-              Create Route
+              Calculate Distance
             </button>
-            {message && <p className="mt-4 text-lg text-green-500">{message}</p>}
-            {error && <p className="mt-4 text-lg text-red-500">Error: {error}</p>}
-          </form>
 
-          {/* Display newly created routes */}
-          <div className="mt-8">
-            <h4 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-4">Created Routes</h4>
-            {createdRoutes.length > 0 ? (
-              <ul className="space-y-4">
-                {createdRoutes.map((route) => (
-                  <li key={route.id} className="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                    <p><strong>Name:</strong> {route.name}</p>
-                    <p><strong>Start Location:</strong> {route.startLocation}</p>
-                    <p><strong>End Location:</strong> {route.endLocation}</p>
-                    <p><strong>Distance:</strong> {route.distance} km</p>
-                    <button
-                      onClick={() => handleViewDetails(route.id)}
-                      className="mt-2 text-purple-600 hover:underline dark:text-purple-400"
+            {error && <p className="mt-4 text-red-500">Error: {error}</p>}
+
+            {form.distance > 0 && (
+              <>
+                <p className="mt-8 text-lg font-bold">
+                  Distance: {form.distance} kilometers
+                </p>
+
+                {/* Display Map */}
+                {coordinates.length === 2 && (
+                  <div className="h-[400px] w-full mt-4">
+                    <MapContainer
+                      center={coordinates[0]}
+                      zoom={10}
+                      scrollWheelZoom={false}
+                      className="h-full w-full"
                     >
-                      View Details
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-lg text-gray-600 dark:text-gray-300">No routes created yet.</p>
+                      <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      />
+                      <Marker position={coordinates[0]} icon={customIcon} />
+                      <Marker position={coordinates[1]} icon={customIcon} />
+                      <Polyline positions={coordinates} />
+                      <AutoZoom />
+                    </MapContainer>
+                  </div>
+                )}
+
+                <p className="mt-8 text-lg font-bold">
+                  Price:{" "}
+                  {new Intl.NumberFormat("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                  }).format(form.distance * 10000)}
+                </p>
+              </>
             )}
-          </div>
+
+            {/* Place Order Button */}
+            {form.distance > 0 && (
+              <button
+                type="submit"
+                className="w-full py-2 mt-4 text-lg font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                onClick={handlePlaceOrder}
+                disabled={form.distance === 0}
+              >
+                Place Order
+              </button>
+            )}
+          </form>
         </div>
       </div>
+
+      {/* ToastContainer for showing success message */}
+      <ToastContainer />
     </div>
   );
 }

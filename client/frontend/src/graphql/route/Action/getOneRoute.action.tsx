@@ -4,7 +4,6 @@ export const GET_ROUTE = gql`
 query GetRoute($id: String!) {
     route(id: $id) {
       id
-      name
       startLocation
       endLocation
       distance

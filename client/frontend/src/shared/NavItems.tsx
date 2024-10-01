@@ -27,7 +27,7 @@ const NavItems = ({ activeItem = 0 }: { activeItem?: number }) => {
         <Link
           key={item.url}
           href={item.url}
-          className={`px-5 text-[18px] font-Poppins font-[500] text-white ${
+          className={`px-5 text-[18px] font-Poppins font-[500] text-black ${
             activeItem === index && "text-[#37b668]"
           }`}
         >

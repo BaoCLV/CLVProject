@@ -2,7 +2,8 @@ import { BadRequestException, Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
-import { ActivationDto, ChangePasswordDto, ForgotPasswordDto, LoginDto, RegisterDto, RequestChangePasswordDto, ResetPasswordDto, UpdateUserDto } from '../dto/user.dto'; import * as bcrypt from 'bcrypt';
+import { ActivationDto, ChangePasswordDto, ForgotPasswordDto, LoginDto, RegisterDto, RequestChangePasswordDto, ResetPasswordDto, UpdateUserDto } from '../dto/user.dto'; 
+import * as bcrypt from 'bcrypt';
 import { RegisterResponse, LoginResponse, GetUserByEmailResponse, UserListResponse } from '../types/user.types';
 import { JwtService, JwtVerifyOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -356,4 +357,56 @@ export class UsersService {
     // Save the updated user entity to the database
     return await this.userRepository.save(user);
   }
-}  
+  
+  // //Email change
+  // async updateEmail(changeEmailDto: ChangeEmailDto, res: Response): Promise<RegisterResponse> {
+  //   const { oldEmail, newEmail } = changeEmailDto;
+  
+  //   const user = await this.userRepository.findOne({ where: { email: oldEmail } });
+  
+  //   if (!user) {
+  //     throw new BadRequestException(`User with email ${oldEmail} not found.`);
+  //   }
+  
+  //   const existingUserWithNewEmail = await this.userRepository.findOne({ where: { email: newEmail } });
+  
+  //   if (existingUserWithNewEmail) {
+  //     throw new BadRequestException(`The new email ${newEmail} is already in use by another user.`);
+  //   }
+  
+  //   const activationToken = await this.createEmailActivationToken({ email: oldEmail });
+  
+  //   await this.kafkaProducerService.sendUserEmailChangeevent({
+  //     oldEmail: user.email,
+  //     newEmail: newEmail,
+  //     activation_token: activationToken.Token,
+  //     activation_code: activationToken.ActivationCode,  
+  //   });
+  
+  //   return {
+  //     activation_token: activationToken.Token,
+  //   };
+  // }
+  
+  // This remains unchanged as it already generates a token for the old email.
+  async createEmailActivationToken(user: { email: string }) {
+    const ActivationCode = Math.floor(1000 + Math.random() * 9000).toString();
+  
+    // Generate a JWT token with the user's old email and activation code
+    const Token = this.jwtService.sign(
+      {
+        user,
+        ActivationCode,
+      },
+      {
+        secret: this.configService.get<string>('ACTIVATION_SECRET'),
+        expiresIn: '10m',  // The token will expire in 10 minutes
+      },
+    );
+  
+    return {
+      Token,
+      ActivationCode,
+    };
+  }
+};

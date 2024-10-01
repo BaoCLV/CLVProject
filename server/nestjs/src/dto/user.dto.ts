@@ -108,3 +108,16 @@ export class UpdateUserDto {
   @Field({ nullable: true })
   address: string;
 }
+
+@InputType()
+export class ChangeEmailDto {
+  @Field()
+  @IsNotEmpty({ message: 'Old email is required.' })
+  @IsEmail({}, { message: 'Old email must be a valid email address.' })
+  oldEmail: string;
+
+  @Field()
+  @IsNotEmpty({ message: 'New email is required.' })
+  @IsEmail({}, { message: 'New email must be a valid email address.' })
+  newEmail: string;
+}
