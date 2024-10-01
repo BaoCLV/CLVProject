@@ -1,28 +1,31 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { QueryClient, QueryClientProvider } from "react-query";
-import { useGetRoutes } from "../../../hooks/useRoute";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Spinner } from "@nextui-org/react"; // Ensure you have the Spinner component installed
-import Sidebar from "../../components/Sidebar";
-import Header from "../../components/Header";
-// import FilterButton from "../../components/FilterDropDown"; // Uncomment if using FilterButton
+import { useState, useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { useGetRoutes } from '../../../hooks/useRoute';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Spinner } from '@nextui-org/react'; // Ensure you have the Spinner component installed
+import { useUser } from '../../../hooks/useUser'; // Import your hook to get logged-in user data
+import Sidebar from '../../components/Sidebar';
+import Header from '../../components/Header';
 
 const queryClient = new QueryClient();
 
-function Dashboard() {
+function UserRoutesDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const itemsPerPage = 20;
 
+  // Fetch logged-in user
+  const { user, loading: userLoading } = useUser();
+
   // Read page from the URL (or default to 1 if it's not set)
-  const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
+  const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
   const [currentPage, setCurrentPage] = useState(pageFromUrl);
 
   // State for filter criteria
-  const [filterType, setFilterType] = useState<string>("name"); // Default filter is "name"
-  const [filterQuery, setFilterQuery] = useState<string>("");
+  const [filterType, setFilterType] = useState<string>('name'); // Default filter is "name"
+  const [filterQuery, setFilterQuery] = useState<string>('');
 
   // Sync currentPage state with URL query param
   useEffect(() => {
@@ -35,7 +38,7 @@ function Dashboard() {
     router.push(`/dashboard/?page=${newPage}`); // Update URL with new page, but don't reload the page
   };
 
-  // Function to handle filtering
+  // Function to handle filtering (not used in this example but can be expanded)
   const handleFilter = (type: string, query: string) => {
     setFilterType(type);
     setFilterQuery(query);
@@ -43,7 +46,7 @@ function Dashboard() {
     router.push(`/?filterType=${type}&filterQuery=${query}&page=1`); // Update URL with filter params
   };
 
-  // Fetch filtered, paginated data based on currentPage, filterType, and filterQuery
+  // Fetch filtered, paginated data based on currentPage
   const {
     data,
     error,
@@ -54,24 +57,30 @@ function Dashboard() {
     isFetchingPreviousPage,
   } = useGetRoutes(currentPage, itemsPerPage);
 
+  if (userLoading || !user) {
+    return (
+      <div className="flex h-screen bg-gray-100 dark:bg-gray-600 items-center justify-center">
+        <Spinner label="Loading User Data..." />
+      </div>
+    );
+  }
+
   if (error instanceof Error) return <p>Error: {error.message}</p>;
 
-  const allRoutes = data?.pages.flatMap((page) => page) ?? [];
+  // Filter routes by the logged-in user's ID
+  const userRoutes = data?.pages.flatMap((page) => page.filter((route: any) => route.userId === user.id)) ?? [];
 
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <div className="flex flex-col flex-1 bg-gray-200 border-black"> {/* Background set to white */}
+      <div className="flex flex-col flex-1 bg-gray-200 border-black">
         <Header />
         <div className="dark p-4">
-          <h1 className="text-2xl font-bold mb-4 text-black">Dashboard</h1> {/* Changed heading to purple */}
-
-          {/* Filter Button Component */}
-          {/* <FilterButton onFilter={handleFilter} /> Pass filter handler to the FilterButton */}
+          <h1 className="text-2xl font-bold mb-4 text-black">My Routes</h1>
 
           <div className="w-full">
             <div className="w-full overflow-x-auto">
-              <table className="w-full whitespace-no-wrap border-black bg-white"> {/* Table background set to white */}
+              <table className="w-full whitespace-no-wrap border-black bg-white">
                 <thead>
                   <tr className="text-xs font-semibold tracking-wide text-left bg-white text-purple-700 uppercase border-b dark:border-black">
                     <th className="px-4 py-3">Route ID</th>
@@ -90,16 +99,11 @@ function Dashboard() {
                     </tr>
                   )}
 
-                  {allRoutes.length > 0
-                    ? allRoutes.map((route: any) => (
-                        <tr
-                          key={route.id}
-                          className="text-blue-700 dark:text-black"
-                        >
+                  {userRoutes.length > 0
+                    ? userRoutes.map((route: any) => (
+                        <tr key={route.id} className="text-blue-700 dark:text-black">
                           <td className="px-4 py-3 text-sm">{route.id}</td>
-                          <td className="px-4 py-3 text-sm">
-                            {route.startLocation}
-                          </td>
+                          <td className="px-4 py-3 text-sm">{route.startLocation}</td>
                           <td className="px-4 py-3 text-sm">{route.endLocation}</td>
                           <td className="px-4 py-3 text-sm">{route.distance}</td>
                           <td className="px-4 py-3 text-sm">
@@ -115,7 +119,7 @@ function Dashboard() {
                     : !isFetching && (
                         <tr>
                           <td colSpan={5} className="text-center py-4">
-                            No routes available
+                            No routes available for this user
                           </td>
                         </tr>
                       )}
@@ -124,7 +128,7 @@ function Dashboard() {
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex justify-between px-4 py-3 text-xs font-semibold tracking-wide text-purple-700 uppercase border-t "> {/* Pagination purple */}
+            <div className="flex justify-between px-4 py-3 text-xs font-semibold tracking-wide text-purple-700 uppercase border-t">
               {/* Previous Button */}
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
@@ -136,7 +140,7 @@ function Dashboard() {
                     <Spinner className="mr-2" /> Loading...
                   </>
                 ) : (
-                  "Previous"
+                  'Previous'
                 )}
               </button>
 
@@ -154,7 +158,7 @@ function Dashboard() {
                     <Spinner className="mr-2" /> Loading...
                   </>
                 ) : (
-                  "Next"
+                  'Next'
                 )}
               </button>
             </div>
@@ -168,7 +172,7 @@ function Dashboard() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Dashboard />
+      <UserRoutesDashboard />
     </QueryClientProvider>
   );
 }

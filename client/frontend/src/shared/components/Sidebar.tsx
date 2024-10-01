@@ -25,7 +25,7 @@ const Sidebar = () => {
                 ? 'text-purple-800' // Active link styles
                 : 'text-black hover:text-gray-600'
             }`}
-            href="/"
+            href="/dashboard"
           >
             <span>Dashboard</span>
           </a>

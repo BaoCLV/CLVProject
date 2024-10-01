@@ -1,13 +1,10 @@
-import { ObjectType, Field, Int, InputType } from '@nestjs/graphql';
-import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
+import { ObjectType, Field, InputType, Float } from '@nestjs/graphql';
+import { IsNotEmpty, IsString, IsNumber, IsUUID } from 'class-validator';
 
 @ObjectType()
 export class RouteDto {
-  @Field(() => Int)
-  id: number;
-
-  @Field()
-  name: string;
+  @Field(() => String)
+  id: string;
 
   @Field()
   startLocation: string;
@@ -15,39 +12,38 @@ export class RouteDto {
   @Field()
   endLocation: string;
 
-  @Field(() => Int)
+  @Field(() => Float) // Ensure distance is a Float
   distance: number;
+
+  @Field()
+  userId: string;  // Reference to the user who created the route
 }
 
 @InputType()
 export class CreateRouteDto {
   @Field()
-  @IsNotEmpty() // Ensures the field is not empty
-  @IsString()
-  name: string;
-
-  @Field()
   @IsNotEmpty()
   @IsString()
-  startLocation: string; // Ensures start_location is provided and is a string
+  startLocation: string;
 
   @Field()
   @IsNotEmpty()
   @IsString()
   endLocation: string;
 
-  @Field(() => Int)
+  @Field(() => Float)
   @IsNotEmpty()
   @IsNumber()
   distance: number;
+
+  @Field(() => String)
+  @IsNotEmpty()
+  @IsUUID()
+  userId: string;
 }
 
 @InputType()
 export class UpdateRouteDto {
-  @Field({ nullable: true })
-  @IsString()
-  name?: string;
-
   @Field({ nullable: true })
   @IsString()
   startLocation?: string;
@@ -56,7 +52,7 @@ export class UpdateRouteDto {
   @IsString()
   endLocation?: string;
 
-  @Field(() => Int, { nullable: true })
+  @Field(() => Float, { nullable: true }) // Change to Float for consistency
   @IsNumber()
   distance?: number;
 }

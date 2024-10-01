@@ -16,13 +16,6 @@ import { ConfigModule } from '@nestjs/config';
           { name: 'routeService', url: process.env.ROUTE_SERVICE_URL || 'http://localhost:4000/graphql' },
         ],
       },
-      server: {
-        context: ({ req }) => {
-          return { headers: req.headers };
-        },
-        playground: true,
-        introspection: true,
-      },
     }),
   ],
 })

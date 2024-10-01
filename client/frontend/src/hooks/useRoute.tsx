@@ -15,7 +15,7 @@ export const useCreateRoute = () => {
   const [createRoute] = useMutation(CREATE_ROUTE_MUTATION, { client: routeClient });
 
   const handleCreateRoute = async (data: {
-    name: string;
+    userId: string;
     startLocation: string;
     endLocation: string;
     distance: number;
@@ -60,7 +60,7 @@ export const useUpdateRoute = () => {
   const [updateRoute] = useMutation(UPDATE_ROUTE_MUTATION, { client: routeClient });
 
   const handleUpdateRoute = async (id: number, data: { 
-    name: string;
+    userId: string;
     startLocation: string; 
     endLocation: string; 
     distance: number; 
@@ -119,7 +119,7 @@ export const useGetRoutes = (currentPage: number, itemsPerPage: number) => {
     },
     {
       getNextPageParam: (lastPage, allPages) => {
-        if (lastPage.length < itemsPerPage) return undefined; // No more pages
+        if (lastPage.length < itemsPerPage) return undefined;
         return allPages.length + 1;
       },
       getPreviousPageParam: (firstPage, allPages) => {

@@ -1,19 +1,13 @@
+import { ObjectType, Field, Float } from '@nestjs/graphql';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { ObjectType, Field } from '@nestjs/graphql';
-import { Directive } from '@nestjs/graphql';
 
 @ObjectType()
 @Entity()
-@Directive('@key(fields: "id")')
 export class Route {
   @Field()
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @Field()
-  @Column()
-  name: string;
-  
   @Field()
   @Column()
   startLocation: string;
@@ -22,15 +16,20 @@ export class Route {
   @Column()
   endLocation: string;
 
-  @Field()
+  @Field(() => Float)
   @Column('float')
   distance: number;
 
+
   @Field()
-  @CreateDateColumn({ name: 'created_at' })
+  @Column('uuid')
+  userId: string;  
+
+  @Field()
+  @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 
   @Field()
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn({ type: 'timestamp', onUpdate: 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 }

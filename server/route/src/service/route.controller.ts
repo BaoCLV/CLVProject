@@ -29,7 +29,7 @@ export class RouteController {
   }
 
   @GrpcMethod('RouteService', 'FindOneRoute')
-  async findOneRoute(data: { id: number }) {
+  async findOneRoute(data: { id: string }) {
     try {
       const route = await this.routesService.findOneById(data.id);
       return { route };
@@ -39,7 +39,7 @@ export class RouteController {
   }
 
   @GrpcMethod('RouteService', 'UpdateRoute')
-  async updateRoute(data: UpdateRouteDto & { id: number }) {
+  async updateRoute(data: UpdateRouteDto & { id: string }) {
     try {
       const updatedRoute = await this.routesService.updateById(data.id, data);
       return { route: updatedRoute, message: 'Route updated successfully!' };
@@ -49,7 +49,7 @@ export class RouteController {
   }
 
   @GrpcMethod('RouteService', 'DeleteRoute')
-  async deleteRoute(data: { id: number }) {
+  async deleteRoute(data: { id: string }) {
     try {
       await this.routesService.removeById(data.id);
       return { message: 'Route deleted successfully!' };

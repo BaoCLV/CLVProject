@@ -21,7 +21,7 @@ export class RouteResolver {
 
   // Query to get a specific route by id
   @Query(() => Route)
-  async route(@Args('id', { type: () => String }) id: number): Promise<Route> {
+  async route(@Args('id', { type: () => String }) id: string): Promise<Route> {
     return this.routesService.findOneById(id);
   }
 
@@ -34,7 +34,7 @@ export class RouteResolver {
   // Mutation to update an existing route by name
   @Mutation(() => Route)
   async updateRoute(
-    @Args('id', {type: () =>  String}) id: number,
+    @Args('id', {type: () =>  String}) id: string,
     @Args('data') data: UpdateRouteDto,
   ): Promise<Route> {
     return this.routesService.updateById(id, data);
@@ -42,7 +42,7 @@ export class RouteResolver {
 
   // Mutation to delete a route by name
   @Mutation(() => Boolean)
-  async deleteRoute(@Args('id', { type: () => String }) id: number): Promise<boolean> {
+  async deleteRoute(@Args('id', { type: () => String }) id: string): Promise<boolean> {
     await this.routesService.removeById(id);
     return true;
   }

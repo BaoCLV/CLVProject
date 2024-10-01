@@ -42,7 +42,6 @@ const UserDropDown = () => {
       Cookies.remove("refresh_token");
       toast.success("Log out successful!");
     }
-    window.location.reload();
     router.push("/");
   };
 
