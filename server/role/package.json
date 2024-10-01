@@ -8,8 +8,9 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "postbuild": "cp src/protos/*.proto dist/src/protos/",
     "start": "nest start",
-    "start:dev": "nest start --watch",
+    "start:dev": "nest build && node dist/role/src/main.js --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -17,9 +18,16 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "generate-proto": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto.cmd --ts_proto_out=. --ts_proto_opt=nestJs=true ./src/protos/roles.proto --experimental_allow_proto3_optional --ts_proto_opt=exportCommonSymbols=false -I=."
   },
   "dependencies": {
+    "@apollo/gateway": "^2.8.3",
+    "@apollo/subgraph": "^2.8.3",
+    "@nestjs/apollo": "^12.2.0",
+    "apollo-server-express": "^3.13.0",
+    "@nestjs/graphql": "^12.2.0",
+    "graphql": "^16.9.0",
     "@grpc/grpc-js": "^1.11.1",
     "@grpc/proto-loader": "^0.7.13",
     "@nestjs/common": "^10.0.0",
@@ -31,6 +39,7 @@
     "pg": "^8.12.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
+    "ts-proto": "^2.2.0",
     "typeorm": "^0.3.20"
   },
   "devDependencies": {
@@ -43,6 +52,7 @@
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
+    "cpx": "^1.5.0",
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",

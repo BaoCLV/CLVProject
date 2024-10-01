@@ -66,8 +66,28 @@ export class ResetPasswordDto {
   password: string;
 
   @Field()
-  @IsNotEmpty({ message: 'Activation Token is required.' })
-  activationToken: string;
+  @IsNotEmpty({ message: 'Forgot Password Token is required.' })
+  forgotPasswordToken: string;
+}
+
+@InputType()
+export class RequestChangePasswordDto {
+  @Field()
+  @IsNotEmpty({ message: 'Password is required.' })
+  @MinLength(8, { message: 'Password must be at least 8 characters.' })
+  oldPassword: string;
+}
+
+@InputType()
+export class ChangePasswordDto {
+  @Field()
+  @IsNotEmpty({ message: 'Password is required.' })
+  @MinLength(8, { message: 'Password must be at least 8 characters.' })
+  newPassword: string;
+
+  @Field()
+  @IsNotEmpty({ message: 'Change Password Token is required.' })
+  changePasswordToken: string;
 }
 
 @InputType()
@@ -77,16 +97,15 @@ export class UpdateUserDto {
   @IsString({ message: 'Name must need to be one string.' })
   name: string;
 
-
   @Field()
   @IsNotEmpty({ message: 'Email is required.' })
   @IsEmail({}, { message: 'Email is invalid.' })
   email: string;
 
-  @Field({ nullable : true})
+  @Field({ nullable: true })
   phone_number: string;
 
-  @Field({ nullable : true })
+  @Field({ nullable: true })
   address: string;
 }
 

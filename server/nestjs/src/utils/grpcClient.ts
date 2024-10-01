@@ -1,9 +1,11 @@
 import { loadPackageDefinition, credentials } from '@grpc/grpc-js';
 import { loadSync } from '@grpc/proto-loader';
-import path from 'path';
+// import path from 'path';
+import * as path from 'path';
+
 
 // Load proto file
-const protoPath = path.resolve(__dirname, '../src/proto/roles.proto');
+const protoPath = path.resolve(__dirname, '../../src/protos/user.proto');
 const packageDefinition = loadSync(protoPath, {
   keepCase: true,
   longs: String,
@@ -14,10 +16,10 @@ const packageDefinition = loadSync(protoPath, {
 
 // Load gRPC package
 const grpcObject = loadPackageDefinition(packageDefinition);
-const rolePackage = grpcObject.roles;
+const userPackage = grpcObject.user;
 
 // Create gRPC client
-export const roleClient = new (rolePackage as any).RoleService(
+export const roleClient = new (userPackage as any).UserService(
   'localhost:50052', // RoleService URL
   credentials.createInsecure()
 );

@@ -12,18 +12,21 @@ import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/ap
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
+import { Role } from '../../../role/src/entities/role.entity';
+import { Permission } from '../../../role/src/entities/permission.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Role, Permission]),
     GraphQLModule.forRoot<ApolloFederationDriverConfig>({
       driver: ApolloFederationDriver,
       autoSchemaFile: {
-        federation:2
-      }
+        federation: 2
+      },
+      context: ({ req }) => ({ req })
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -37,24 +40,24 @@ import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
           username: url ? undefined : configService.get<string>('DB_USER'),
           password: url ? undefined : configService.get<string>('DB_PASSWORD'),
           database: url ? undefined : configService.get<string>('DB_NAME'),
-          entities: [User],
+          entities: [User, Role, Permission],
           synchronize: true,
         };
       },
       inject: [ConfigService],
     }),
-  
+
     // EmailModule,
 
   ],
   providers: [
-    UsersService, 
-    UsersResolver, 
+    UsersService,
+    UsersResolver,
     ConfigService,
     JwtService,
     KafkaProducerService
     // EmailService
   ],
-exports: [UsersService]
+  exports: [UsersService]
 })
-export class UsersModule {}
+export class UsersModule { }

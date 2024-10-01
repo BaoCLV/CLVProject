@@ -42,19 +42,20 @@ export class KafkaConsumerService implements OnModuleInit {
               subject: 'Reset Your Password',
               email: event.email,
               name: event.name,
-              ActivationCode: event.activationCode,
+              ActivationCode: event.activation_code,
               template: 'forgot-password', 
             });
             console.log(`Password reset email sent successfully to ${event.email}`);
-          } else if (topic === 'user-email-change') {
+          } else if (topic === 'user-change-password') {
+            // Handle forgot password event
             await this.emailService.sendActivationEmail({
-              subject: 'Change Your Email',
+              subject: 'Reset Your Password',
               email: event.email,
               name: event.name,
-              ActivationCode: event.activationCode,
-              template: 'email-change', 
+              ActivationCode: event.activation_code,
+              template: 'change-password-mail', 
             });
-            console.log(`Token reset email sent successfully to ${event.email}`);
+            console.log(`Password change email sent successfully to ${event.email}`);
           }
         } catch (error) {
           console.error(`Error processing event from ${topic}:`, error);

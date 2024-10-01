@@ -1,6 +1,5 @@
 import { CanActivate, ExecutionContext, Injectable, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Permissions } from '../enum/permissions.enum';
 import { RolesPermissions } from '../permission/roles.permission';
 
 // Create a custom decorator to set required permissions

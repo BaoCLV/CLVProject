@@ -1,16 +1,29 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { RolesService } from './roles.service';
 import { Role } from '../entities/role.entity';
-import { RolesController } from './roles.controller';
+import { User } from '../../../nestjs/src/entities/user.entity';
+import { Permission } from 'src/entities/permission.entity';
+// import { RoleController } from './roles.controller';
+import { RoleService } from './roles.service';
+// import { GraphQLModule } from '@nestjs/graphql';
+// import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
+import { RoleResolver } from './roles.resolver';
+
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forFeature([Role]),
+    TypeOrmModule.forFeature([User, Role, Permission]),
+    // GraphQLModule.forRoot<ApolloFederationDriverConfig>({
+    //   driver: ApolloFederationDriver,
+    //   autoSchemaFile: {
+    //     federation: 2
+    //   },
+    //   context: ({ req }) => ({ req })
+    // }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
@@ -23,14 +36,17 @@ import { RolesController } from './roles.controller';
           username: url ? undefined : configService.get<string>('DB_USER'),
           password: url ? undefined : configService.get<string>('DB_PASSWORD'),
           database: url ? undefined : configService.get<string>('DB_NAME'),
-          entities: [Role],
+          entities: [User, Role, Permission],
           synchronize: true,
         };
       },
       inject: [ConfigService],
     }),
   ],
-  controllers: [RolesController],
-  providers: [RolesService],
+  providers: [
+    RoleService,
+    RoleResolver
+  ],
+  exports: [RoleService]
 })
-export class RolesModule {}
+export class RolesModule { }

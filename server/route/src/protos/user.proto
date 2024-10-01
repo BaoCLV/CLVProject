@@ -7,9 +7,13 @@ service UserService {
   rpc Register (RegisterRequest) returns (RegisterResponse);
   rpc Login (LoginRequest) returns (LoginResponse);
   rpc ActivateUser (ActivationRequest) returns (ActivationResponse);
-  rpc GetUsers (EmptyRequest) returns (UserListResponse);
+  rpc GetAllUser (EmptyRequest) returns (UserListResponse);
   rpc Logout (EmptyRequest) returns (LogoutResponse);
   rpc GetLoggedInUser (EmptyRequest) returns (GetLoggedInUserResponse);
+  rpc GetRolePermissions (RoleRequest) returns (RoleResponse);
+  rpc ForgotPassword (ForgotRequest) returns (ForgotResponse);
+  rpc ResetPassword (ResetRequest) returns (ResetResponse);
+  rpc ChangePassword (ChangeRequest) returns (ChangeResponse);
 }
 
 // Define the User message
@@ -65,6 +69,44 @@ message EmptyRequest {}
 
 message UserListResponse {
   repeated User users = 1;
+}
+
+message RoleRequest {
+  string role = 1;
+}
+
+message RoleResponse {
+  repeated string permissions = 1;
+}
+
+message ForgotRequest {
+  string email = 1;
+}
+
+message ForgotResponse {
+  string forgotPasswordToken = 1;
+  string message = 2;
+}
+
+message ResetRequest {
+  string password = 1;
+  string forgotPasswordToken = 2;
+}
+
+message ResetResponse {
+  User user = 1;
+  string message = 2;
+}
+
+message ChangeRequest {
+  string password = 1;
+  string changePasswordToken = 2;
+}
+
+message ChangeResponse {
+  User user = 1;
+  string updatedPassword = 2;
+  string message = 3;
 }
 
 message ErrorResponse {

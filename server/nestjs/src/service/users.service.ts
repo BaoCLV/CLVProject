@@ -2,9 +2,9 @@ import { BadRequestException, Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
-import { ActivationDto, ForgotPasswordDto, LoginDto, RegisterDto,UpdateUserDto, ResetPasswordDto, ChangeEmailDto } from '../dto/user.dto';
+import { ActivationDto, ChangePasswordDto, ForgotPasswordDto, LoginDto, RegisterDto, RequestChangePasswordDto, ResetPasswordDto, UpdateUserDto } from '../dto/user.dto'; 
 import * as bcrypt from 'bcrypt';
-import { RegisterResponse, LoginResponse, GetUserByEmailResponse } from '../types/user.types';
+import { RegisterResponse, LoginResponse, GetUserByEmailResponse, UserListResponse } from '../types/user.types';
 import { JwtService, JwtVerifyOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { TokenSender } from '../utils/sendToken';
@@ -35,6 +35,15 @@ export class UsersService {
     private readonly kafkaProducerService: KafkaProducerService,
     // private readonly emailService: EmailService,
   ) { }
+
+  @GrpcMethod('UserService', 'GetAllUser')
+  async getAllUser(): Promise<UserListResponse> {
+    const users = await this.userRepository.createQueryBuilder('user').getMany();
+    if (!users.length) {
+      return { users: [], error: { message: 'No user found' } };
+    }
+    return { users };
+  }
 
   @GrpcMethod('UserService', 'Register')
   async register(registerDto: RegisterDto, res: Response): Promise<RegisterResponse> {
@@ -80,34 +89,33 @@ export class UsersService {
     };
   }
   //activate user
-  async activateUser(activationDto: ActivationDto, response: Response){
-    const {ActivationToken, ActivationCode } = activationDto;
+  async activateUser(activationDto: ActivationDto, response: Response) {
+    const { ActivationToken, ActivationCode } = activationDto;
 
-    const newUser: {user: UserData; ActivationCode: string} =
+    const newUser: { user: UserData; ActivationCode: string } =
       this.jwtService.verify(ActivationToken, {
         secret: this.configService.get<string>('ACTIVATION_SECRET'),
-      } as JwtVerifyOptions) as {user:UserData; ActivationCode: string};
-      if (newUser.ActivationCode !== ActivationCode) {
-        throw new BadRequestException('Invalid activation code');
-      }
-  
-      const { name, email, password, phone_number, address } = newUser.user;
-      const user = this.userRepository.create({
-        name,
-        email,
-        password,
-        phone_number,
-        address,
-      });
+      } as JwtVerifyOptions) as { user: UserData; ActivationCode: string };
+    if (newUser.ActivationCode !== ActivationCode) {
+      throw new BadRequestException('Invalid activation code');
+    }
 
-      const savedUser = await this.userRepository.save(user);
-      console.log(savedUser)
-      return { savedUser, response };
-      }
+    const { name, email, password, phone_number, address } = newUser.user;
+    const user = this.userRepository.create({
+      name,
+      email,
+      password,
+      phone_number,
+      address,
+    });
+
+    const savedUser = await this.userRepository.save(user);
+    return { savedUser, response };
+  }
   // Create activation token
   async createActivationToken(user: UserData) {
     const ActivationCode = Math.floor(1000 + Math.random() * 9000).toString();
-
+    console.log(ActivationCode)
     const Token = this.jwtService.sign(
       {
         user,
@@ -120,7 +128,7 @@ export class UsersService {
     );
     return {
       Token,
-      ActivationCode 
+      ActivationCode
     };
   }
   @GrpcMethod('UserService', 'Login')
@@ -130,11 +138,8 @@ export class UsersService {
     if (user && (await this.comparePassword(password, user.password))
     ) {
       const tokenSender = new TokenSender(this.configService, this.jwtService, this.userRepository);
-      console.log(user)
       return tokenSender.sendToken(user);
     } else {
-      console.log(password);
-      console.log(user.password)
       return {
         user: null,
         accessToken: null,
@@ -145,15 +150,14 @@ export class UsersService {
       };
     }
   }
- 
-async comparePassword(
-  password: string,
-  hashedPassword: string,
-): Promise<boolean> {
-    console.log('Comparing:', password, hashedPassword);
 
-    return await  bcrypt.compare(password, hashedPassword);
-  }  
+  async comparePassword(
+    password: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
+    return await bcrypt.compare(password, hashedPassword);
+  }
+
   @GrpcMethod('UserService', 'GetLoggedInUser')
   async getLoggedInUser(req: any) {
     const user = req.user;
@@ -177,10 +181,6 @@ async comparePassword(
     req.accesstoken = null;
     return { message: 'Logged out successfully!' };
   }
-  @GrpcMethod('UserService', 'GetUsers')
-  async getUsers() {
-    return this.userRepository.find({});
-  }
 
   //Gernerate forgot password link
   async generateForgotPasswordLink(user: User) {
@@ -196,7 +196,22 @@ async comparePassword(
     return forgotPasswordToken;
   }
 
+   //Gernerate change password link
+   async generateChangePasswordLink(user: User) {
+    const changePasswordToken = this.jwtService.sign(
+      {
+        userId: user.id,
+      },
+      {
+        secret: this.configService.get<string>('CHANGE_PASSWORD_SECRET'),
+        expiresIn: '5m'
+      },
+    );
+    return changePasswordToken;
+  }
+
   //Forgot password
+  @GrpcMethod('UserService', 'forgotPassword')
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
     const { email } = forgotPasswordDto;
     const user = await this.userRepository.findOne({
@@ -215,94 +230,163 @@ async comparePassword(
       `/reset-password?verify=${forgotPasswordToken}`;
 
     await this.kafkaProducerService.sendUserForgotPasswordEvent({
-        email:user.email,
-        name: user.name,
-        activationCode: resetPasswordUrl,
-      });
-    return { message: `Your forgot password request succesful at ${resetPasswordUrl}` };
+      email: user.email,
+      name: user.name,
+      forgotPasswordToken: forgotPasswordToken,
+    });
+    return { forgotPasswordToken, message: `Your forgot password request succesfully!` };
   }
 
   //reset password
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
-    const { password, activationToken } = resetPasswordDto;
-  
+    const { password, forgotPasswordToken } = resetPasswordDto;
+
     // Verify the JWT token, which checks the expiration and validity
     let decoded;
     try {
-      decoded = this.jwtService.verify(activationToken, {
+      decoded = this.jwtService.verify(forgotPasswordToken, {
         secret: this.configService.get<string>('FORGOT_PASSWORD_SECRET'),
       });
     } catch (error) {
       throw new BadRequestException('Invalid or expired token!');
     }
-  
+
     // Proceed with password reset only if token is valid
     if (!decoded || !decoded.userId) {
       throw new BadRequestException('Invalid token payload!');
     }
-  
+
     // Hash the new password
     const hashedPassword = await bcrypt.hash(password, 10);
-  
+
     // Update the user's password in the database
     await this.userRepository.update(
       { id: decoded.userId },
       { password: hashedPassword },
     );
-  
+
     // Fetch the updated user
     const user = await this.userRepository.findOne({ where: { id: decoded.userId } });
-  
+
     if (!user) {
       throw new Error('User not found');
     }
-  
-    return { message: 'Password has been successfully reset.' };
+
+    return { user, message: 'Password has been successfully reset.' };
   }
+
+  //Request Change Password
+  @GrpcMethod('UserService', 'requestChangePassword')
+  async requestChangePassword(requestChangePasswordDto: RequestChangePasswordDto, req: any) {
+    const { oldPassword } = requestChangePasswordDto;
+
+    const user = await this.userRepository.findOne({ where: { id: req.id } });
+    if (!user) {
+      throw new BadRequestException("User is not found!")
+    }
+    if (await this.comparePassword(oldPassword, user.password)
+    ) {
+      const changePasswordToken = await this.generateChangePasswordLink(user)
+      const changePasswordUrl =
+        this.configService.get<string>('CLIENT_SIDE_URI') +
+        `/change-password?verify=${changePasswordToken}`;
+
+      await this.kafkaProducerService.sendUserRequsetChangePasswordEvent({
+        email: user.email,
+        name: user.name,
+        changePasswordToken: changePasswordToken,
+      });
+      return { changePasswordToken, message: `Your change password request was successful!` };
+    }else {
+      throw new BadRequestException('Old password does not match!');
+    }
+  }
+
+  @GrpcMethod('UserService', 'changePassword')
+  async changePassword(changePasswordDto: ChangePasswordDto) {
+    const { newPassword, changePasswordToken } = changePasswordDto;
+
+    // Verify the JWT token, which checks the expiration and validity
+    let decoded;
+
+    try {
+      decoded = this.jwtService.verify(changePasswordToken, {
+        secret: this.configService.get<string>('CHANGE_PASSWORD_SECRET'),
+      });
+    } catch (error) {
+      throw new BadRequestException('Invalid or expired token!');
+    }
+
+    // Proceed with password reset only if token is valid
+    if (!decoded || !decoded.userId) {
+      throw new BadRequestException('Invalid token payload!');
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+
+    // Update the user's password in the database
+    await this.userRepository.update(
+      { id: decoded.userId },
+      { password: hashedPassword },
+    );
+
+    // Fetch the updated user
+    const user = await this.userRepository.findOne({ where: { id: decoded.userId } });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+    const updatedPassword = user.password
+
+    return { user, updatedPassword, message: 'Password has been successfully changed.' };
+  }
+  
   async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     // Find the user by ID
     const user = await this.userRepository.findOne({ where: { id } });
-    
+
     if (!user) {
       throw new BadRequestException(`User with ID ${id} not found`);
     }
-  
+
     // Merge updated data into the existing user entity
     Object.assign(user, updateUserDto);
-  
+
     // Save the updated user entity to the database
     return await this.userRepository.save(user);
   }
   
-  //Email change
-  async updateEmail(changeEmailDto: ChangeEmailDto, res: Response): Promise<RegisterResponse> {
-    const { oldEmail, newEmail } = changeEmailDto;
+  // //Email change
+  // async updateEmail(changeEmailDto: ChangeEmailDto, res: Response): Promise<RegisterResponse> {
+  //   const { oldEmail, newEmail } = changeEmailDto;
   
-    const user = await this.userRepository.findOne({ where: { email: oldEmail } });
+  //   const user = await this.userRepository.findOne({ where: { email: oldEmail } });
   
-    if (!user) {
-      throw new BadRequestException(`User with email ${oldEmail} not found.`);
-    }
+  //   if (!user) {
+  //     throw new BadRequestException(`User with email ${oldEmail} not found.`);
+  //   }
   
-    const existingUserWithNewEmail = await this.userRepository.findOne({ where: { email: newEmail } });
+  //   const existingUserWithNewEmail = await this.userRepository.findOne({ where: { email: newEmail } });
   
-    if (existingUserWithNewEmail) {
-      throw new BadRequestException(`The new email ${newEmail} is already in use by another user.`);
-    }
+  //   if (existingUserWithNewEmail) {
+  //     throw new BadRequestException(`The new email ${newEmail} is already in use by another user.`);
+  //   }
   
-    const activationToken = await this.createEmailActivationToken({ email: oldEmail });
+  //   const activationToken = await this.createEmailActivationToken({ email: oldEmail });
   
-    await this.kafkaProducerService.sendUserEmailChangeevent({
-      oldEmail: user.email,
-      newEmail: newEmail,
-      activation_token: activationToken.Token,
-      activation_code: activationToken.ActivationCode,  
-    });
+  //   await this.kafkaProducerService.sendUserEmailChangeevent({
+  //     oldEmail: user.email,
+  //     newEmail: newEmail,
+  //     activation_token: activationToken.Token,
+  //     activation_code: activationToken.ActivationCode,  
+  //   });
   
-    return {
-      activation_token: activationToken.Token,
-    };
-  }
+  //   return {
+  //     activation_token: activationToken.Token,
+  //   };
+  // }
   
   // This remains unchanged as it already generates a token for the old email.
   async createEmailActivationToken(user: { email: string }) {

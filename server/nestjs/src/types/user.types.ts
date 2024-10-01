@@ -54,13 +54,16 @@ export class ForgotPasswordResponse {
   @Field()
   message: string;
 
+  @Field({ nullable: true })
+  forgotPasswordToken?: string;
+
   @Field(() => ErrorType, { nullable: true })
   error?: ErrorType;
 }
 
 @ObjectType()
 export class ResetPasswordResponse {
-  @Field(() => User)
+  @Field(() => User, { nullable: true })
   user?: User | unknown;
   
   @Field()
@@ -92,12 +95,36 @@ export class UpdateUserResponse {
 }
 
 @ObjectType()
-export class ChangeEmailResponse {
+export class UserListResponse {
+  @Field(() => [User], { nullable: true })
+  users?: User[];
+
+  @Field(() => ErrorType, { nullable: true })
+  error?: ErrorType;
+}
+
+@ObjectType()
+export class RequestChangePasswordResponse {
   @Field()
   message: string;
 
   @Field({ nullable: true })
-  activation_token?: string;
+  changePasswordToken?: string;
+
+  @Field(() => ErrorType, { nullable: true })
+  error?: ErrorType;
+}
+
+@ObjectType()
+export class ChangePasswordResponse {
+  @Field(() => User, { nullable: true })
+  user?: User | unknown;
+
+  @Field({ nullable: true })
+  updatedPassword?: string;
+  
+  @Field()
+  message: string;
 
   @Field(() => ErrorType, { nullable: true })
   error?: ErrorType;

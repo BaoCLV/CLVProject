@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package rolepermission;
+
+service RolePermissionService {
+  rpc CheckPermission (CheckPermissionRequest) returns (CheckPermissionResponse);
+}
+
+message CheckPermissionRequest {
+  string userId = 1;
+  string role = 2;
+}
+
+message CheckPermissionResponse {
+  bool hasPermission = 1;
+}

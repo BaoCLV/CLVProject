@@ -1,6 +1,6 @@
-import { Permissions } from '../enum/permissions.enum';
+import { ClientPermission } from '../enum/permissions.enum';
 
 export const RolesPermissions = {
-  admin: [Permissions.CREATE, Permissions.READ, Permissions.UPDATE, Permissions.DELETE],
-  user: [Permissions.READ], // Users can only read by default
+  admin: [ClientPermission.Create, ClientPermission.Read, ClientPermission.Update, ClientPermission.Delete],
+  user: [ClientPermission.Create, ClientPermission.Read ], // Users can only read by default
 };

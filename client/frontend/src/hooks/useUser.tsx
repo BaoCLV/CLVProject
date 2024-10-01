@@ -5,10 +5,12 @@ import { REGISTER_USER } from "../graphql/auth/Actions/register.action";
 import toast from "react-hot-toast";
 import { GET_SOCIAL_USER } from "../graphql/auth/Actions/getSocialUser.action";
 import { UPDATE_USER } from "../graphql/auth/Actions/updateUser";
-import { UPDATE_EMAIL } from "../graphql/auth/Actions/change-email.action";
+import { GET_ALL_USER } from "../graphql/auth/Actions/getAllUser.action";
+import { useInfiniteQuery } from "react-query";
+import { routeClient } from "../graphql/route/route.gql.setup";
 
 
-
+//get loggedin user
 export const useUser = () => {
   const authClient = useGraphQLClient('auth');
   const { loading, data } = useQuery(GET_USER, { client: authClient });
@@ -19,6 +21,7 @@ export const useUser = () => {
   };
 };
 
+//get single user by email
 export const useGetUser = (email: string) => {
   const authClient = useGraphQLClient('auth'); // Use the auth client
   const { data, loading, error } = useQuery(GET_SOCIAL_USER, {
@@ -34,14 +37,11 @@ export const useGetUser = (email: string) => {
   };
 };
 
-
+//create user by google
 export const useCreateUserSocial = (userData: any) => {
   const authClient = useGraphQLClient('auth');
   const [createUser] = useMutation(REGISTER_USER, { client: authClient });
   const isUserExist = useGetUser(userData?.email);
-  // const usertest = useUser()
-  // console.log("usertest",usertest)
-  // console.log("user existed:", isUserExist)
 
   const randomPassword = () => {
     const characters =
@@ -70,16 +70,14 @@ export const useCreateUserSocial = (userData: any) => {
       name: userData.name,
       email: userData.email,
       password: randomPassword(),
-      phone_number: userData.phone_number, // Provide a default value if phone_number is not available
-      address: userData.address || 'No address provided', // Provide a default value if address is not available
+      phone_number: userData.phone_number, 
+      address: userData.address || 'No address provided', 
     }
-    console.log("input data:", data)
 
     try {
       const response = await createUser({
         variables: data,
       });
-      console.log("register:", data)
       localStorage.setItem(
         "activation_token",
         response.data.register.activation_token
@@ -92,6 +90,8 @@ export const useCreateUserSocial = (userData: any) => {
 
   return { handlecreateUserSocial };
 };
+
+//update user infor
 export const useUpdateUser = () => {
   const authClient = useGraphQLClient('auth');
   const [updateUser, { loading, error }] = useMutation(UPDATE_USER, {
@@ -130,44 +130,42 @@ export const useUpdateUser = () => {
   };
 };
 
-export const useUpdateEmail = () => {
-  const authClient = useGraphQLClient('auth');
-  const [updateEmail, { loading, error }] = useMutation(UPDATE_EMAIL, {
-    client: authClient,
-  });
 
-  const handleUpdateEmail = async (oldEmail: string, newEmail: string) => {
-    try {
-      const response = await updateEmail({
+// Hook for getting a list of routes with optional query, limit, and offset
+export const useGetAllUser = (currentPage: number, itemsPerPage: number) => {
+  const authClient = useGraphQLClient('auth');
+  // const [getAllUser] = useQuery(GET_ALL_USER, { client: authClient });
+
+  return useInfiniteQuery(
+    ['users', currentPage], // Use currentPage in the query key for caching
+    async ({ pageParam = currentPage }) => {
+      const offset = (pageParam - 1) * itemsPerPage;
+
+      const { data } = await authClient.query({
+        query: GET_ALL_USER,
         variables: {
-          oldEmail,
-          newEmail,
+          limit: itemsPerPage,
+          offset: offset,
         },
       });
 
-      const data = response?.data?.updateEmail;
-
-      if (data?.activation_token) {
-        localStorage.setItem('activation_token', data.activation_token);
-        toast.success('Email update initiated. Check your inbox for the activation code!');
-        return data;
+      if (!data?.users) {
+        throw new Error('Failed to fetch users');
       }
+      console.log(data.users)
 
-      if (data?.error?.message) {
-        toast.error(data.error.message);
-      } else {
-        toast.error('Failed to update email.');
-      }
-
-    } catch (err: any) {
-      toast.error(`Error: ${err.message}`);
-      console.error('Error updating email:', err);
+      return data.users;
+    },
+    {
+      getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.length < itemsPerPage) return undefined; // No more pages
+        return allPages.length + 1;
+      },
+      getPreviousPageParam: (firstPage, allPages) => {
+        if (allPages.length === 1) return undefined;
+        return allPages.length - 1;
+      },
     }
-  };
-
-  return {
-    handleUpdateEmail,
-    loading,
-    error,
-  };
+  );
 };
+
