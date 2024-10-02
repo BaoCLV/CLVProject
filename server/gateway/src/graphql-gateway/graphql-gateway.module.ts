@@ -1,18 +1,23 @@
 import { Module } from '@nestjs/common';
-import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloGatewayDriver, ApolloGatewayDriverConfig } from '@nestjs/apollo';
-import { ConfigModule } from '@nestjs/config';
+import { GqlModuleOptions, GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig, ApolloGatewayDriver, ApolloGatewayDriverConfig } from '@nestjs/apollo';
+// import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ApolloGateway } from '@apollo/gateway';
 
 @Module({
   imports: [
+    // ConfigModule.forRoot({
+    //   isGlobal: true, // Makes ConfigModule globally available
+    // }),
     GraphQLModule.forRootAsync<ApolloDriverConfig>({
       driver: ApolloDriver,
+      // inject: [ConfigService],
       useFactory: async (): Promise<GqlModuleOptions> => {
         const gateway = new ApolloGateway({
             serviceList: [
-                { name: 'authService', url: process.env.AUTH_SERVICE_URL || 'http://localhost:3001/graphql' },
-                { name: 'RouteService', url: process.env.ROUTE_SERVICE_URL || 'http://localhost:4000/graphql' },
-                { name: 'RoleService', url: process.env.ROLE_SERVICE_URL || 'http://localhost:6000/graphql' },
+                { name: 'authService', url: 'http://localhost:3001/graphql' },
+                { name: 'RouteService', url: 'http://localhost:4000/graphql' },
+                // { name: 'RoleService', url: process.env.ROLE_SERVICE_URL || 'http://localhost:6000/graphql' },
               ],
             });
 

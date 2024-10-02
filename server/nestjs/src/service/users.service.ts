@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
-import { ActivationDto, ChangePasswordDto, ForgotPasswordDto, LoginDto, RegisterDto, RequestChangePasswordDto, ResetPasswordDto, UpdateUserDto } from '../dto/user.dto'; 
+import { ActivationDto, ChangePasswordDto, ForgotPasswordDto, LoginDto, RegisterDto, RequestChangePasswordDto, ResetPasswordDto, UpdateUserDto } from '../dto/user.dto';
 import * as bcrypt from 'bcrypt';
 import { RegisterResponse, LoginResponse, GetUserByEmailResponse, UserListResponse } from '../types/user.types';
 import { JwtService, JwtVerifyOptions } from '@nestjs/jwt';
@@ -37,12 +37,39 @@ export class UsersService {
   ) { }
 
   @GrpcMethod('UserService', 'GetAllUser')
-  async getAllUser(): Promise<UserListResponse> {
-    const users = await this.userRepository.createQueryBuilder('user').getMany();
+  async getAllUser({ query,
+    limit,
+    offset
+  }: { query?: string; limit?: number; offset?: number }): Promise<UserListResponse> {
+    const usersQuery = this.userRepository.createQueryBuilder('user');
+    // Apply query filtering if provided
+    if (query) {
+      usersQuery.where(
+        'user.name LIKE :query OR user.email LIKE :query OR user.address LIKE :query OR user.phone_number LIKE :query',
+        {
+          query: `%${query}%`,
+        },
+      );
+    }
+
+    // Apply offset if provided
+    if (offset) {
+      usersQuery.skip(offset);
+    }
+
+    // Apply limit if provided
+    if (limit) {
+      usersQuery.take(limit);
+    }
+
+    usersQuery.orderBy('user.id', 'DESC');
+    const users = await usersQuery.getMany()
+
     if (!users.length) {
       return { users: [], error: { message: 'No user found' } };
     }
-    return { users };
+    console.log("AllUser", users)
+    return {users};
   }
 
   @GrpcMethod('UserService', 'Register')
@@ -196,8 +223,8 @@ export class UsersService {
     return forgotPasswordToken;
   }
 
-   //Gernerate change password link
-   async generateChangePasswordLink(user: User) {
+  //Gernerate change password link
+  async generateChangePasswordLink(user: User) {
     const changePasswordToken = this.jwtService.sign(
       {
         userId: user.id,
@@ -297,7 +324,7 @@ export class UsersService {
         changePasswordToken: changePasswordToken,
       });
       return { changePasswordToken, message: `Your change password request was successful!` };
-    }else {
+    } else {
       throw new BadRequestException('Old password does not match!');
     }
   }
@@ -342,7 +369,7 @@ export class UsersService {
 
     return { user, updatedPassword, message: 'Password has been successfully changed.' };
   }
-  
+
   async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     // Find the user by ID
     const user = await this.userRepository.findOne({ where: { id } });
@@ -357,41 +384,41 @@ export class UsersService {
     // Save the updated user entity to the database
     return await this.userRepository.save(user);
   }
-  
+
   // //Email change
   // async updateEmail(changeEmailDto: ChangeEmailDto, res: Response): Promise<RegisterResponse> {
   //   const { oldEmail, newEmail } = changeEmailDto;
-  
+
   //   const user = await this.userRepository.findOne({ where: { email: oldEmail } });
-  
+
   //   if (!user) {
   //     throw new BadRequestException(`User with email ${oldEmail} not found.`);
   //   }
-  
+
   //   const existingUserWithNewEmail = await this.userRepository.findOne({ where: { email: newEmail } });
-  
+
   //   if (existingUserWithNewEmail) {
   //     throw new BadRequestException(`The new email ${newEmail} is already in use by another user.`);
   //   }
-  
+
   //   const activationToken = await this.createEmailActivationToken({ email: oldEmail });
-  
+
   //   await this.kafkaProducerService.sendUserEmailChangeevent({
   //     oldEmail: user.email,
   //     newEmail: newEmail,
   //     activation_token: activationToken.Token,
   //     activation_code: activationToken.ActivationCode,  
   //   });
-  
+
   //   return {
   //     activation_token: activationToken.Token,
   //   };
   // }
-  
+
   // This remains unchanged as it already generates a token for the old email.
   async createEmailActivationToken(user: { email: string }) {
     const ActivationCode = Math.floor(1000 + Math.random() * 9000).toString();
-  
+
     // Generate a JWT token with the user's old email and activation code
     const Token = this.jwtService.sign(
       {
@@ -403,7 +430,7 @@ export class UsersService {
         expiresIn: '10m',  // The token will expire in 10 minutes
       },
     );
-  
+
     return {
       Token,
       ActivationCode,

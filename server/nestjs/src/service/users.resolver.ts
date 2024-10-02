@@ -12,13 +12,15 @@ export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
   @Query(() => UserListResponse)
-  @UseGuards(AuthGuard, PermissionsGuard)
+  @UseGuards(AuthGuard)//PermissionsGuard
   @RequirePermissions('admin')
   @SetMetadata(ROLE_KEY, ['create', 'read', 'update', 'delete'])
   async getAllUsers(
-    @Context() context: { req: Request }
+    @Args('query', { type: () => String, nullable: true }) query?: string,
+    @Args('limit', { type: () => Number, nullable: true }) limit?: number,
+    @Args('offset', { type: () => Number, nullable: true }) offset?: number,
   ): Promise<UserListResponse> {
-    return this.usersService.getAllUser();
+    return this.usersService.getAllUser({ query, limit, offset });
   }
 
   @Mutation(() => RegisterResponse)
@@ -61,7 +63,7 @@ export class UsersResolver {
   }
 
   @Query(() => GetUserByEmailResponse)
-  @UseGuards(AuthGuard, PermissionsGuard)
+  @UseGuards(AuthGuard)//PermissionsGuard
   @RequirePermissions('admin')
   @SetMetadata(ROLE_KEY, ['read', 'write', 'delete', 'update'])
   async getUserByEmail(
@@ -104,7 +106,7 @@ export class UsersResolver {
   }
 
   @Mutation(() => RequestChangePasswordResponse)
-  @UseGuards(AuthGuard, PermissionsGuard)
+  @UseGuards(AuthGuard)//PermissionsGuard
   @RequirePermissions('admin', 'user')
   @SetMetadata(ROLE_KEY, ['read', 'update'])
   async RequestChangePassword(

@@ -11,7 +11,6 @@ export const RequirePermissions = (...role: string[]) =>
 const rolePermissions = {
   admin: ['create', 'read', 'update', 'delete'],
   user: ['read', 'update'],
-  guest: ['read'],
   // Add more roles and their permissions as needed
 };
 
