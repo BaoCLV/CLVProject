@@ -68,8 +68,7 @@ export class UsersService {
     if (!users.length) {
       return { users: [], error: { message: 'No user found' } };
     }
-    console.log("AllUser", users)
-    return {users};
+    return { users };
   }
 
   @GrpcMethod('UserService', 'Register')
@@ -139,6 +138,7 @@ export class UsersService {
     const savedUser = await this.userRepository.save(user);
     return { savedUser, response };
   }
+
   // Create activation token
   async createActivationToken(user: UserData) {
     const ActivationCode = Math.floor(1000 + Math.random() * 9000).toString();
@@ -200,6 +200,15 @@ export class UsersService {
     }
     return { user }
   }
+
+  async getUserById(id: string): Promise<GetUserByEmailResponse> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      return { user, error: { message: `user with ${id} not found` } };
+    }
+    return { user }
+  }
+
 
   @GrpcMethod('UserService', 'Logout')
   async Logout(req: any) {
@@ -435,5 +444,22 @@ export class UsersService {
       Token,
       ActivationCode,
     };
+  }
+
+  // create a user by admin
+  async createUser(data: RegisterDto): Promise<User> {
+    const newUser = this.userRepository.create(data);
+    return this.userRepository.save(newUser);
+  }
+
+  // Remove a user by name
+  async deleteById(id: string): Promise<void> {
+    const userResponse = await this.getUserById(id);
+    const user = userResponse.user;
+    if (user) {
+      await this.userRepository.remove(user);
+    } else {
+      throw new Error(`User with id ${id} not found`);
+    }
   }
 };

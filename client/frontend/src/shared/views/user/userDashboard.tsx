@@ -3,15 +3,16 @@
 import React from 'react';
 import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
-import { useGetRoutes } from "../../../hooks/useRoute";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Spinner } from "@nextui-org/react";
-import FilterButton from "../../../shared/components/FilterDropDown";
+import FilterButton from "../../components/FilterDropDown";
 import { useGetAllUser } from '@/src/hooks/useUser';
+import Sidebar from '../../components/Sidebar';
+import Header from '../../components/Header';
 
 
 const queryClient = new QueryClient();
-function Dashboard() {
+function UserDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const itemsPerPage = 20;
@@ -52,35 +53,35 @@ function Dashboard() {
     hasPreviousPage,
     isFetchingNextPage,
     isFetchingPreviousPage,
-  } = useGetAllUser(currentPage, itemsPerPage); // Pass filter to useGetRoutes
+  } = useGetAllUser(currentPage, itemsPerPage); // Pass filter to useGetAllUser
 
   if (error instanceof Error) return <p>Error: {error.message}</p>;
 
   // Aggregate all data from the pages into a single array
-  const allRoutes = data?.pages.flatMap((page) => page) ?? [];
-  console.log("allRoutes",allRoutes)
+  const allUsers = data?.pages.flatMap((page) => page) ?? [];
+  console.log("allUsers", allUsers)
 
   return (
+
     <div className="dark  p-4">
-      <h1 className="text-2xl font-bold mb-4 text-yellow-500">Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-4 text-black">User List</h1>
 
       {/* Filter Button Component */}
       {/* <FilterButton onFilter={handleFilter} /> Pass filter handler to the FilterButton */}
 
       <div className="w-full overflow-hidden  rounded-lg shadow-xs">
-        
         <div className="w-full overflow-x-auto">
-          <table className="w-full whitespace-no-wrap border-black bg-gray-900">
+          <table className="w-full whitespace-no-wrap border-black bg-white">
             <thead>
-              <tr className="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 dark:text-gray-400">
-                <th className="px-4 py-3">User Name</th>
+              <tr className="text-xs font-semibold tracking-wide text-left bg-white text-purple-700 uppercase border-b dark:border-black">
+                <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Email</th>
+                <th className="px-4 py-3">Address</th>
                 <th className="px-4 py-3">Phone Number</th>
-                <th className="px-4 py-3">Created At</th>
-                <th className="px-4 py-3">Updated At</th>
+                <th className="px-4 py-3">Detail</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y dark:divide-gray-700 dark:bg-blue-950">
+            <tbody className="bg-white divide-y dark:divide-gray-700 dark:bg-white">
               {isFetching && (
                 <tr>
                   <td colSpan={5} className="text-center py-4">
@@ -89,46 +90,46 @@ function Dashboard() {
                 </tr>
               )}
 
-              {allRoutes.length > 0
-                ? allRoutes.map((route: any) => (
-                    <tr
-                      key={route.id}
-                      className="text-blue-700 dark:text-gray-400"
-                    >
-                      <td className="px-4 py-3 text-sm">{route.name}</td>
-                      <td className="px-4 py-3 text-sm">
-                        {route.startLocation}
-                      </td>
-                      <td className="px-4 py-3 text-sm">{route.endLocation}</td>
-                      <td className="px-4 py-3 text-sm">{route.distance}</td>
-                      <td className="px-4 py-3 text-sm">
-                        <a
-                          href={`/api/route/${route.id}`}
-                          className="text-blue-600 hover:underline dark:text-blue-400"
-                        >
-                          View Details
-                        </a>
-                      </td>
-                    </tr>
-                  ))
+              {allUsers.length > 0
+                ? allUsers.map((user: any) => (
+                  <tr
+                    key={user.id}
+                    className="text-blue-700 dark:text-black"
+                  >
+                    <td className="px-4 py-3 text-sm">{user.name}</td>
+                    <td className="px-4 py-3 text-sm">
+                      {user.email}
+                    </td>
+                    <td className="px-4 py-3 text-sm">{user.address}</td>
+                    <td className="px-4 py-3 text-sm">{user.phone_number}</td>
+                    <td className="px-4 py-3 text-sm">
+                      <a
+                        href={`/api/user/${user.id}`}
+                        className="text-blue-600 hover:underline dark:text-blue-400"
+                      >
+                        View Details
+                      </a>
+                    </td>
+                  </tr>
+                ))
                 : !isFetching && (
-                    <tr>
-                      <td colSpan={5} className="text-center py-4">
-                        No routes available
-                      </td>
-                    </tr>
-                  )}
+                  <tr>
+                    <td colSpan={5} className="text-center py-4">
+                      No user available
+                    </td>
+                  </tr>
+                )}
             </tbody>
           </table>
         </div>
 
         {/* Pagination Controls */}
-        <div className="flex justify-between px-4 py-3 text-xs font-semibold tracking-wide text-gray-500 uppercase border-t dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+        <div className="flex justify-between px-4 py-3 text-xs font-semibold tracking-wide text-purple-700 uppercase border-t ">
           {/* Previous Button */}
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage <= 1 || isFetchingPreviousPage}
-            className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50 flex items-center"
+            className="px-3 py-1 bg-purple-500 text-white rounded disabled:opacity-50 flex items-center"
           >
             {isFetchingPreviousPage ? (
               <>
@@ -146,7 +147,7 @@ function Dashboard() {
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={!hasNextPage || isFetchingNextPage}
-            className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50 flex items-center"
+            className="px-3 py-1 bg-purple-500 text-white rounded disabled:opacity-50 flex items-center"
           >
             {isFetchingNextPage ? (
               <>
@@ -162,4 +163,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default UserDashboard;

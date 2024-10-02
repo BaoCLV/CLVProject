@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useUser, useUpdateUser } from "../../../hooks/useUser";
+import { useUser, useUpdateUser, useGetUserById } from "../../../hooks/useUser";
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
 import ProfileSidebar from "../../components/ProfileSidebar";
@@ -13,15 +13,14 @@ interface UpdateProfileProps {
 
 export default function UpdateProfile({ userId }: UpdateProfileProps) {
   const router = useRouter();
-  const { loading, user } = useUser();
+  const { loading, user } = useGetUserById(userId);
   const { handleUpdateUser } = useUpdateUser();
 
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone_number: "",
-    address: "",
-    role: "",
+    address: ""
   });
   const [message, setMessage] = useState("");
   const [submitError, setSubmitError] = useState("");
@@ -33,8 +32,7 @@ export default function UpdateProfile({ userId }: UpdateProfileProps) {
         name: user.name,
         email: user.email,
         phone_number: user.phone_number || "",
-        address: user.address || "",
-        role: user.role || "",
+        address: user.address || ""
       });
     }
   }, [user]);

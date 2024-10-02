@@ -9,7 +9,7 @@ import { PermissionsGuard, RequirePermissions, ROLE_KEY } from 'src/guards/permi
 
 @Resolver()
 export class UsersResolver {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Query(() => UserListResponse)
   @UseGuards(AuthGuard)//PermissionsGuard
@@ -72,6 +72,16 @@ export class UsersResolver {
     return await this.usersService.getUserByEmail(email);
   }
 
+  @Query(() => GetUserByEmailResponse)
+  @UseGuards(AuthGuard)//PermissionsGuard
+  @RequirePermissions('admin')
+  @SetMetadata(ROLE_KEY, ['read', 'write', 'delete', 'update'])
+  async getUserById(
+    @Args('id', { type: () => String }) id: string
+  ): Promise<GetUserByEmailResponse> {
+    return await this.usersService.getUserById(id);
+  }
+
   @Query(() => LogOutResponse)
   @UseGuards(AuthGuard)
   async LogOutUser(@Context() context: { req: Request }) {
@@ -122,5 +132,19 @@ export class UsersResolver {
     @Args('changePasswordDto') changePasswordDto: ChangePasswordDto,
   ): Promise<ChangePasswordResponse> {
     return await this.usersService.changePassword(changePasswordDto);
+  }
+
+  // Mutation to create a new user by admin
+  @Mutation(() => User)
+  async createUser(@Args('data') data: RegisterDto): Promise<User> {
+    return this.usersService.createUser(data);
+  }
+
+
+  // Mutation to delete a user by id
+  @Mutation(() => Boolean)
+  async deleteUser(@Args('id', { type: () => String }) id: string): Promise<boolean> {
+    await this.usersService.deleteById(id);
+    return true;
   }
 }
