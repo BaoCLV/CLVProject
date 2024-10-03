@@ -16,7 +16,7 @@ async function bootstrap() {
   const grpcApp= await NestFactory.createMicroservice<MicroserviceOptions>(RolesModule, {
     transport: Transport.GRPC,
     options: {
-      package: 'rolepermission',
+      package: 'role',
       protoPath,
       url: '0.0.0.0:50053',
     },

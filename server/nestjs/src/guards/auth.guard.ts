@@ -1,4 +1,3 @@
-
 import {
   CanActivate,
   ExecutionContext,
@@ -12,6 +11,12 @@ import { Repository } from 'typeorm';
 import { User } from './../entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
+class RedirectUnauthorizedException extends UnauthorizedException {
+  constructor(message: string) {
+    super(message);
+    this.message = 'redirect_to_home';
+  }
+}
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -30,25 +35,26 @@ export class AuthGuard implements CanActivate {
     const refreshToken = req.headers.refreshtoken as string;
 
     if (!accessToken || !refreshToken) {
-      throw new UnauthorizedException('Please login to access this resource!');
+      throw new RedirectUnauthorizedException('Please login to access this resource!');
     }
 
     let decoded;
     try {
       decoded = this.jwtService.verify(accessToken, { secret: this.config.get('ACCESS_TOKEN_SECRET') });
     } catch (error) {
-      throw new UnauthorizedException('Invalid access token');
+      throw new RedirectUnauthorizedException('Invalid access token');
     }
 
     const expirationTime = decoded?.exp;
     if (expirationTime * 1000 < Date.now()) {
       await this.updateAccessToken(req);
     }
-    // Attach user to request
+
     const user = await this.userRepo.findOne({ where: { id: decoded.id } });
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new RedirectUnauthorizedException('User not found');
     }
+
     req.user = user;
 
     return true;
@@ -57,15 +63,11 @@ export class AuthGuard implements CanActivate {
   private async updateAccessToken(req: any): Promise<void> {
     try {
       const refreshTokenData = req.headers.refreshtoken as string;
-
       const decoded = this.jwtService.decode(refreshTokenData);
 
       const expirationTime = decoded.exp * 1000;
-
       if (expirationTime < Date.now()) {
-        throw new UnauthorizedException(
-          'Please login to access this resource!',
-        );
+        throw new RedirectUnauthorizedException('Please login to access this resource!');
       }
 
       const user = await this.userRepo.findOne({
@@ -94,7 +96,7 @@ export class AuthGuard implements CanActivate {
       req.refreshtoken = refreshToken;
       req.user = user;
     } catch (error) {
-      throw new UnauthorizedException(error.message);
+      throw new RedirectUnauthorizedException(error.message);
     }
   }
 }

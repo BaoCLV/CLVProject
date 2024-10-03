@@ -20,7 +20,7 @@ const AuthScreen = ({ setOpen }: { setOpen: (e: boolean) => void }) => {
       id="screen"
       onClick={handleClose}
     >
-      <div className="w-[500px] bg-slate-900 rounded shadow-sm p-3">
+      <div className="w-[500px] bg-slate-900 z-90 rounded shadow-sm p-3">
         {activeState === "Login" && (
           <Login setActiveState={setActiveState} setOpen={setOpen} />
         )}

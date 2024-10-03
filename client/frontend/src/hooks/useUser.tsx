@@ -8,19 +8,27 @@ import { UPDATE_USER } from "../graphql/auth/Actions/updateUser";
 import { GET_ALL_USER } from "../graphql/auth/Actions/getAllUser.action";
 import { useInfiniteQuery } from "react-query";
 import { routeClient } from "../graphql/route/route.gql.setup";
+import { GET_TOTALS } from "../graphql/auth/Actions/countUser";
+import { useRouter } from "next/navigation";
 
 
 //get loggedin user
 export const useUser = () => {
   const authClient = useGraphQLClient('auth');
-  const { loading, data } = useQuery(GET_USER, { client: authClient });
+  const router = useRouter();
+
+  const { loading, data, error } = useQuery(GET_USER, { client: authClient });
+
+  // Check for the custom error and redirect to the home page
+  if (error && error.message.includes('redirect_to_home')) {
+    router.push('/');
+  }
 
   return {
     loading,
     user: data?.getLoggedInUser?.user,
   };
 };
-
 //get single user by email
 export const useGetUser = (email: string) => {
   const authClient = useGraphQLClient('auth'); // Use the auth client
@@ -167,5 +175,17 @@ export const useGetAllUser = (currentPage: number, itemsPerPage: number) => {
       },
     }
   );
+};
+
+export const useTotalsUser = () => {
+  const authClient = useGraphQLClient('auth');
+  const { data, loading, error } = useQuery(GET_TOTALS, {client: authClient});
+
+  // Returning the results along with loading and error states
+  return {
+    totalUsers: data?.totalUsers || 0,
+    loading,
+    error,
+  };
 };
 

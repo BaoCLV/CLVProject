@@ -14,6 +14,7 @@ import { RouteResolver } from './route.resolver';
     isGlobal: true,
   }),
   TypeOrmModule.forFeature([Route]),
+
   GraphQLModule.forRoot<ApolloFederationDriverConfig>({
     driver: ApolloFederationDriver,
     autoSchemaFile: {

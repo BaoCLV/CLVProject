@@ -7,6 +7,7 @@ import { GET_ROUTES_QUERY } from "../graphql/route/Action/getRoutes.action";
 import { useGraphQLClient } from "../hooks/useGraphql";
 import { useInfiniteQuery } from 'react-query';
 import { number } from "zod";
+import { GET_TOTALS } from "../graphql/route/Action/countRoute";
 
 
 // Hook for creating a route
@@ -128,4 +129,14 @@ export const useGetRoutes = (currentPage: number, itemsPerPage: number) => {
       },
     }
   );
+};
+export const useTotalsRoute = () => {
+  const routeClient = useGraphQLClient('route');
+  const { data, loading, error } = useQuery(GET_TOTALS, { client: routeClient });
+
+  return {
+    totalRoutes: data?.totalRoutes || 0,
+    loading,
+    error,
+  };
 };

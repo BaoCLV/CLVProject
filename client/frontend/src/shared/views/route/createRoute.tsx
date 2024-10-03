@@ -224,8 +224,6 @@ export default function CreateRoute() {
               Calculate Distance
             </button>
 
-            {error && <p className="mt-4 text-red-500">Error: {error}</p>}
-
             {form.distance > 0 && (
               <>
                 <p className="mt-8 text-lg font-bold">

@@ -3,7 +3,6 @@ import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { RoutesService } from './route.service'; // Make sure the import points to the correct service file
 import { CreateRouteDto, UpdateRouteDto } from '../dto/route.dto';
 import { Route } from '../entities/route.entity';
-import { Int } from '@nestjs/graphql';
 
 @Resolver(() => Route)
 export class RouteResolver {
@@ -34,7 +33,7 @@ export class RouteResolver {
   // Mutation to update an existing route by name
   @Mutation(() => Route)
   async updateRoute(
-    @Args('id', {type: () =>  String}) id: string,
+    @Args('id', { type: () => String }) id: string,
     @Args('data') data: UpdateRouteDto,
   ): Promise<Route> {
     return this.routesService.updateById(id, data);
@@ -45,5 +44,11 @@ export class RouteResolver {
   async deleteRoute(@Args('id', { type: () => String }) id: string): Promise<boolean> {
     await this.routesService.removeById(id);
     return true;
+  }
+
+  // Query to get the total number of routes
+  @Query(() => Number)
+  async totalRoutes(): Promise<number> {
+    return this.routesService.countRoutes(); // Use the service to count routes
   }
 }

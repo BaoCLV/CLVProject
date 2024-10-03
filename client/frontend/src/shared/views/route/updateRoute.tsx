@@ -17,7 +17,6 @@ const customIcon = L.icon({
 });
 
 interface UpdateRouteForm {
-  name: string;
   startLocation: string;
   endLocation: string;
   distance: number;
@@ -29,7 +28,6 @@ interface UpdateRouteProps {
 
 export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   const [form, setForm] = useState<UpdateRouteForm>({
-    name: '',
     startLocation: '',
     endLocation: '',
     distance: 0,
@@ -46,7 +44,6 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   useEffect(() => {
     if (route) {
       setForm({
-        name: route.name,
         startLocation: route.startLocation,
         endLocation: route.endLocation,
         distance: route.distance,
@@ -92,7 +89,6 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
 
     try {
       await handleUpdateRoute(routeId, {
-        name: form.name,
         startLocation: form.startLocation,
         endLocation: form.endLocation,
         distance: form.distance,

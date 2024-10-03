@@ -54,7 +54,7 @@ const UserDropDown = () => {
   };
 
   return (
-    <div className="flex items-center gap-4 ml-auto"> {/* Changed to ml-auto */}
+    <div className="flex items-center z-50 gap-4 ml-auto"> {/* Changed to ml-auto */}
       {signedIn ? (
         <Dropdown placement="bottom-end">
           <DropdownTrigger>

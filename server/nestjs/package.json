@@ -18,7 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "generate-proto": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto.cmd --ts_proto_out=./src/protos --ts_proto_opt=nestJs=true  ./src/protos/auth.proto --experimental_allow_proto3_optional --ts_proto_opt=exportCommonSymbols=false -I=./src/protos"
+    "generate-proto": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto.cmd --ts_proto_out=./src/protos --ts_proto_opt=nestJs=true  ./src/protos/roles.proto --experimental_allow_proto3_optional --ts_proto_opt=exportCommonSymbols=false -I=./src/protos"
   },
   "dependencies": {
     "@apollo/gateway": "^2.8.3",

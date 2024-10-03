@@ -8,6 +8,7 @@ import { Spinner } from '@nextui-org/react'; // Ensure you have the Spinner comp
 import { useUser } from '../../../hooks/useUser'; // Import your hook to get logged-in user data
 import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
+import ProfileSidebar from '../../components/ProfileSidebar';
 
 const queryClient = new QueryClient();
 
@@ -72,7 +73,7 @@ function UserRoutesDashboard() {
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
+      <ProfileSidebar />
       <div className="flex flex-col flex-1 bg-gray-200 border-black">
         <Header />
         <div className="dark p-4">

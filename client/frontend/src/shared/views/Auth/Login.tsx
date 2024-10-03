@@ -72,7 +72,7 @@ const Login = ({
         setOpen(false); 
         reset();
 
-        //window.location.reload();
+        window.location.reload();
       } else {
         toast.error(response.data.login.error.message);
       }

@@ -58,7 +58,6 @@ function SearchResults() {
               <table className="w-full whitespace-no-wrap bg-white">
                 <thead>
                   <tr className="text-xs font-semibold tracking-wide text-left bg-white text-purple-700 uppercase border-b dark:border-black">
-                    <th className="px-4 py-3">Route Name</th>
                     <th className="px-4 py-3">Start Location</th>
                     <th className="px-4 py-3">End Location</th>
                     <th className="px-4 py-3">Distance (km)</th>
@@ -69,7 +68,6 @@ function SearchResults() {
                   {routes.length > 0 ? (
                     routes.map((route: any) => (
                       <tr key={route.id} className="text-blue-700 dark:text-black">
-                        <td className="px-4 py-3 text-sm">{route.name}</td>
                         <td className="px-4 py-3 text-sm">{route.startLocation}</td>
                         <td className="px-4 py-3 text-sm">{route.endLocation}</td>
                         <td className="px-4 py-3 text-sm">{route.distance}</td>

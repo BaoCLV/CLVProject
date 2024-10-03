@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGetRoute, useDeleteRoute, useUpdateRoute } from '../../../hooks/useRoute'; // Adjust path to your hooks
+import { useUser } from '../../../hooks/useUser'; // Import the useUser hook
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
 import Footer from '../../components/Footer';
@@ -29,7 +30,10 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
   const router = useRouter();
 
   // Fetch the route details using the useGetRoute hook
-  const { route, loading, error } = useGetRoute(routeId);
+  const { route, loading: routeLoading, error } = useGetRoute(routeId);
+
+  // Fetch the user details using the useUser hook
+  const { user, loading: userLoading } = useUser();
 
   // Hook for deleting a route
   const { handleDeleteRoute } = useDeleteRoute();
@@ -98,7 +102,8 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
     router.push(`/api/route/${routeId}/update`);
   };
 
-  if (loading || isGeocoding) {
+  // Handle loading states for both route and user
+  if (routeLoading || userLoading || isGeocoding) {
     return (
       <div className="flex h-screen bg-gray-100 dark:bg-gray-600 items-center justify-center">
         <Spinner size="lg" label="Loading Route Detail..." />
@@ -124,7 +129,7 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col z-50 flex-1">
         <Header />
         <div className="flex-1 bg-gray-100 dark:bg-gray-600 p-8">
           <h4 className="mb-6 text-2xl font-bold text-gray-700 dark:text-gray-300">
@@ -192,20 +197,23 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
                 Back to Dashboard
               </button>
 
-              <div className="flex space-x-4">
-                <button
-                  onClick={handleUpdate}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105"
-                >
-                  Update Route
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105"
-                >
-                  Delete Route
-                </button>
-              </div>
+              {/* Conditionally show the buttons based on the user's role */}
+              {user?.roles?.includes('admin') && (
+                <div className="flex space-x-4">
+                  <button
+                    onClick={handleUpdate}
+                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105"
+                  >
+                    Update Route
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105"
+                  >
+                    Delete Route
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

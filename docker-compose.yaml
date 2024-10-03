@@ -1,38 +1,38 @@
 version: '3.8'
 
 services:
-  nextjs:
-    build:
-      context: ./client/frontend
-      dockerfile: Dockerfile
-    ports:
-      - '3000:3000'
-    depends_on:
-      - api-auth
-    environment:
-      - API_URL=http://api-auth:3001
+  # client:
+  #   build:
+  #     context: ./client/frontend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - '3000:3000'
+  #   depends_on:
+  #     - api-auth
+  #   environment:
+  #     - API_URL=http://api-auth:3001
 
-  api-auth:
-    build:
-      context: ./server/nestjs
-      dockerfile: Dockerfile  # Correct capitalization
-    ports:
-      - '3001:3001'
-    depends_on:
-      - db
-      - kafka
-    environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/CLVproject
-      - DB_USER=postgres
-      - DB_PASSWORD=password
-      - DB_HOST=db  # Use service name for proper networking
-      - DB_PORT=5432
-      - DB_NAME=CLVproject
+  # api-auth:
+  #   build:
+  #     context: ./server/nestjs
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - '3001:3001'
+  #   depends_on:
+  #     - db
+  #     - kafka
+  #   environment:
+  #     - DATABASE_URL=postgresql://postgres:password@db:5432/CLVproject
+  #     - DB_USER=postgres
+  #     - DB_PASSWORD=password
+  #     - DB_HOST=db
+  #     - DB_PORT=5432
+  #     - DB_NAME=CLVproject
       
-  api-route:
+  route-api:
     build:
       context: ./server/route
-      dockerfile: Dockerfile  # Correct capitalization
+      dockerfile: Dockerfile
     ports:
       - '4000:4000'
     depends_on:
@@ -41,10 +41,55 @@ services:
       - DATABASE_URL=postgresql://postgres:password@db:5432/CLVproject
       - DB_USER=postgres
       - DB_PASSWORD=password
-      - DB_HOST=db  # Use service name for proper networking
+      - DB_HOST=db
       - DB_PORT=5432
       - DB_NAME=CLVproject
 
+  # role-api:
+  #   build:
+  #     context: ./server/role
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - '3003:3003'
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     - DATABASE_URL=postgresql://postgres:password@db:5432/CLVproject
+  #     - DB_USER=postgres
+  #     - DB_PASSWORD=password
+  #     - DB_HOST=db
+  #     - DB_PORT=5432
+  #     - DB_NAME=CLVproject
+
+  gateway-api:
+    build:
+      context: ./server/gateway
+      dockerfile: Dockerfile
+    ports:
+      - '5000:5000'
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/CLVproject
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=CLVproject
+
+  notification-api:
+    build:
+      context: ./server/notification
+      dockerfile: Dockerfile
+    ports:
+      - '6000:6000'
+    depends_on:
+      - kafka
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/CLVproject
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=CLVproject
   db:
     image: postgres:13
     environment:

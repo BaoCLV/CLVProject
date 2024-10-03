@@ -9,7 +9,7 @@ query {
       id
       name
       email
-      role
+      roles
       address
       phone_number
       refreshToken

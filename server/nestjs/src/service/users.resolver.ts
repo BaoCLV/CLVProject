@@ -1,6 +1,6 @@
 import { Resolver, Context, Query, Mutation, Args } from '@nestjs/graphql';
 import { UsersService } from './users.service';
-import { RegisterResponse, LoginResponse, ActivationResponse, LogOutResponse, ForgotPasswordResponse, ResetPasswordResponse, GetUserByEmailResponse, UserListResponse, ChangePasswordResponse, RequestChangePasswordResponse, UpdateUserResponse } from '../types/user.types';
+import { RegisterResponse, LoginResponse, ActivationResponse, LogOutResponse, ForgotPasswordResponse, ResetPasswordResponse, GetUserByEmailResponse, UserListResponse, ChangePasswordResponse, RequestChangePasswordResponse, UpdateUserResponse, TotalUsersResponse } from '../types/user.types';
 import { RegisterDto, LoginDto, ActivationDto, ForgotPasswordDto, ResetPasswordDto, ChangePasswordDto, RequestChangePasswordDto, UpdateUserDto } from '../dto/user.dto';
 import { User } from '../entities/user.entity';
 import { BadRequestException, SetMetadata, UseGuards } from '@nestjs/common';
@@ -11,6 +11,11 @@ import { PermissionsGuard, RequirePermissions, ROLE_KEY } from 'src/guards/permi
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
+  @Query(() => TotalUsersResponse)
+  async totalUsers(): Promise<TotalUsersResponse> {
+    const totalUsersCount = await this.usersService.countUsers();
+    return { totalUsers: totalUsersCount };
+  }
   @Query(() => UserListResponse)
   @UseGuards(AuthGuard, PermissionsGuard)
   @RequirePermissions('admin')
@@ -121,4 +126,6 @@ export class UsersResolver {
   ): Promise<ChangePasswordResponse> {
     return await this.usersService.changePassword(changePasswordDto);
   }
+
 }
+

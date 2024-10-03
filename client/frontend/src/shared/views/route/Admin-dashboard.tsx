@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
-import { useGetRoutes } from "../../../hooks/useRoute";
+import { useGetRoutes } from "../../../hooks/useRoute"; // Assuming useGetRoutes is fetching the routes data
+import { useTotalsUser } from "../../../hooks/useUser"; // Hook for fetching total users
+import { useTotalsRoute } from "../../../hooks/useRoute"; // Hook for fetching total routes
 import { useRouter, useSearchParams } from "next/navigation";
-import { Spinner } from "@nextui-org/react"; // Ensure you have the Spinner component installed
+import { Spinner } from "@nextui-org/react";
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
-// import FilterButton from "../../components/FilterDropDown"; // Uncomment if using FilterButton
+import Card from "../../components/Card"; // Import the Card component
+import { FaUsers, FaRoute } from "react-icons/fa"; // For icons
 
 const queryClient = new QueryClient();
 
@@ -16,34 +19,29 @@ function Dashboard() {
   const searchParams = useSearchParams();
   const itemsPerPage = 20;
 
-  // Read page from the URL (or default to 1 if it's not set)
+  // Fetch total users and total routes using custom hooks
+  //const { totalUsers, loading: loadingUsers, error: errorUsers } = useTotalsUser();
+  const { totalRoutes, loading: loadingRoutes, error: errorRoutes } = useTotalsRoute();
+
   const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
   const [currentPage, setCurrentPage] = useState(pageFromUrl);
 
-  // State for filter criteria
-  const [filterType, setFilterType] = useState<string>("name"); // Default filter is "name"
-  const [filterQuery, setFilterQuery] = useState<string>("");
-
-  // Sync currentPage state with URL query param
   useEffect(() => {
     setCurrentPage(pageFromUrl);
   }, [pageFromUrl]);
 
-  // Function to update the URL without full page reload
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
-    router.push(`/dashboard/?page=${newPage}`); // Update URL with new page, but don't reload the page
+    router.push(`/dashboard/?page=${newPage}`);
   };
 
-  // Function to handle filtering
-  const handleFilter = (type: string, query: string) => {
-    setFilterType(type);
-    setFilterQuery(query);
-    setCurrentPage(1); // Reset to the first page when applying a new filter
-    router.push(`/?filterType=${type}&filterQuery=${query}&page=1`); // Update URL with filter params
-  };
+  // const handleFilter = (type: string, query: string) => {
+  //   setFilterType(type);
+  //   setFilterQuery(query);
+  //   setCurrentPage(1);
+  //   router.push(`/?filterType=${type}&filterQuery=${query}&page=1`);
+  // };
 
-  // Fetch filtered, paginated data based on currentPage, filterType, and filterQuery
   const {
     data,
     error,
@@ -61,17 +59,44 @@ function Dashboard() {
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <div className="flex flex-col flex-1 bg-gray-200 border-black"> {/* Background set to white */}
+      <div className="flex flex-col flex-1 bg-gray-200 border-black">
         <Header />
-        <div className="dark p-4">
-          <h1 className="text-2xl font-bold mb-4 text-black">Dashboard</h1> {/* Changed heading to purple */}
+        <div className="p-4">
+          <h1 className="text-2xl font-bold mb-4 text-black">Dashboard</h1>
 
-          {/* Filter Button Component */}
-          {/* <FilterButton onFilter={handleFilter} /> Pass filter handler to the FilterButton */}
+          {/* Cards Section */}
+          <div className="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
+            {/* Card for Total Users
+            {loadingUsers ? (
+              <Spinner label="Loading Users..." />
+            ) : errorUsers ? (
+              <p>Error loading users: {errorUsers.message}</p>
+            ) : (
+              <Card
+                icon={<FaUsers className="w-5 h-5" />}
+                title="Total Users"
+                value={totalUsers}
+              />
+            )} */}
 
+            {/* Card for Total Routes */}
+            {loadingRoutes ? (
+              <Spinner label="Loading Routes..." />
+            ) : errorRoutes ? (
+              <p>Error loading routes: {errorRoutes.message}</p>
+            ) : (
+              <Card
+                icon={<FaRoute className="w-5 h-5" />}
+                title="Total Routes"
+                value={totalRoutes}
+              />
+            )}
+          </div>
+
+          {/* Table Section */}
           <div className="w-full">
             <div className="w-full overflow-x-auto">
-              <table className="w-full whitespace-no-wrap border-black bg-white"> {/* Table background set to white */}
+              <table className="w-full whitespace-no-wrap border-black bg-white">
                 <thead>
                   <tr className="text-xs font-semibold tracking-wide text-left bg-white text-purple-700 uppercase border-b dark:border-black">
                     <th className="px-4 py-3">Route ID</th>
@@ -124,8 +149,7 @@ function Dashboard() {
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex justify-between px-4 py-3 text-xs font-semibold tracking-wide text-purple-700 uppercase border-t "> {/* Pagination purple */}
-              {/* Previous Button */}
+            <div className="flex justify-between px-4 py-3 text-xs font-semibold tracking-wide text-purple-700 uppercase border-t">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage <= 1 || isFetchingPreviousPage}
@@ -140,10 +164,8 @@ function Dashboard() {
                 )}
               </button>
 
-              {/* Current Page Display */}
               <span>Showing page {currentPage}</span>
 
-              {/* Next Button */}
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={!hasNextPage || isFetchingNextPage}

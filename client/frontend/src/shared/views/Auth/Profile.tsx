@@ -77,7 +77,7 @@ export default function UserProfile({ userId }: UserDetailProps) {
               <div className="block text-lg">
                 <span className="text-gray-900 dark:text-gray-100">Role</span>
                 <p className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 text-white rounded-lg">
-                  {user.role}
+                  {user.roles}
                 </p>
               </div>
 

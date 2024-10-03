@@ -8,7 +8,8 @@ import { Permission } from 'src/entities/permission.entity';
 import { RoleService } from './roles.service';
 // import { GraphQLModule } from '@nestjs/graphql';
 // import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
-import { RoleResolver } from './roles.resolver';
+//import { RoleResolver } from './roles.resolver';
+import { SeedService } from 'src/seeder/seeder.service';
 
 
 @Module({
@@ -45,7 +46,8 @@ import { RoleResolver } from './roles.resolver';
   ],
   providers: [
     RoleService,
-    RoleResolver
+    //RoleResolver,
+    SeedService
   ],
   exports: [RoleService]
 })
