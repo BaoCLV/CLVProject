@@ -114,3 +114,19 @@ input::-webkit-inner-spin-button {
 .shake {
   animation: shake 0.5s ease-in-out;
 }
+
+/* Hide scrollbar while keeping scrollable */
+html {
+  overflow: hidden;
+}
+
+body {
+  height: 100vh; /* Ensures the body is full height */
+  overflow-y: scroll; /* Allow scrolling */
+  scrollbar-width: none; /* Hide scrollbar in Firefox */
+}
+
+body::-webkit-scrollbar {
+  overflow-y: auto; /* Allow scrolling */
+  display: none; /* Hide scrollbar in Chrome, Safari, and Edge */
+}

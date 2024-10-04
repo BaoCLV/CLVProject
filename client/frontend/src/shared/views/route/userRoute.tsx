@@ -6,7 +6,6 @@ import { useGetRoutes } from '../../../hooks/useRoute';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Spinner } from '@nextui-org/react'; // Ensure you have the Spinner component installed
 import { useUser } from '../../../hooks/useUser'; // Import your hook to get logged-in user data
-import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
 import ProfileSidebar from '../../components/ProfileSidebar';
 
@@ -72,10 +71,7 @@ function UserRoutesDashboard() {
   const userRoutes = data?.pages.flatMap((page) => page.filter((route: any) => route.userId === user.id)) ?? [];
 
   return (
-    <div className="flex h-screen">
-      <ProfileSidebar />
-      <div className="flex flex-col flex-1 bg-gray-200 border-black">
-        <Header />
+
         <div className="dark p-4">
           <h1 className="text-2xl font-bold mb-4 text-black">My Routes</h1>
 
@@ -165,8 +161,6 @@ function UserRoutesDashboard() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
   );
 }
 
