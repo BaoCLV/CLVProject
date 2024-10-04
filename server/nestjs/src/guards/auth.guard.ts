@@ -80,7 +80,7 @@ export class AuthGuard implements CanActivate {
         { id: user.id },
         {
           secret: this.config.get<string>('ACCESS_TOKEN_SECRET'),
-          expiresIn: '5m',
+          expiresIn: '3d',
         },
       );
 

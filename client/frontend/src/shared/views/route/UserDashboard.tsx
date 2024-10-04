@@ -6,11 +6,18 @@ import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
 import { useCreateRoute } from "../../../hooks/useRoute";
 import * as turf from "@turf/turf";
-import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Polyline,
+  useMap,
+} from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Footer from "../../components/Footer";
 
 // Define your custom marker icon
 const customIcon = L.icon({
@@ -38,7 +45,7 @@ export default function UserDashboard() {
   const [error, setError] = useState<string | null>(null);
   const { handleCreateRoute } = useCreateRoute();
   const { user, loading } = useUser();
-  
+
   const OPEN_CAGE_API_KEY = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,14 +56,21 @@ export default function UserDashboard() {
     }));
   };
 
-  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+  const calculateDistance = (
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number
+  ) => {
     const point1 = turf.point([lng1, lat1]);
     const point2 = turf.point([lng2, lat2]);
     const distance = turf.distance(point1, point2, { units: "kilometers" });
     return distance;
   };
 
-  const geocodeLocation = async (location: string): Promise<[number, number]> => {
+  const geocodeLocation = async (
+    location: string
+  ): Promise<[number, number]> => {
     if (!OPEN_CAGE_API_KEY) {
       throw new Error("OpenCage API key is missing");
     }
@@ -154,7 +168,7 @@ export default function UserDashboard() {
   return (
     <div className="flex flex-col bg-gray-200 border-black">
       <Header />
-      <div className="flex flex-row h-screen p-8">
+      <div className="flex flex-row h-srceen p-8">
         {/* Form Section */}
         <div className="flex-1 h-full bg-white p-6 border border-gray-300 shadow-md">
           <h4 className="mb-6 text-2xl font-bold text-black">Create a Route</h4>
@@ -231,9 +245,9 @@ export default function UserDashboard() {
         </div>
 
         {/* Map Section */}
-        <div className="flex-1 ml-8">
+        <div className="flex-1 h-screen ml-8">
           {coordinates.length === 2 && (
-            <div className="h-[400px] w-full">
+            <div className="h-[800px] w-full">
               <MapContainer
                 center={coordinates[0]}
                 zoom={10}
@@ -253,7 +267,7 @@ export default function UserDashboard() {
           )}
         </div>
       </div>
-
+      <Footer />
       {/* ToastContainer for showing success message */}
       <ToastContainer />
     </div>
