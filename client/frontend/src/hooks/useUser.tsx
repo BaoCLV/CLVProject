@@ -112,7 +112,6 @@ export const useUpdateUser = () => {
         variables: {
           id: userId,
           name: userData.name,
-          email: userData.email,
           phone_number: userData.phone_number,
           address: userData.address,
           role: userData.role,

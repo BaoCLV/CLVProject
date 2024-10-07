@@ -97,11 +97,6 @@ export class UpdateUserDto {
   @IsString({ message: 'Name must need to be one string.' })
   name: string;
 
-  @Field()
-  @IsNotEmpty({ message: 'Email is required.' })
-  @IsEmail({}, { message: 'Email is invalid.' })
-  email: string;
-
   @Field({ nullable: true })
   phone_number: string;
 

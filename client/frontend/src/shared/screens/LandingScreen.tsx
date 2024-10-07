@@ -1,8 +1,11 @@
-import Navbar from "../components/paging/Navbar";
-import AboutSection from "../components/paging/About";
-import FactsSection from "../components/paging/Facts";
+import Navbar from "../components/home/Navbar";
+import AboutSection from "../components/home/About";
+import FactsSection from "../components/home/Facts";
 import Footer from "../components/Footer";
-import Frontpage from "../components/paging/FrontPage";
+import Frontpage from "../components/home/FrontPage";
+import Features from "../components/home/Features";
+import Services from "../components/home/Services";
+import TeamSection from "../components/home/Team";
 
 const LandingPage = () => {
   return (
@@ -16,8 +19,16 @@ const LandingPage = () => {
       {/* About Section */}
       <AboutSection />
 
+      {/* Services Section */}
+      <Services/>
+
       {/* Facts Section */}
       <FactsSection />
+
+      {/* Features Section */}
+      <Features/>
+
+      <TeamSection/>
 
       {/* Footer */}
       <Footer />

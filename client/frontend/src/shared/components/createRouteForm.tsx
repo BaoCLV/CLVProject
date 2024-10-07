@@ -3,13 +3,13 @@ import * as turf from "@turf/turf";
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import AuthScreen from "../screens/AuthScreen"; // Assuming this is the Login/Signup modal
-import { toast, ToastContainer } from "react-toastify"; // Import Toast components
-import "react-toastify/dist/ReactToastify.css"; // Import Toast styles
+import AuthScreen from "../screens/AuthScreen"; 
+import { toast, ToastContainer } from "react-toastify"; 
+import "react-toastify/dist/ReactToastify.css"; 
+import { useUser } from "../../hooks/useUser"; 
 
-// Define your custom marker icon
 const customIcon = L.icon({
-  iconUrl: "/img/map-marker.png", // Ensure this image is in the public/img folder
+  iconUrl: "/img/map-marker.png", 
   iconSize: [38, 38],
   iconAnchor: [19, 38],
   popupAnchor: [0, -30],
@@ -17,22 +17,23 @@ const customIcon = L.icon({
 
 interface CreateRouteFormProps {
   onSubmit: (startLocation: string, endLocation: string, distance: number) => void;
-  user: any; // The current authenticated user, if available
 }
 
-const CreateRouteForm = ({ onSubmit, user }: CreateRouteFormProps) => {
+const CreateRouteForm = ({ onSubmit }: CreateRouteFormProps) => {
   const [startLocation, setStartLocation] = useState("");
   const [endLocation, setEndLocation] = useState("");
   const [distance, setDistance] = useState<number | null>(null);
   const [coordinates, setCoordinates] = useState<[number, number][]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [showAuthModal, setShowAuthModal] = useState(false); // Modal state for authentication
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const { user, loading } = useUser(); 
 
   const OPEN_CAGE_API_KEY = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY;
 
-  // Geocode location (city name) to get lat/lng using OpenCage
+
   const geocodeLocation = async (location: string): Promise<[number, number] | null> => {
-    if (!location) return null; // No location input yet
+    if (!location) return null;
     if (!OPEN_CAGE_API_KEY) throw new Error("OpenCage API key is missing");
 
     const response = await fetch(
@@ -40,7 +41,7 @@ const CreateRouteForm = ({ onSubmit, user }: CreateRouteFormProps) => {
     );
     const data = await response.json();
 
-    if (data.results.length === 0) return null; // Location not found
+    if (data.results.length === 0) return null;
 
     const { lat, lng } = data.results[0].geometry;
     return [lat, lng];
@@ -70,7 +71,7 @@ const CreateRouteForm = ({ onSubmit, user }: CreateRouteFormProps) => {
   };
 
   useEffect(() => {
-    const timer = setTimeout(updateMapAndDistance, 500); 
+    const timer = setTimeout(updateMapAndDistance, 500);
     return () => clearTimeout(timer);
   }, [startLocation, endLocation]);
 
@@ -84,78 +85,82 @@ const CreateRouteForm = ({ onSubmit, user }: CreateRouteFormProps) => {
     return null;
   }
 
-  // Handle route submission with authentication check
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (loading) {
+      toast.info("Please wait, checking authentication...");
+      return;
+    }
+
+    // Check if the user is logged in
     if (!user) {
-      // Show a toast message instead of the Auth Modal
-      toast.info("Please login or sign up to continue");
-      setShowAuthModal(true); // You can also show the auth modal if you want
+      toast.info("Please login or sign up to continue.");
+      setShowAuthModal(true); 
     } else if (distance !== null) {
-      // User is authenticated, proceed with creating the route
       onSubmit(startLocation, endLocation, distance);
     }
   };
 
   return (
-    <div className="relative flex">
+    <div className="relative flex flex-col md:flex-row h-[600px] bg-gray-50">
       {/* Form Section */}
-      <div className="w-1/2 p-4">
-        <form onSubmit={handleSubmit}>
+      <div className="w-full md:w-1/2 p-8 flex flex-col justify-top bg-white shadow-md">
+        <h2 className="text-2xl font-bold mb-6 text-center text-blue-600">Create a Route</h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700">Start Location</label>
             <input
               type="text"
               value={startLocation}
               onChange={(e) => setStartLocation(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md"
+              className="mt-1 block w-full bg-white px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter start location"
               required
             />
           </div>
-          <div className="mt-4">
+          <div>
             <label className="block text-sm font-medium text-gray-700">End Location</label>
             <input
               type="text"
               value={endLocation}
               onChange={(e) => setEndLocation(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md"
+              className="mt-1 block w-full bg-white px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter end location"
               required
             />
           </div>
 
-          {error && <p className="mt-4 text-red-500">Error: {error}</p>}
+          {error && <p className="text-red-500 mt-2">Error: {error}</p>}
 
           {distance !== null && (
-            <>
-              <p className="mt-8 text-lg font-bold">Distance: {distance} kilometers</p>
-              <p className="mt-8 text-lg font-bold">
+            <div className="mt-6 space-y-4">
+              <p className="text-lg font-bold">Distance: {distance} kilometers</p>
+              <p className="text-lg font-bold">
                 Price:{" "}
                 {new Intl.NumberFormat("vi-VN", {
                   style: "currency",
                   currency: "VND",
                 }).format(distance * 10000)}
               </p>
-
               <button
                 type="submit"
-                className="px-4 py-2 bg-green-600 text-white rounded-lg mt-4"
+                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
               >
                 Place Order
               </button>
-            </>
+            </div>
           )}
         </form>
       </div>
 
       {/* Map Section */}
-      <div className="w-1/2 h-[500px] p-4 z-10">
+      <div className="w-full md:w-1/2 h-96 md:h-full p-4">
         <MapContainer
           center={coordinates.length === 2 ? coordinates[0] : [51.505, -0.09]} // Default to London
           zoom={10}
           scrollWheelZoom={false}
-          className="h-full w-full z-10"
+          className="h-full w-full rounded-lg shadow-md"
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

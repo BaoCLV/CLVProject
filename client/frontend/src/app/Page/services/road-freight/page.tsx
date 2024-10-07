@@ -1,13 +1,13 @@
 import Loading from "@/src/shared/components/Loading";
+import RoadFreight from "@/src/shared/components/pages/services/Train";
 import React, { Suspense } from "react";
-import UserDashboard from "@/src/shared/views/route/UserDashboard";
 
 const Page = () => {
   return (
     <div>
 
       <Suspense fallback={<Loading/>}>
-        <UserDashboard />
+        <RoadFreight />
       </Suspense>
     </div>
   );

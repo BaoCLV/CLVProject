@@ -68,7 +68,7 @@ const Login = ({
         // Set authentication tokens in cookies
         Cookies.set("refresh_token", response.data.login.refreshToken);
         Cookies.set("access_token", response.data.login.accessToken);
-        router.push('/dashboard');
+        router.push('/');
         setOpen(false); 
         reset();
 

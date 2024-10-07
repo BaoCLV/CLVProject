@@ -1,4 +1,5 @@
-import { useEffect, useState, useRef } from "react";
+
+import { useEffect, useRef, useState } from "react";
 
 export const useInView = (threshold = 0.1) => {
   const [isInView, setIsInView] = useState(false);
@@ -6,13 +7,8 @@ export const useInView = (threshold = 0.1) => {
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsInView(true);
-            observer.disconnect(); // Disconnect after the element is in view to prevent repeated triggers.
-          }
-        });
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
       },
       { threshold }
     );
@@ -22,9 +18,11 @@ export const useInView = (threshold = 0.1) => {
     }
 
     return () => {
-      if (ref.current) observer.disconnect();
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
     };
   }, [threshold]);
 
-  return [ref, isInView] as const;
+  return [ref, isInView]; // Ensure the hook returns [ref, isInView]
 };

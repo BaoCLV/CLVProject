@@ -1,51 +1,54 @@
 "use client";
 
 import React from "react";
-import { usePathname, useRouter } from "next/navigation"; // Import the useRouter and usePathname hooks
-import { useUser } from "../../hooks/useUser"; // Assuming there's a hook to get user data
+import { usePathname, useRouter } from "next/navigation";
+import { useUser } from "../../hooks/useUser";
 
 const ProfileSidebar = () => {
-  const pathname = usePathname(); // Get the current path
-  const router = useRouter(); // Use the router for programmatic navigation
-  const { user } = useUser(); // Assuming `user` contains the logged-in user information
+  const pathname = usePathname(); 
+  const router = useRouter(); 
+  const { user } = useUser(); 
 
-  // Function to handle dynamic routing based on key
   const handleNavigation = (key: string) => {
     if (key === "dashboard") {
-      router.push("/dashboard"); // Navigate to dashboard
+      router.push("/");
     } else if (key === "profile") {
-      router.push(`/api/profile/${user?.id}`); // Navigate to profile with user ID
+      router.push(`/api/profile/${user?.id}`); 
     } else if (key === "myRoute") {
-      router.push(`/api/profile/${user.id}/route`); // Navigate to My Route
+      router.push(`/api/profile/${user?.id}/route`); 
     } else if (key === "changePassword") {
-      router.push("/api/profile/change-password"); // Navigate to Change Password
+      router.push(`/api/profile/${user?.id}/change-password`); 
     }
   };
 
   return (
-    <aside className="z-20 w-40 overflow-y-auto mb-30 bg-white flex-shrink-0 flex flex-col">
-      <a
-        className="ml-10 mt-6 text-2xl font-extrabold text-black items-center cursor-pointer"
-        onClick={() => handleNavigation("dashboard")} // Use key for dashboard
-      >
-        CLV
+    <aside className="z-20 w-64 h-full bg-white shadow-lg flex-shrink-0 flex flex-col">
+      {/* Sidebar Logo */}
+      <a href="/" className="text-3xl font-bold text-blue-600 p-6 cursor-pointer hover:scale-105 transition-transform">
+        <img
+          src="https://cyberlogitec.com.vn/wp-content/uploads/2024/09/logo-ngang_3-1.svg"
+          alt="Logo"
+          className="h-5"
+        />
       </a>
-      <ul className="mt-6">
+
+      {/* Sidebar Links */}
+      <ul className="mt-4 space-y-2">
         {/* Dashboard */}
         <li className="relative px-6 py-3">
           <span
             className={`absolute inset-y-0 left-0 w-1 ${
-              pathname === "/dashboard" ? "bg-purple-800" : ""
+              pathname === "/" ? "bg-blue-600" : ""
             } rounded-tr-lg rounded-br-lg`}
             aria-hidden="true"
           ></span>
           <a
             className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 cursor-pointer ${
-              pathname === "/dashboard"
-                ? "text-purple-800" // Active link styles
-                : "text-gray-800 hover:text-gray-600"
+              pathname === "/"
+                ? "text-blue-600"
+                : "text-gray-800 hover:text-blue-500"
             }`}
-            onClick={() => handleNavigation("dashboard")} // Use key for dashboard
+            onClick={() => handleNavigation("dashboard")}
           >
             <span>Dashboard</span>
           </a>
@@ -55,17 +58,17 @@ const ProfileSidebar = () => {
         <li className="relative px-6 py-3">
           <span
             className={`absolute inset-y-0 left-0 w-1 ${
-              pathname.startsWith("/api/profile") ? "bg-purple-800" : ""
+              pathname === `/api/profile/${user?.id}` ? "bg-blue-600" : ""
             } rounded-tr-lg rounded-br-lg`}
             aria-hidden="true"
           ></span>
           <a
             className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 cursor-pointer ${
-              pathname.startsWith("/api/profile")
-                ? "text-purple-800"
-                : "text-gray-800 hover:text-gray-600"
+              pathname === `/api/profile/${user?.id}`
+                ? "text-blue-600"
+                : "text-gray-800 hover:text-blue-500"
             }`}
-            onClick={() => handleNavigation("profile")} // Use key for profile
+            onClick={() => handleNavigation("profile")}
           >
             <span>Profile</span>
           </a>
@@ -75,17 +78,17 @@ const ProfileSidebar = () => {
         <li className="relative px-6 py-3">
           <span
             className={`absolute inset-y-0 left-0 w-1 ${
-              pathname === "/api/profile/route" ? "bg-purple-800" : ""
+              pathname === `/api/profile/${user?.id}/route` ? "bg-blue-600" : ""
             } rounded-tr-lg rounded-br-lg`}
             aria-hidden="true"
           ></span>
           <a
             className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 cursor-pointer ${
-              pathname === "/api/profile/route"
-                ? "text-purple-800"
-                : "text-gray-800 hover:text-gray-600"
+              pathname === `/api/profile/${user?.id}/route`
+                ? "text-blue-600"
+                : "text-gray-800 hover:text-blue-500"
             }`}
-            onClick={() => handleNavigation("myRoute")} // Use key for My Route
+            onClick={() => handleNavigation("myRoute")}
           >
             <span>My Route</span>
           </a>
@@ -95,19 +98,19 @@ const ProfileSidebar = () => {
         <li className="relative px-6 py-3">
           <span
             className={`absolute inset-y-0 left-0 w-1 ${
-              pathname === "/api/profile/change-password"
-                ? "bg-purple-800"
+              pathname === `/api/profile/${user?.id}/change-password`
+                ? "bg-blue-600"
                 : ""
             } rounded-tr-lg rounded-br-lg`}
             aria-hidden="true"
           ></span>
           <a
             className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 cursor-pointer ${
-              pathname === "/api/profile/change-password"
-                ? "text-purple-800"
-                : "text-gray-800 hover:text-gray-600"
+              pathname === `/api/profile/${user?.id}/change-password`
+                ? "text-blue-600"
+                : "text-gray-800 hover:text-blue-500"
             }`}
-            onClick={() => handleNavigation("changePassword")} // Use key for Change Password
+            onClick={() => handleNavigation("changePassword")}
           >
             <span>Change Password</span>
           </a>
