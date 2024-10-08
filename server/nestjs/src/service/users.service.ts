@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
-import { ActivationDto, ChangePasswordDto, ForgotPasswordDto, LoginDto, RegisterDto, RequestChangePasswordDto, ResetPasswordDto, UpdateUserDto } from '../dto/user.dto'; 
+import { ActivationDto, ChangePasswordDto, ForgotPasswordDto, LoginDto, RegisterDto, RequestChangePasswordDto, ResetPasswordDto, UpdateUserDto } from '../dto/user.dto';
 import * as bcrypt from 'bcrypt';
 import { RegisterResponse, LoginResponse, GetUserByEmailResponse, UserListResponse } from '../types/user.types';
 import { JwtService, JwtVerifyOptions } from '@nestjs/jwt';
@@ -56,8 +56,34 @@ export class UsersService implements OnModuleInit {
   }
 
   @GrpcMethod('UserService', 'GetAllUser')
-  async getAllUser(): Promise<UserListResponse> {
-    const users = await this.userRepository.createQueryBuilder('user').getMany();
+  async getAllUser({ query,
+    limit,
+    offset
+  }: { query?: string; limit?: number; offset?: number }): Promise<UserListResponse> {
+    const usersQuery = this.userRepository.createQueryBuilder('user');
+    // Apply query filtering if provided
+    if (query) {
+      usersQuery.where(
+        'user.name LIKE :query OR user.email LIKE :query OR user.address LIKE :query OR user.phone_number LIKE :query',
+        {
+          query: `%${query}%`,
+        },
+      );
+    }
+
+    // Apply offset if provided
+    if (offset) {
+      usersQuery.skip(offset);
+    }
+
+    // Apply limit if provided
+    if (limit) {
+      usersQuery.take(limit);
+    }
+
+    usersQuery.orderBy('user.id', 'DESC');
+    const users = await usersQuery.getMany()
+
     if (!users.length) {
       return { users: [], error: { message: 'No user found' } };
     }
@@ -196,7 +222,15 @@ export class UsersService implements OnModuleInit {
     return { user };
   }
 
-  // User logout
+  async getUserById(id: string): Promise<GetUserByEmailResponse> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      return { user, error: { message: `user with ${id} not found` } };
+    }
+    return { user }
+  }
+
+
   @GrpcMethod('UserService', 'Logout')
   async Logout(req: any) {
     req.user = null;
@@ -219,7 +253,21 @@ export class UsersService implements OnModuleInit {
     return forgotPasswordToken;
   }
 
-  // Handle forgot password logic
+  //Gernerate change password link
+  async generateChangePasswordLink(user: User) {
+    const changePasswordToken = this.jwtService.sign(
+      {
+        userId: user.id,
+      },
+      {
+        secret: this.configService.get<string>('CHANGE_PASSWORD_SECRET'),
+        expiresIn: '5m'
+      },
+    );
+    return changePasswordToken;
+  }
+
+  //Forgot password
   @GrpcMethod('UserService', 'forgotPassword')
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
     const { email } = forgotPasswordDto;
@@ -331,7 +379,6 @@ export class UsersService implements OnModuleInit {
     return { user, message: 'Password has been successfully changed.' };
   }
 
-  // Update user details
   async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } });
 
@@ -347,4 +394,22 @@ export class UsersService implements OnModuleInit {
   async countUsers(): Promise<number> {
     return this.userRepository.count();
   }
-}
+
+ 
+  // create a user by admin
+  async createUser(data: RegisterDto): Promise<User> {
+    const newUser = this.userRepository.create(data);
+    return this.userRepository.save(newUser);
+  }
+
+  // Remove a user by name
+  async deleteById(id: string): Promise<void> {
+    const userResponse = await this.getUserById(id);
+    const user = userResponse.user;
+    if (user) {
+      await this.userRepository.remove(user);
+    } else {
+      throw new Error(`User with id ${id} not found`);
+    }
+  }
+};

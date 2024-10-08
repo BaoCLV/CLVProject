@@ -9,7 +9,7 @@ import { PermissionsGuard, RequirePermissions, ROLE_KEY } from 'src/guards/permi
 
 @Resolver()
 export class UsersResolver {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Query(() => TotalUsersResponse)
   async totalUsers(): Promise<TotalUsersResponse> {
@@ -17,13 +17,15 @@ export class UsersResolver {
     return { totalUsers: totalUsersCount };
   }
   @Query(() => UserListResponse)
-  @UseGuards(AuthGuard, PermissionsGuard)
+  @UseGuards(AuthGuard)//PermissionsGuard
   @RequirePermissions('admin')
   @SetMetadata(ROLE_KEY, ['create', 'read', 'update', 'delete'])
   async getAllUsers(
-    @Context() context: { req: Request }
+    @Args('query', { type: () => String, nullable: true }) query?: string,
+    @Args('limit', { type: () => Number, nullable: true }) limit?: number,
+    @Args('offset', { type: () => Number, nullable: true }) offset?: number,
   ): Promise<UserListResponse> {
-    return this.usersService.getAllUser();
+    return this.usersService.getAllUser({ query, limit, offset });
   }
 
   @Mutation(() => RegisterResponse)
@@ -66,13 +68,23 @@ export class UsersResolver {
   }
 
   @Query(() => GetUserByEmailResponse)
-  @UseGuards(AuthGuard, PermissionsGuard)
+  @UseGuards(AuthGuard)//PermissionsGuard
   @RequirePermissions('admin')
   @SetMetadata(ROLE_KEY, ['read', 'write', 'delete', 'update'])
   async getUserByEmail(
     @Args('email', { type: () => String }) email: string
   ): Promise<GetUserByEmailResponse> {
     return await this.usersService.getUserByEmail(email);
+  }
+
+  @Query(() => GetUserByEmailResponse)
+  @UseGuards(AuthGuard)//PermissionsGuard
+  @RequirePermissions('admin')
+  @SetMetadata(ROLE_KEY, ['read', 'write', 'delete', 'update'])
+  async getUserById(
+    @Args('id', { type: () => String }) id: string
+  ): Promise<GetUserByEmailResponse> {
+    return await this.usersService.getUserById(id);
   }
 
   @Query(() => LogOutResponse)
@@ -109,7 +121,7 @@ export class UsersResolver {
   }
 
   @Mutation(() => RequestChangePasswordResponse)
-  @UseGuards(AuthGuard, PermissionsGuard)
+  @UseGuards(AuthGuard)//PermissionsGuard
   @RequirePermissions('admin', 'user')
   @SetMetadata(ROLE_KEY, ['read', 'update'])
   async RequestChangePassword(
@@ -127,5 +139,18 @@ export class UsersResolver {
     return await this.usersService.changePassword(changePasswordDto);
   }
 
+  // Mutation to create a new user by admin
+  @Mutation(() => User)
+  async createUser(@Args('data') data: RegisterDto): Promise<User> {
+    return this.usersService.createUser(data);
+  }
+
+
+  // Mutation to delete a user by id
+  @Mutation(() => Boolean)
+  async deleteUser(@Args('id', { type: () => String }) id: string): Promise<boolean> {
+    await this.usersService.deleteById(id);
+    return true;
+  }
 }
 

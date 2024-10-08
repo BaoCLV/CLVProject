@@ -2,7 +2,7 @@
 
 import { gql, DocumentNode } from "@apollo/client";
 
-export const GET_USER: DocumentNode = gql`
+export const GET_USER: DocumentNode = gql` 
   query {
     getLoggedInUser {
       user {

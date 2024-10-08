@@ -48,7 +48,42 @@ const Sidebar = () => {
             <span>Create new route</span>
           </a>
         </li>
-        {/* Add other navigation items here */}
+        <li className="relative px-6 py-3">
+          <span
+            className={`absolute inset-y-0 left-0 w-1 ${
+              pathname === '/api/user' ? 'bg-purple-800' : ''
+            }`}
+            aria-hidden="true"
+          ></span>
+          <a
+            className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 ${
+              pathname === '/api/user'
+                ? 'text-purple-800'
+                : 'text-black hover:text-gray-800'
+            }`}
+            href="/api/user"
+          >
+            <span>User List</span>
+          </a>
+        </li>
+        <li className="relative px-6 py-3">
+          <span
+            className={`absolute inset-y-0 left-0 w-1 ${
+              pathname === '/api/user/createUser' ? 'bg-purple-800' : ''
+            }`}
+            aria-hidden="true"
+          ></span>
+          <a
+            className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 ${
+              pathname === '/api/user/createUser'
+                ? 'text-purple-800'
+                : 'text-black hover:text-gray-800'
+            }`}
+            href="/api/user/createUser"
+          >
+            <span>Create User</span>
+          </a>
+        </li>
       </ul>
     </aside>
   );

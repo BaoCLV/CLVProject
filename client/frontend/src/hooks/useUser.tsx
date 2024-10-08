@@ -8,8 +8,9 @@ import { UPDATE_USER } from "../graphql/auth/Actions/updateUser";
 import { GET_ALL_USER } from "../graphql/auth/Actions/getAllUser.action";
 import { useInfiniteQuery } from "react-query";
 import { routeClient } from "../graphql/route/route.gql.setup";
-import { GET_TOTALS } from "../graphql/auth/Actions/countUser";
-import { useRouter } from "next/navigation";
+import { GET_USER_BY_ID } from "../graphql/auth/Actions/getUserById.action";
+import DELETE_USER from "../graphql/auth/Actions/deleteUser.action";
+import { CREATE_USER } from "../graphql/auth/Actions/createUserByAdmin";
 
 
 //get loggedin user
@@ -29,6 +30,23 @@ export const useUser = () => {
     user: data?.getLoggedInUser?.user,
   };
 };
+
+//get single user by id
+export const useGetUserById = (id: string) => {
+  const authClient = useGraphQLClient('auth'); // Use the auth client
+  const { data, loading, error } = useQuery(GET_USER_BY_ID, {
+    variables: { id },
+    client: authClient,
+  });
+
+  const user = data?.getUserById?.user;
+  return {
+    loading,
+    error,
+    user: user
+  };
+};
+
 //get single user by email
 export const useGetUser = (email: string) => {
   const authClient = useGraphQLClient('auth'); // Use the auth client
@@ -78,8 +96,8 @@ export const useCreateUserSocial = (userData: any) => {
       name: userData.name,
       email: userData.email,
       password: randomPassword(),
-      phone_number: userData.phone_number, 
-      address: userData.address || 'No address provided', 
+      phone_number: userData.phone_number,
+      address: userData.address || 'No address provided',
     }
 
     try {
@@ -99,6 +117,45 @@ export const useCreateUserSocial = (userData: any) => {
   return { handlecreateUserSocial };
 };
 
+//create user
+export const useCreateUser = () => {
+  const authClient = useGraphQLClient('auth');
+  const [createUser] = useMutation(CREATE_USER, { client: authClient });
+
+  const handlecreateUser = async (data: {
+    name: string,
+    email: string,
+    password: string,
+    phone_number: string,
+    address: string
+  }) => {
+
+    try {
+      const response = await createUser({
+        variables: {
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          phone_number: data.phone_number,
+          address: data.address
+        },
+      });
+      // localStorage.setItem(
+      //   "activation_token",
+      //   response.data.register.activation_token
+      // );
+      if (response.errors) {
+        throw new Error(response.errors[0].message);
+      }
+      return response.data.createUser;
+    } catch (error: any) {
+      toast.error("Error creating user: " + error.message);
+    }
+  }
+
+  return { handlecreateUser };
+};
+
 //update user infor
 export const useUpdateUser = () => {
   const authClient = useGraphQLClient('auth');
@@ -113,8 +170,7 @@ export const useUpdateUser = () => {
           id: userId,
           name: userData.name,
           phone_number: userData.phone_number,
-          address: userData.address,
-          role: userData.role,
+          address: userData.address
         },
       });
 
@@ -141,10 +197,9 @@ export const useUpdateUser = () => {
 // Hook for getting a list of routes with optional query, limit, and offset
 export const useGetAllUser = (currentPage: number, itemsPerPage: number) => {
   const authClient = useGraphQLClient('auth');
-  // const [getAllUser] = useQuery(GET_ALL_USER, { client: authClient });
 
   return useInfiniteQuery(
-    ['users', currentPage], // Use currentPage in the query key for caching
+    ['user', currentPage], // Use currentPage in the query key for caching
     async ({ pageParam = currentPage }) => {
       const offset = (pageParam - 1) * itemsPerPage;
 
@@ -156,16 +211,14 @@ export const useGetAllUser = (currentPage: number, itemsPerPage: number) => {
         },
       });
 
-      if (!data?.users) {
+      if (!data?.getAllUsers) {
         throw new Error('Failed to fetch users');
       }
-      console.log(data.users)
-
-      return data.users;
+      return data.getAllUsers.users;
     },
     {
       getNextPageParam: (lastPage, allPages) => {
-        if (lastPage.length < itemsPerPage) return undefined; // No more pages
+        if (lastPage?.length < itemsPerPage) return undefined; // No more pages
         return allPages.length + 1;
       },
       getPreviousPageParam: (firstPage, allPages) => {
@@ -186,5 +239,23 @@ export const useTotalsUser = () => {
     loading,
     error,
   };
+// Hook for deleting a user
+export const useDeleteUser = () => {
+  const authClient = useGraphQLClient('auth');
+  const [deleteUser] = useMutation(DELETE_USER, { client: authClient });
+
+  const handleDeleteUser = async (id: string) => {
+    try {
+      const response = await deleteUser({
+        variables: { id },
+      });
+      return response.data.deleteUser;
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      throw error;
+    }
+  };
+
+  return { handleDeleteUser };
 };
 

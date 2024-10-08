@@ -5,8 +5,7 @@ export const UPDATE_USER = gql`
     $id: String!,
     $name: String!,
     $phone_number: String,
-    $address: String,
-
+    $address: String
   ) {
     updateUser(
       id: $id,
@@ -14,7 +13,6 @@ export const UPDATE_USER = gql`
         name: $name,
         phone_number: $phone_number,
         address: $address,
-
       }
     ) {
       message
