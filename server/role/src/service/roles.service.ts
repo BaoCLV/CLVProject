@@ -1,40 +1,92 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { GrpcMethod } from '@nestjs/microservices';
 import { Role } from '../entities/role.entity';
+import { Permission } from '../entities/permission.entity';
+import { GrpcMethod } from '@nestjs/microservices';
+import { UpdateRoleDto } from '../dto/role.dto';
 
 @Injectable()
 export class RoleService {
   constructor(
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
+    @InjectRepository(Permission)
+    private readonly permissionRepository: Repository<Permission>,
   ) {}
 
-  // Fix for the roleNames being undefined: Use the correct data parameter
-  @GrpcMethod('RoleService', 'GetRolesByNames')
-  async getRolesByNames(data: { roleNames: string[] }): Promise<{ roles: string[] }> {
-    const roles = await this.roleRepository.find({
-      where: data.roleNames.map(name => ({ name })),
-    });
-    return { roles: roles.map(role => role.name) };
+  // gRPC method to get all roles
+  @GrpcMethod('RoleService', 'FindAllRoles')
+  async findAllRoles(): Promise<{ roles: Role[] }> {
+    const roles = await this.roleRepository.find({ relations: ['permissions'] });
+    return { roles };
   }
 
-  // Fix for the roleNames being undefined: Use the correct data parameter
-  @GrpcMethod('RoleService', 'GetPermissionsByRoleNames')
-  async getPermissionsByRoleNames(data: { roleNames: string[] }): Promise<{ permissions: string[] }> {
-    const roles = await this.roleRepository.find({
-      where: data.roleNames.map(name => ({ name })),
+  // gRPC method to get all permissions
+  @GrpcMethod('RoleService', 'FindAllPermissions')
+  async findAllPermissions(): Promise<{ permissions: Permission[] }> {
+    const permissions = await this.permissionRepository.find();
+    return { permissions };
+  }
+
+  // gRPC method to get a role by its name
+  @GrpcMethod('RoleService', 'GetRoleByName')
+  async GetRoleByName(data: { name: string }): Promise<{ role: Role }> {
+    const role = await this.roleRepository.findOne({
+      where: { name: data.name },
       relations: ['permissions'],
     });
 
-    const permissions = roles.reduce((acc, role) => {
-      if (role.permissions) {
-        acc.push(...role.permissions.map(p => p.name));
-      }
-      return acc;
-    }, []);
+    if (!role) {
+      throw new Error(`Role with name ${data.name} not found`);
+    }
 
-    return { permissions };
+    return { role };
+  }
+
+  // gRPC method to update a role (name and permissions)
+  @GrpcMethod('RoleService', 'UpdateRole')
+  async updateRole(data: { roleId: string; name: string; permissionIds: string[] }): Promise<{ role: Role }> {
+    const { roleId, name, permissionIds } = data;
+    const role = await this.roleRepository.findOne({ where: { id: roleId }, relations: ['permissions'] });
+
+    if (!role) {
+      throw new Error('Role not found');
+    }
+
+    if (name) {
+      role.name = name;
+    }
+
+    if (permissionIds && permissionIds.length > 0) {
+      const permissions = await this.permissionRepository.findByIds(permissionIds);
+      role.permissions = permissions;
+    }
+
+    const updatedRole = await this.roleRepository.save(role);
+    return { role: updatedRole };
+  }
+
+  // gRPC method to assign a permission to a role
+  @GrpcMethod('RoleService', 'AssignPermissionToRole')
+  async assignPermissionToRole(data: { roleId: string; permissionId: string }): Promise<{ role: Role }> {
+    const { roleId, permissionId } = data;
+
+    const role = await this.roleRepository.findOne({ where: { id: roleId }, relations: ['permissions'] });
+    if (!role) {
+      throw new Error('Role not found');
+    }
+
+    const permission = await this.permissionRepository.findOne({ where: { id: permissionId } });
+    if (!permission) {
+      throw new Error('Permission not found');
+    }
+
+    if (!role.permissions.some(p => p.id === permission.id)) {
+      role.permissions.push(permission);
+    }
+
+    const updatedRole = await this.roleRepository.save(role);
+    return { role: updatedRole };
   }
 }

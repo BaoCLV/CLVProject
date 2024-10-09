@@ -1,5 +1,5 @@
 // src/routes/route.resolver.ts
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { RoutesService } from './route.service'; // Make sure the import points to the correct service file
 import { CreateRouteDto, UpdateRouteDto } from '../dto/route.dto';
 import { Route } from '../entities/route.entity';
@@ -51,4 +51,11 @@ export class RouteResolver {
   async totalRoutes(): Promise<number> {
     return this.routesService.countRoutes(); // Use the service to count routes
   }
+  @Query(() => Number)
+async totalRoutesForMonth(
+  @Args('year', { type: () => Int }) year: number,
+  @Args('month', { type: () => Int }) month: number,
+): Promise<number> {
+  return this.routesService.countRoutesForMonth(year, month);
+}
 }

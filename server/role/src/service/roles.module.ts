@@ -4,12 +4,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Role } from '../entities/role.entity';
 import { User } from '../../../nestjs/src/entities/user.entity';
 import { Permission } from 'src/entities/permission.entity';
-// import { RoleController } from './roles.controller';
 import { RoleService } from './roles.service';
-// import { GraphQLModule } from '@nestjs/graphql';
-// import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
-//import { RoleResolver } from './roles.resolver';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
 import { SeedService } from 'src/seeder/seeder.service';
+import { RoleResolver } from './roles.resolver';
+import { RoleController } from './roles.controller';
 
 
 @Module({
@@ -18,13 +18,13 @@ import { SeedService } from 'src/seeder/seeder.service';
       isGlobal: true,
     }),
     TypeOrmModule.forFeature([User, Role, Permission]),
-    // GraphQLModule.forRoot<ApolloFederationDriverConfig>({
-    //   driver: ApolloFederationDriver,
-    //   autoSchemaFile: {
-    //     federation: 2
-    //   },
-    //   context: ({ req }) => ({ req })
-    // }),
+    GraphQLModule.forRoot<ApolloFederationDriverConfig>({
+      driver: ApolloFederationDriver,
+      autoSchemaFile: {
+        federation: 2
+      },
+      context: ({ req }) => ({ req })
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
@@ -46,9 +46,10 @@ import { SeedService } from 'src/seeder/seeder.service';
   ],
   providers: [
     RoleService,
-    //RoleResolver,
+    RoleResolver,
     SeedService
   ],
+  controllers: [RoleController],
   exports: [RoleService]
 })
 export class RolesModule { }

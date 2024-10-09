@@ -1,6 +1,6 @@
-import { Resolver, Context, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Context, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { UsersService } from './users.service';
-import { RegisterResponse, LoginResponse, ActivationResponse, LogOutResponse, ForgotPasswordResponse, ResetPasswordResponse, GetUserByEmailResponse, UserListResponse, ChangePasswordResponse, RequestChangePasswordResponse, UpdateUserResponse, TotalUsersResponse } from '../types/user.types';
+import { RegisterResponse, LoginResponse, ActivationResponse, LogOutResponse, ForgotPasswordResponse, ResetPasswordResponse, GetUserByEmailResponse, UserListResponse, ChangePasswordResponse, RequestChangePasswordResponse, UpdateUserResponse } from '../types/user.types';
 import { RegisterDto, LoginDto, ActivationDto, ForgotPasswordDto, ResetPasswordDto, ChangePasswordDto, RequestChangePasswordDto, UpdateUserDto } from '../dto/user.dto';
 import { User } from '../entities/user.entity';
 import { BadRequestException, SetMetadata, UseGuards } from '@nestjs/common';
@@ -11,11 +11,18 @@ import { PermissionsGuard, RequirePermissions, ROLE_KEY } from 'src/guards/permi
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) { }
 
-  @Query(() => TotalUsersResponse)
-  async totalUsers(): Promise<TotalUsersResponse> {
-    const totalUsersCount = await this.usersService.countUsers();
-    return { totalUsers: totalUsersCount };
+  @Query(() => Number)
+  async totalUsers(): Promise<Number> {
+    return this.usersService.countUsers();
+    
   }
+  @Query(() => Number)
+async totalUsersForMonth(
+  @Args('year', { type: () => Int }) year: number,
+  @Args('month', { type: () => Int }) month: number,
+): Promise<number> {
+  return this.usersService.countUsersForMonth(year, month);
+}
   @Query(() => UserListResponse)
   @UseGuards(AuthGuard)//PermissionsGuard
   @RequirePermissions('admin')
@@ -39,7 +46,6 @@ export class UsersResolver {
 
     const { activation_token } = await this.usersService.register(
       registerDto,
-      context.res,
     );
 
     return { activation_token };
@@ -139,12 +145,14 @@ export class UsersResolver {
     return await this.usersService.changePassword(changePasswordDto);
   }
 
-  // Mutation to create a new user by admin
+  // Create a new user by admin
   @Mutation(() => User)
-  async createUser(@Args('data') data: RegisterDto): Promise<User> {
-    return this.usersService.createUser(data);
+  async createUser(
+    @Args('data') data: RegisterDto,    // User data
+    @Args('roleId', { type: () => String }) roleId: string  // Role ID (UUID)
+  ): Promise<User> {
+    return this.usersService.createUser(data, roleId);  // Pass roleId to service
   }
-
 
   // Mutation to delete a user by id
   @Mutation(() => Boolean)

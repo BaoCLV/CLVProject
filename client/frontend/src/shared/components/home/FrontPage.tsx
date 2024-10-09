@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import AuthScreen from "../../screens/AuthScreen";
 import { useCreateRoute } from "../../../hooks/useRoute";
 import Modal from "../Modal";
-import CreateRouteForm from "../createRouteForm";
+import CreateRouteForm from "./createRouteForm";
 import { useUser } from "../../../hooks/useUser";
 import { useInView } from "../../../hooks/useInView";
-import  Player  from "lottie-react";
+import Player from "lottie-react";
 import logisticsAnimation from "@/src/animations/home.json";
 
 // Slogans for logistics
@@ -36,7 +36,7 @@ const FrontPage = () => {
   const [ref, isInView] = useInView(0.1);
 
   const { handleCreateRoute } = useCreateRoute(); // Hook to create a route
-  const { user,  loading } = useUser(); // Use the useUser hook to get user and error
+  const { user, loading } = useUser(); // Use the useUser hook to get user and error
 
   const createRouteHandler = () => {
     setModalOpen(true);
@@ -84,27 +84,31 @@ const FrontPage = () => {
       <div className="absolute inset-0 bg-black bg-opacity-50" />
 
       {/* Main Content */}
-      <div className="absolute top left-10 z-10 text-left p-10">
+      <div className="absolute left-10 z-10 text-left p-6 sm:p-10">
         {/* Welcome Message */}
-        <h1 className="text-8xl font-bold text-white mb-4">
+        <h1 className="text-xl sm:text-2xl lg:text-6xl font-bold text-white mb-4">
           Welcome to CLVProject
         </h1>
 
         {/* Random Logistics Slogan */}
-        <p className="text-xl text-white mb-6">{randomSlogan}</p>
+        <p className="text-lg sm:text-xl lg:text-2xl text-white mb-6">
+          {randomSlogan}
+        </p>
 
+        {/* Inline Buttons */}
         <div className="flex space-x-4">
           <button
             onClick={createRouteHandler}
-            className="px-8 py-4 bg-green-500 text-white text-lg hover:bg-green-700 transition duration-300 ease-in-out"
+            className="px-4 sm:px-8 py-2 sm:py-4 bg-green-500 text-white text-base sm:text-lg hover:bg-green-700 transition duration-300 ease-in-out"
           >
             Create Route
           </button>
 
+          {/* Conditionally render the Login / Sign Up button if user is not logged in */}
           {!user && (
             <button
               onClick={() => setOpen(true)}
-              className="px-8 py-4 bg-blue-500 text-white text-lg hover:bg-blue-700 transition duration-300 ease-in-out"
+              className="px-4 sm:px-8 py-2 sm:py-4 bg-blue-500 text-white text-base sm:text-lg hover:bg-blue-700 transition duration-300 ease-in-out"
             >
               Login / Sign Up
             </button>
@@ -114,15 +118,17 @@ const FrontPage = () => {
         {/* Feedback Section */}
         {feedback && <div className="mt-4 text-white">{feedback}</div>}
       </div>
-      
-      <div className="absolute pr-24 right-10 z-10 hidden md:block">
+
+      {/* Lottie Animation (Right side) */}
+      <div className="absolute right-0 z-10 hidden md:block pr-10 lg:pr-20">
         <Player
           autoplay
           loop
-          animationData={logisticsAnimation} // Use your logistics Lottie file here
-          style={{ height: "600px", width: "600px" }} // Adjust size as needed
+          animationData={logisticsAnimation}
+          className="max-w-xs sm:max-w-md lg:max-w-lg"
         />
       </div>
+
       {/* Modal for Login / Sign Up */}
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useUpdateUser, useGetUserById } from "../../../hooks/useUser";
 import Header from "../../components/Header";
-import ProfileSidebar from "../../components/ProfileSidebar";
+import ProfileSidebar from "../../components/pages/admin/ProfileSidebar";
 
 
 interface UpdateProfileProps {

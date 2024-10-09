@@ -1,7 +1,7 @@
 // src/routes/routes.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { Route } from '../entities/route.entity';
 import { CreateRouteDto, UpdateRouteDto } from '../dto/route.dto';
 
@@ -75,5 +75,15 @@ export class RoutesService {
   }
   async countRoutes(): Promise<number> {
     return this.routeRepository.count(); // Use the repository to count
+  }
+  async countRoutesForMonth(year: number, month: number): Promise<number> {
+    const startOfMonth = new Date(year, month - 1, 1);
+    const endOfMonth = new Date(year, month, 0, 23, 59, 59); // Last day of the month
+  
+    return this.routeRepository.count({
+      where: {
+        createdAt: Between(startOfMonth, endOfMonth),
+      },
+    });
   }
 }

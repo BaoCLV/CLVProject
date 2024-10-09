@@ -4,8 +4,9 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '../../../hooks/useUser';
 import { format } from 'date-fns'; // Ensure date-fns is installed: npm install date-fns
 import Header from '../../components/Header';
-import ProfileSidebar from '../../components/ProfileSidebar';
+import ProfileSidebar from '../../components/pages/admin/ProfileSidebar';
 import { Avatar } from '@nextui-org/react';
+import Loading from '../../components/Loading';
 
 interface UserDetailProps {
   userId: string;
@@ -33,15 +34,17 @@ export default function UserProfile({ userId }: UserDetailProps) {
     }
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return (
+    <Loading/>
+  );
   if (!user) return <p>User not found</p>;
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="flex h-screen bg-gray-200">
       <ProfileSidebar />
       <div className="flex flex-col flex-1">
         <Header />
-        <div className="flex-1 bg-white p-10">
+        <div className="flex-1 bg-gray-200 p-10">
           <div className="max-w-4xl mx-auto">
             <div className="flex flex-col md:flex-row items-center justify-between bg-blue-50 shadow-lg rounded-xl p-8">
               <div className="flex flex-col items-center md:items-start space-y-4">
@@ -53,7 +56,6 @@ export default function UserProfile({ userId }: UserDetailProps) {
             />
                 {/* User Info */}
                 <h1 className="text-3xl font-bold text-blue-900">{user.name}</h1>
-                <p className="text-xl text-blue-600">{user.roles}</p>
               </div>
 
               {/* Action Buttons */}

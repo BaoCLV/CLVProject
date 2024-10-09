@@ -7,10 +7,12 @@ import { GET_SOCIAL_USER } from "../graphql/auth/Actions/getSocialUser.action";
 import { UPDATE_USER } from "../graphql/auth/Actions/updateUser";
 import { GET_ALL_USER } from "../graphql/auth/Actions/getAllUser.action";
 import { useInfiniteQuery } from "react-query";
-import { routeClient } from "../graphql/route/route.gql.setup";
 import { GET_USER_BY_ID } from "../graphql/auth/Actions/getUserById.action";
 import DELETE_USER from "../graphql/auth/Actions/deleteUser.action";
 import { CREATE_USER } from "../graphql/auth/Actions/createUserByAdmin";
+import { GET_TOTALS } from "../graphql/auth/Actions/countUser";
+import { useRouter } from "next/navigation";
+import { GET_TOTAL_USERS_FOR_MONTH } from "../graphql/auth/Actions/totalMonthUser";
 
 
 //get loggedin user
@@ -156,11 +158,10 @@ export const useCreateUser = () => {
   return { handlecreateUser };
 };
 
-//update user infor
 export const useUpdateUser = () => {
-  const authClient = useGraphQLClient('auth');
+  const authClient = useGraphQLClient('auth');  // Use the correct GraphQL client for authentication
   const [updateUser, { loading, error }] = useMutation(UPDATE_USER, {
-    client: authClient,
+    client: authClient,  // Use the authenticated client
   });
 
   const handleUpdateUser = async (userId: string, userData: any) => {
@@ -170,13 +171,14 @@ export const useUpdateUser = () => {
           id: userId,
           name: userData.name,
           phone_number: userData.phone_number,
-          address: userData.address
+          address: userData.address,
+          roleId: userData.roleId || null,  // Pass roleId, if available, otherwise null
         },
       });
 
       if (response?.data?.updateUser?.user) {
         toast.success('User updated successfully!');
-        return response.data.updateUser.user;
+        return response.data.updateUser.user;  // Return updated user object
       } else {
         toast.error('Failed to update user.');
       }
@@ -186,12 +188,9 @@ export const useUpdateUser = () => {
     }
   };
 
-  return {
-    handleUpdateUser,
-    loading,
-    error,
-  };
+  return { handleUpdateUser, loading, error };  // Expose loading and error states
 };
+
 
 
 // Hook for getting a list of routes with optional query, limit, and offset
@@ -239,6 +238,7 @@ export const useTotalsUser = () => {
     loading,
     error,
   };
+};
 // Hook for deleting a user
 export const useDeleteUser = () => {
   const authClient = useGraphQLClient('auth');
@@ -259,3 +259,17 @@ export const useDeleteUser = () => {
   return { handleDeleteUser };
 };
 
+export const useTotalsUserForMonth = (year: number, month: number) => {
+  const authClient = useGraphQLClient('auth');
+  
+  const { data, loading, error } = useQuery(GET_TOTAL_USERS_FOR_MONTH, {
+    client: authClient,
+    variables: { year, month },
+  });
+
+  return {
+    totalUsersMonth: data?.totalUsersForMonth || 0,
+    loading,
+    error,
+  };
+};

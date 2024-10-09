@@ -1,5 +1,5 @@
 import { InputType, Field } from '@nestjs/graphql';
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, IsUUID, MinLength } from 'class-validator';
 
 @InputType()
 export class RegisterDto {
@@ -94,7 +94,7 @@ export class ChangePasswordDto {
 export class UpdateUserDto {
   @Field()
   @IsNotEmpty({ message: 'Name is required.' })
-  @IsString({ message: 'Name must need to be one string.' })
+  @IsString({ message: 'Name must be a string.' })
   name: string;
 
   @Field({ nullable: true })
@@ -102,6 +102,11 @@ export class UpdateUserDto {
 
   @Field({ nullable: true })
   address: string;
+
+  // Update the role to be a single UUID instead of an array
+  @Field({ nullable: true })
+  @IsUUID("4", { message: "Role must be a valid UUID." })
+  roleId: string;
 }
 
 @InputType()

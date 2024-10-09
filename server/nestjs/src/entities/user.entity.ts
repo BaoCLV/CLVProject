@@ -1,6 +1,6 @@
 import { ObjectType, Field } from '@nestjs/graphql';
 import { Directive } from '@nestjs/graphql';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
 
 @ObjectType()
 @Entity()
@@ -22,9 +22,10 @@ export class User {
   @Column()
   password: string;
 
-  @Field(() => [String])
-  @Column("simple-array", { default: 'user' })
-  roles: string[];
+  // Now roles is a single UUID string field, not an array
+  @Field(() => String)
+  @Column({ type: 'uuid', nullable: true })
+  roleId: string;
 
   @Field({ nullable: true })
   @Column({ nullable: true })
@@ -37,7 +38,6 @@ export class User {
   @Field({ nullable: true })
   @Column({ nullable: true })
   refreshToken: string;
-
 
   @Field()
   @CreateDateColumn({ type: 'timestamp' })

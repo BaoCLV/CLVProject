@@ -57,10 +57,22 @@ export class SeedService implements OnModuleInit {
           name: role,
         });
 
-        // Assign all permissions to the Admin role
-        if (role === ClientRole.Admin) {
+        if (role === ClientRole.User) {
+          // User gets only the 'read' permission
+          const readPermission = await this.permissionRepository.findOne({
+            where: { name: ClientPermission.Read },
+          });
+          newRole.permissions = [readPermission];
+
+        } else if (role === ClientRole.Admin) {
+          // Admin gets all permissions
           const allPermissions = await this.permissionRepository.find();
-          newRole.permissions = allPermissions; // Admin gets all permissions
+          newRole.permissions = allPermissions;
+
+        } else if (role === ClientRole.SuperAdmin) {
+          // SuperAdmin also gets all permissions, superior to Admin
+          const allPermissions = await this.permissionRepository.find();
+          newRole.permissions = allPermissions;
         }
 
         await this.roleRepository.save(newRole);

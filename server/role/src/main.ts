@@ -12,7 +12,7 @@ async function bootstrap() {
   });
   await app.listen(3003);
 
-  const protoPath = join(__dirname, '../../../src/protos/roles.proto');
+  const protoPath = join('./src/protos/roles.proto');
   const grpcApp= await NestFactory.createMicroservice<MicroserviceOptions>(RolesModule, {
     transport: Transport.GRPC,
     options: {

@@ -6,6 +6,7 @@ import { Permission } from './permission.entity';
 enum ClientRole {
   User = 'user',
   Admin = 'admin',
+  SuperAdmin = 'Super Admin'
 }
 registerEnumType(ClientRole, {
   name: 'ClientRole',
@@ -27,4 +28,6 @@ export class Role {
   @ManyToMany(() => Permission)
   @JoinTable()
   permissions?: Permission[];
+
+  
 }

@@ -8,27 +8,90 @@
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
 import { Observable } from "rxjs";
 
-export interface GetRolesRequest {
-  userId: string;
+export interface Empty {
 }
 
-export interface GetRolesResponse {
-  roles: string[];
+export interface FindAllRolesResponse {
+  roles: Role[];
+}
+
+export interface FindAllPermissionsResponse {
+  permissions: Permission[];
+}
+
+export interface UpdateRoleRequest {
+  roleId: string;
+  name: string;
+  permissionIds: string[];
+}
+
+export interface AssignPermissionToRoleRequest {
+  roleId: string;
+  permissionId: string;
+}
+
+export interface RoleResponse {
+  role: Role | undefined;
+}
+
+export interface GetRoleByNameRequest {
+  name: string;
+}
+
+export interface GetRoleByNameResponse {
+  role: Role | undefined;
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  permissions: Permission[];
+}
+
+export interface Permission {
+  id: string;
+  name: string;
 }
 
 export interface RoleServiceClient {
-  getRolesByUserId(request: GetRolesRequest): Observable<GetRolesResponse>;
+  findAllRoles(request: Empty): Observable<FindAllRolesResponse>;
+
+  findAllPermissions(request: Empty): Observable<FindAllPermissionsResponse>;
+
+  updateRole(request: UpdateRoleRequest): Observable<RoleResponse>;
+
+  getRoleByName(request: GetRoleByNameRequest): Observable<GetRoleByNameResponse>;
+
+  assignPermissionToRole(request: AssignPermissionToRoleRequest): Observable<RoleResponse>;
 }
 
 export interface RoleServiceController {
-  getRolesByUserId(
-    request: GetRolesRequest,
-  ): Promise<GetRolesResponse> | Observable<GetRolesResponse> | GetRolesResponse;
+  findAllRoles(request: Empty): Promise<FindAllRolesResponse> | Observable<FindAllRolesResponse> | FindAllRolesResponse;
+
+  findAllPermissions(
+    request: Empty,
+  ): Promise<FindAllPermissionsResponse> | Observable<FindAllPermissionsResponse> | FindAllPermissionsResponse;
+
+  updateRole(request: UpdateRoleRequest): Promise<RoleResponse> | Observable<RoleResponse> | RoleResponse;
+
+  getRoleByName(
+    request: GetRoleByNameRequest,
+  ): Promise<GetRoleByNameResponse> | Observable<GetRoleByNameResponse> | GetRoleByNameResponse;
+
+  assignPermissionToRole(
+    request: AssignPermissionToRoleRequest,
+  ): Promise<RoleResponse> | Observable<RoleResponse> | RoleResponse;
 }
 
 export function RoleServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["getRolesByUserId"];
+    const grpcMethods: string[] = [
+      "findAllRoles",
+      "findAllPermissions",
+      "updateRole",
+      "getRoleByName",
+      "assignPermissionToRole",
+    ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("RoleService", method)(constructor.prototype[method], method, descriptor);

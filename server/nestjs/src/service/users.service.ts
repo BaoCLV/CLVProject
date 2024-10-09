@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { ActivationDto, ChangePasswordDto, ForgotPasswordDto, LoginDto, RegisterDto, RequestChangePasswordDto, ResetPasswordDto, UpdateUserDto } from '../dto/user.dto';
 import * as bcrypt from 'bcrypt';
@@ -24,7 +24,7 @@ interface UserData {
 }
 
 interface RoleServiceClient {
-  getRolesByNames(data: { roleNames: string[] }): Observable<{ roles: string[] }>;
+  GetRoleByName(data: { roleNames: string }): Observable<{ roleId: string }>;
 }
 
 @Injectable()
@@ -91,21 +91,24 @@ export class UsersService implements OnModuleInit {
   }
 
   @GrpcMethod('UserService', 'Register')
-  async register(registerDto: RegisterDto, res: Response): Promise<RegisterResponse> {
+  async register(registerDto: RegisterDto): Promise<RegisterResponse> {
     const { name, email, password, phone_number, address } = registerDto;
+    
+    // Check if a user with the same email or phone number exists
     const existingUser = await this.userRepository.findOne({ where: { email } });
     const existingPhone = await this.userRepository.findOne({ where: { phone_number } });
-
+    
     if (existingUser) {
       throw new BadRequestException('User with this email already exists');
     }
-
     if (existingPhone) {
       throw new BadRequestException('User with this phone number already exists');
     }
-
+  
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Create the user object
     const user = this.userRepository.create({
       name,
       email,
@@ -113,22 +116,35 @@ export class UsersService implements OnModuleInit {
       phone_number,
       address,
     });
-
+    
+    // Fetch the "User" role from the RoleService via gRPC (expecting role IDs as strings)
+    const roleResponse = await lastValueFrom(this.roleService.GetRoleByName({ roleNames: 'user' }));
+    
+    if (!roleResponse || !roleResponse.roles.length) {
+      throw new BadRequestException('Role "User" not found');
+    }
+  
+    const roleId = roleResponse.roles[0];  // Expecting the role ID as a string
+    
+    // Assign the roleId to the user
+    user.roleId = roleId;
+  
+    // Save the new user with the assigned roleId
+    const savedUser = await this.userRepository.save(user);
+    
     // Create an activation token for the new user
-    const activationToken = await this.createActivationToken(user);
-
+    const activationToken = await this.createActivationToken(savedUser);
+  
     // Produce a Kafka event for user registration
     await this.kafkaProducerService.sendUserRegisteredEvent({
-      email: user.email,
-      name: user.name,
-      activation_token: activationToken.Token, // Send the token
+      email: savedUser.email,
+      name: savedUser.name,
+      activation_token: activationToken.Token,
       activation_code: activationToken.ActivationCode,
     });
-
-    const activation_token = activationToken.Token;
-
+  
     return {
-      activation_token,
+      activation_token: activationToken.Token,
     };
   }
 
@@ -380,27 +396,53 @@ export class UsersService implements OnModuleInit {
   }
 
   async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    // Find the user by ID
     const user = await this.userRepository.findOne({ where: { id } });
-
+  
     if (!user) {
       throw new BadRequestException(`User with ID ${id} not found`);
     }
-
+  
+    // Update user properties
     Object.assign(user, updateUserDto);
+  
+    // If roleId is provided, assign the role to the user
+    if (updateUserDto.roleId) {
+      user.roleId = updateUserDto.roleId;
+    }
+  
+    // Save the updated user
     return await this.userRepository.save(user);
   }
+
+  // Create a user
+  async createUser(data: RegisterDto, roleId: string): Promise<User> {
+    const newUser = this.userRepository.create(data);
+    
+    // Assign the roleId to the new user
+    newUser.roleId = roleId;
+
+    return await this.userRepository.save(newUser);
+  }
+
+  
 
   // Count the total number of users
   async countUsers(): Promise<number> {
     return this.userRepository.count();
   }
 
- 
-  // create a user by admin
-  async createUser(data: RegisterDto): Promise<User> {
-    const newUser = this.userRepository.create(data);
-    return this.userRepository.save(newUser);
+  async countUsersForMonth(year: number, month: number): Promise<number> {
+    const startOfMonth = new Date(year, month - 1, 1);
+    const endOfMonth = new Date(year, month, 0, 23, 59, 59); // Last day of the month
+  
+    return this.userRepository.count({
+      where: {
+        createdAt: Between(startOfMonth, endOfMonth),
+      },
+    });
   }
+
 
   // Remove a user by name
   async deleteById(id: string): Promise<void> {

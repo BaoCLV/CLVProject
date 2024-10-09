@@ -7,6 +7,8 @@ import Header from '../../components/Header';
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import Loading from '../../components/Loading';
+import ProfileSidebar from '../../components/pages/admin/ProfileSidebar';
 
 // Custom marker icon
 const customIcon = L.icon({
@@ -96,7 +98,7 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
 
       setMessage('Route updated successfully.');
       setError('');
-      await geocodeLocations(form.startLocation, form.endLocation); // Geocode again after update
+      await geocodeLocations(form.startLocation, form.endLocation);
     } catch (err) {
       setError('Failed to update route.');
       setMessage('');
@@ -104,10 +106,9 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
     }
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loading/>;
   if (fetchError) return <p>Error: {fetchError.message}</p>;
 
-  // Fit the map bounds to show both markers using the useMap hook
   function AutoZoom() {
     const map = useMap();
     useEffect(() => {
@@ -119,11 +120,11 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   }
 
   return (
-    <div className="flex h-screen">
-      <Sidebar />
+    <div className="flex h-screen bg-gray-50">
+      <ProfileSidebar />
       <div className="flex flex-col flex-1">
         <Header />
-        <div className="flex-1 bg-gray-100 dark:bg-gray-600 p-8">
+        <div className="flex-1 bg-gray-100 dark:bg-gray-600 py-16 px-8">
           <h4 className="mb-6 text-2xl font-bold text-gray-700 dark:text-gray-300">
             Update Route
           </h4>

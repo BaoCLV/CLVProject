@@ -8,6 +8,7 @@ import { useGraphQLClient } from "../hooks/useGraphql";
 import { useInfiniteQuery } from 'react-query';
 import { number } from "zod";
 import { GET_TOTALS } from "../graphql/route/Action/countRoute";
+import { GET_TOTAL_ROUTES_FOR_MONTH } from "../graphql/route/Action/totalMonthRoute";
 
 
 // Hook for creating a route
@@ -61,7 +62,6 @@ export const useUpdateRoute = () => {
   const [updateRoute] = useMutation(UPDATE_ROUTE_MUTATION, { client: routeClient });
 
   const handleUpdateRoute = async (id: number, data: { 
-    userId: string;
     startLocation: string; 
     endLocation: string; 
     distance: number; 
@@ -100,7 +100,7 @@ export const useGetRoutes = (currentPage: number, itemsPerPage: number) => {
   const routeClient = useGraphQLClient('route');
 
   return useInfiniteQuery(
-    ['routes', currentPage], // Use currentPage in the query key for caching
+    ['routes', currentPage], 
     async ({ pageParam = currentPage }) => {
       const offset = (pageParam - 1) * itemsPerPage;
 
@@ -136,6 +136,21 @@ export const useTotalsRoute = () => {
 
   return {
     totalRoutes: data?.totalRoutes || 0,
+    loading,
+    error,
+  };
+};
+
+export const useTotalsRouteForMonth = (year: number, month: number) => {
+  const routeClient = useGraphQLClient('route');
+  
+  const { data, loading, error } = useQuery(GET_TOTAL_ROUTES_FOR_MONTH, {
+    client: routeClient,
+    variables: { year, month },
+  });
+
+  return {
+    totalRoutesMonth: data?.totalRoutesForMonth || 0,
     loading,
     error,
   };

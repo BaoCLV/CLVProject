@@ -3,10 +3,10 @@ import * as turf from "@turf/turf";
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import AuthScreen from "../screens/AuthScreen"; 
+import AuthScreen from "../../screens/AuthScreen"; 
 import { toast, ToastContainer } from "react-toastify"; 
 import "react-toastify/dist/ReactToastify.css"; 
-import { useUser } from "../../hooks/useUser"; 
+import { useUser } from "../../../hooks/useUser"; 
 
 const customIcon = L.icon({
   iconUrl: "/img/map-marker.png", 

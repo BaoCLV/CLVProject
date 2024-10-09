@@ -129,8 +129,3 @@ export class ChangePasswordResponse {
   @Field(() => ErrorType, { nullable: true })
   error?: ErrorType;
 }
-@ObjectType()
-export class TotalUsersResponse {
-  @Field()
-  totalUsers: number;
-}

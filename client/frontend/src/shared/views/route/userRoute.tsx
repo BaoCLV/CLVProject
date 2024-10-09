@@ -9,7 +9,7 @@ import { useUser } from "../../../hooks/useUser";
 import Header from "../../components/Header";
 
 import SearchBar from "../../components/searchBar";
-import ProfileSidebar from "../../components/ProfileSidebar";
+import ProfileSidebar from "../../components/pages/admin/ProfileSidebar";
 
 const queryClient = new QueryClient();
 

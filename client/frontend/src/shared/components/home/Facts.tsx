@@ -35,7 +35,6 @@ const FactsSection = () => {
     >
       <div className="container mx-auto py-16">
         <div className="flex flex-wrap">
-          {/* Left Section with Title, Description and Call */}
           <div className="w-full lg:w-1/2 mb-8 lg:mb-0 lg:pr-8 animate-fadeInUp">
             <h6 className="text-secondary font-bold uppercase text-4xl">Some Facts</h6>
             <h1 className="text-4xl font-bold mb-6">#1 Place To Manage All Of Your Shipments</h1>
