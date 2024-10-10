@@ -35,7 +35,7 @@ export class RoutesService {
     // Apply query filtering if provided
     if (query) {
       qb.where(
-        'route.name LIKE :query OR route.startLocation LIKE :query OR route.endLocation LIKE :query',
+        'route.startLocation LIKE :query OR route.endLocation LIKE :query',
         {
           query: `%${query}%`,
         },

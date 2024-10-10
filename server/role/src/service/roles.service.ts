@@ -1,11 +1,10 @@
-// src/routes/routes.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreatePermissionDto, CreateRoleDto, UpdatePermissionDto, UpdateRoleDto } from 'src/dto/role.dto';
-import { Permission } from 'src/entities/permission.entity';
-import { Role } from 'src/entities/role.entity';
 import { Repository } from 'typeorm';
-
+import { Role } from '../entities/role.entity';
+import { Permission } from '../entities/permission.entity';
+import { GrpcMethod } from '@nestjs/microservices';
+import { UpdateRoleDto } from '../dto/role.dto';
 
 @Injectable()
 export class RoleService {
@@ -16,132 +15,78 @@ export class RoleService {
     private readonly permissionRepository: Repository<Permission>,
   ) {}
 
-  // Create a new role
-  async createRole(createRoleDto: CreateRoleDto): Promise<Role> {
-    const newRole = this.roleRepository.create(createRoleDto);
-    console.log(newRole)
-    return this.roleRepository.save(newRole);
+  // gRPC method to get all roles
+  @GrpcMethod('RoleService', 'FindAllRoles')
+  async findAllRoles(): Promise<{ roles: Role[] }> {
+    const roles = await this.roleRepository.find({ relations: ['permissions'] });
+    return { roles };
   }
 
-  async findAllRole({
-    query,
-    limit,
-    offset,
-  }: { query?: string; limit?: number; offset?: number }): Promise<Role[]> {
-    const qb = this.roleRepository.createQueryBuilder('role');
-  
-    // Apply query filtering if provided
-    if (query) {
-      qb.where(
-        'role.name LIKE :query',
-        {
-          query: `%${query}%`,
-        },
-      );
-    }
-  
-    // Apply offset if provided
-    if (offset) {
-      qb.skip(offset);
-    }
-  
-    // Apply limit if provided
-    if (limit) {
-      qb.take(limit);
-    }
-  
-    qb.orderBy('role.id', 'DESC');
-  
-    return qb.getMany();
+  // gRPC method to get all permissions
+  @GrpcMethod('RoleService', 'FindAllPermissions')
+  async findAllPermissions(): Promise<{ permissions: Permission[] }> {
+    const permissions = await this.permissionRepository.find();
+    return { permissions };
   }
-  
 
-  // Find a role by id
-  async findOneRoleById(id: string): Promise<Role> {
-    const role = await this.roleRepository.findOne({ where: { id } });
-    console.log(role)
+  // gRPC method to get a role by its name
+  @GrpcMethod('RoleService', 'GetRoleByName')
+  async GetRoleByName(data: { name: string }): Promise<{ role: Role }> {
+    const role = await this.roleRepository.findOne({
+      where: { name: data.name },
+      relations: ['permissions'],
+    });
+
     if (!role) {
-      throw new NotFoundException(`Role with id "${id}" not found`);
+      throw new Error(`Role with name ${data.name} not found`);
     }
-    return role;
+
+    return { role };
   }
 
-  // Update a role by id
-  async updateRoleById(id: string, updateRoleDto: UpdateRoleDto): Promise<Role> {
-    const role = await this.findOneRoleById(id);
-    Object.assign(role, updateRoleDto); // Merge updates into the existing route
-    return this.roleRepository.save(role);
-  }
+  // gRPC method to update a role (name and permissions)
+  @GrpcMethod('RoleService', 'UpdateRole')
+  async updateRole(data: { roleId: string; name: string; permissionIds: string[] }): Promise<{ role: Role }> {
+    const { roleId, name, permissionIds } = data;
+    const role = await this.roleRepository.findOne({ where: { id: roleId }, relations: ['permissions'] });
 
-  // Remove a role by id
-  async removeRoleById(id: string): Promise<void> {
-    const role = await this.findOneRoleById(id);
-    console.log(role)
-    await this.roleRepository.remove(role);
-  }
-
-
-  // Create a new Permission
-  async createPermission(createPermissionDto: CreatePermissionDto): Promise<Permission> {
-    const newPermission = this.permissionRepository.create(createPermissionDto);
-    console.log(newPermission)
-    return this.permissionRepository.save(newPermission);
-  }
-
-  async findAllPermission({
-    query,
-    limit,
-    offset,
-  }: { query?: string; limit?: number; offset?: number }): Promise<Permission[]> {
-    const qb = this.permissionRepository.createQueryBuilder('permission');
-  
-    // Apply query filtering if provided
-    if (query) {
-      qb.where(
-        'permission.name LIKE :query',
-        {
-          query: `%${query}%`,
-        },
-      );
+    if (!role) {
+      throw new Error('Role not found');
     }
-  
-    // Apply offset if provided
-    if (offset) {
-      qb.skip(offset);
-    }
-  
-    // Apply limit if provided
-    if (limit) {
-      qb.take(limit);
-    }
-  
-    qb.orderBy('permission.id', 'DESC');
-  
-    return qb.getMany();
-  }
-  
 
-  // Find a Permission by id
-  async findOnePermissionById(id: string): Promise<Permission> {
-    const permission = await this.permissionRepository.findOne({ where: { id } });
-    console.log(permission)
+    if (name) {
+      role.name = name;
+    }
+
+    if (permissionIds && permissionIds.length > 0) {
+      const permissions = await this.permissionRepository.findByIds(permissionIds);
+      role.permissions = permissions;
+    }
+
+    const updatedRole = await this.roleRepository.save(role);
+    return { role: updatedRole };
+  }
+
+  // gRPC method to assign a permission to a role
+  @GrpcMethod('RoleService', 'AssignPermissionToRole')
+  async assignPermissionToRole(data: { roleId: string; permissionId: string }): Promise<{ role: Role }> {
+    const { roleId, permissionId } = data;
+
+    const role = await this.roleRepository.findOne({ where: { id: roleId }, relations: ['permissions'] });
+    if (!role) {
+      throw new Error('Role not found');
+    }
+
+    const permission = await this.permissionRepository.findOne({ where: { id: permissionId } });
     if (!permission) {
-      throw new NotFoundException(`Permission with id "${id}" not found`);
+      throw new Error('Permission not found');
     }
-    return permission;
-  }
 
-  // Update a Permission by id
-  async updatePermissionById(id: string, updatePermissionDto: UpdatePermissionDto): Promise<Permission> {
-    const permission = await this.findOnePermissionById(id);
-    Object.assign(permission, updatePermissionDto); // Merge updates into the existing route
-    return this.permissionRepository.save(permission);
-  }
+    if (!role.permissions.some(p => p.id === permission.id)) {
+      role.permissions.push(permission);
+    }
 
-  // Remove a Permission by id
-  async removePermissionById(id: string): Promise<void> {
-    const permission = await this.findOnePermissionById(id);
-    console.log(permission)
-    await this.permissionRepository.remove(permission);
+    const updatedRole = await this.roleRepository.save(role);
+    return { role: updatedRole };
   }
 }

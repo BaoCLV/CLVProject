@@ -11,6 +11,7 @@ export const GET_ALL_USER: DocumentNode = gql`
         email
         address
         phone_number
+        roleId
         refreshToken
         createdAt
         updatedAt

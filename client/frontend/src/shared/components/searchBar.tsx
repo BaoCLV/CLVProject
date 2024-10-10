@@ -43,7 +43,7 @@ export default function SearchBar({ getSearchResults }: SearchBarProps) {
   return (
     <form onSubmit={handleSearch} className="flex items-center space-x-2 p-2">
       <div className="flex items-center w-full"> {/* Wrapper to hold icon and input */}
-        <AiOutlineSearch className="text-purple-500 mr-2" size={20} /> {/* Purple search icon */}
+        <AiOutlineSearch className="text-blue-500 mr-2" size={20} /> {/* Purple search icon */}
         <Input
           isClearable
           variant="underlined"

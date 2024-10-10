@@ -1,9 +1,8 @@
 // src/routes/route.resolver.ts
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { RoutesService } from './route.service'; // Make sure the import points to the correct service file
 import { CreateRouteDto, UpdateRouteDto } from '../dto/route.dto';
 import { Route } from '../entities/route.entity';
-import { Int } from '@nestjs/graphql';
 import { CreateRequestDto } from 'src/dto/request.dto';
 import { Request } from 'src/entities/request.entity';
 
@@ -38,7 +37,7 @@ export class RouteResolver {
   // Mutation to update an existing route by name
   @Mutation(() => Route)
   async updateRoute(
-    @Args('id', {type: () =>  String}) id: string,
+    @Args('id', { type: () => String }) id: string,
     @Args('data') data: UpdateRouteDto,
   ): Promise<Route> {
     return this.routesService.updateById(id, data);

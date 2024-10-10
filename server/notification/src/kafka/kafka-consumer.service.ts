@@ -32,10 +32,11 @@ export class KafkaConsumerService implements OnModuleInit {
               subject: 'Activate your account!',
               email: event.email,
               name: event.name,
-              ActivationCode: event.activationCode,
+              ActivationCode: event.activation_code,
               template: 'activation-mail',
             });
             console.log(`Activation email sent successfully to ${event.email}`);
+            console.log(`acotivation code: ${event.activation_code}`)
           } else if (topic === 'user-forgot-password') {
             // Handle forgot password event
             await this.emailService.sendActivationEmail({

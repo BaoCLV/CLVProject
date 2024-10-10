@@ -14,6 +14,7 @@ import { join } from 'path';
 import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
 import { Role } from '../../../role/src/entities/role.entity';
 import { Permission } from '../../../role/src/entities/permission.entity';
+import { SeedService } from 'src/seeder/SeedService';
 
 @Module({
   imports: [
@@ -55,7 +56,8 @@ import { Permission } from '../../../role/src/entities/permission.entity';
     UsersResolver,
     ConfigService,
     JwtService,
-    KafkaProducerService
+    KafkaProducerService,
+    SeedService
     // EmailService
   ],
   exports: [UsersService]
