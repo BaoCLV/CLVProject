@@ -20,7 +20,6 @@ export class Route {
   @Column('float')
   distance: number;
 
-
   @Field()
   @Column('uuid')
   userId: string;  

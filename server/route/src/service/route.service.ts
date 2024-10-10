@@ -1,15 +1,21 @@
 // src/routes/routes.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { Route } from '../entities/route.entity';
 import { CreateRouteDto, UpdateRouteDto } from '../dto/route.dto';
+import { Request } from 'src/entities/request.entity';
+import { CreateRequestDto } from 'src/dto/request.dto';
+import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
 
 @Injectable()
 export class RoutesService {
   constructor(
     @InjectRepository(Route)
     private readonly routeRepository: Repository<Route>,
+    @InjectRepository(Request)
+    private readonly requestRepository: Repository<Request>,
+    private readonly kafkaProducerService: KafkaProducerService,
   ) {}
 
   // Create a new route
@@ -72,5 +78,35 @@ export class RoutesService {
   async removeById(id: string): Promise<void> {
     const route = await this.findOneById(id);
     await this.routeRepository.remove(route);
+  }
+  async countRoutes(): Promise<number> {
+    return this.routeRepository.count(); // Use the repository to count
+  }
+  async countRoutesForMonth(year: number, month: number): Promise<number> {
+    const startOfMonth = new Date(year, month - 1, 1);
+    const endOfMonth = new Date(year, month, 0, 23, 59, 59); // Last day of the month
+  
+    return this.routeRepository.count({
+      where: {
+        createdAt: Between(startOfMonth, endOfMonth),
+      },
+    });
+  }
+
+  // REQUEST
+  async createRequest(createRequestDto: CreateRequestDto) {
+    const request = this.requestRepository.create(createRequestDto);
+    await this.kafkaProducerService.sendRequestCreateRouteEvent(request);
+    return this.requestRepository.save(request);
+  }
+
+  async approveRequest(id: string) {
+    await this.kafkaProducerService.sendRequestApproveRouteEvent({ id });
+    return this.requestRepository.update(id, { status: 'approved' });
+  }
+
+  async rejectRequest(id: string) {
+    await this.kafkaProducerService.sendRequestRejectRouteEvent({ id });
+    return this.requestRepository.update(id, { status: 'rejected' });
   }
 }

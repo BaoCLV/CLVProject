@@ -7,6 +7,7 @@ import Header from "../../components/Header";
 import { toast } from "react-hot-toast";
 // import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useRouter } from "next/navigation";
 
 
 // Define the form state interface
@@ -30,6 +31,7 @@ export default function CreateUser() {
     const [error, setError] = useState<string | null>(null);
     const { handlecreateUser } = useCreateUser(); // Mutation to create the user
     const { user, loading } = useUser(); // Get user and loading state from the useUser hook
+    const router = useRouter()
 
     // Handle input field changes
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,6 +66,7 @@ export default function CreateUser() {
                 toast.success("Create user successful!", {
                     //icon: "🚚", // Success icon (customize it to anything you want)
                 });
+                router.push("/api/user/")
             }
         } catch (error: any) {
             setError(error.message || "Error creating user");

@@ -4,10 +4,14 @@ import { RoutesService } from './route.service'; // Make sure the import points 
 import { CreateRouteDto, UpdateRouteDto } from '../dto/route.dto';
 import { Route } from '../entities/route.entity';
 import { Int } from '@nestjs/graphql';
+import { CreateRequestDto } from 'src/dto/request.dto';
+import { Request } from 'src/entities/request.entity';
 
 @Resolver(() => Route)
 export class RouteResolver {
-  constructor(private readonly routesService: RoutesService) {}
+  constructor(
+    private readonly routesService: RoutesService
+  ) { }
 
   // Query to get all routes, optionally paginated
   @Query(() => [Route])
@@ -45,5 +49,34 @@ export class RouteResolver {
   async deleteRoute(@Args('id', { type: () => String }) id: string): Promise<boolean> {
     await this.routesService.removeById(id);
     return true;
+  }
+
+  // Query to get the total number of routes
+  @Query(() => Number)
+  async totalRoutes(): Promise<number> {
+    return this.routesService.countRoutes(); // Use the service to count routes
+  }
+  @Query(() => Number)
+  async totalRoutesForMonth(
+    @Args('year', { type: () => Int }) year: number,
+    @Args('month', { type: () => Int }) month: number,
+  ): Promise<number> {
+    return this.routesService.countRoutesForMonth(year, month);
+  }
+
+  //REQUEST
+  @Mutation(() => Request)
+  createRequest(@Args('createRequestDto') createRequestDto: CreateRequestDto) {
+    return this.routesService.createRequest(createRequestDto);
+  }
+
+  @Mutation(() => Boolean)
+  approveRequest(@Args('id') id: string) {
+    return this.routesService.approveRequest(id);
+  }
+
+  @Mutation(() => Boolean)
+  rejectRequest(@Args('id') id: string) {
+    return this.routesService.rejectRequest(id);
   }
 }
