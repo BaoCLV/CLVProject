@@ -23,33 +23,44 @@ export class RoutesService {
     query,
     limit,
     offset,
-  }: { query?: string; limit?: number; offset?: number }): Promise<Route[]> {
+  }: {
+    query?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<Route[]> {
     const qb = this.routeRepository.createQueryBuilder('route');
   
-    // Apply query filtering if provided
-    if (query) {
+    // Helper function to validate UUID format
+    const isValidUUID = (value: string) => {
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      return uuidRegex.test(value);
+    };
+  
+    // If the query is a valid UUID, treat it as an ID filter
+    if (query && isValidUUID(query)) {
+      qb.where('route.id = :id', { id: query });
+    } else if (query) {
+      // Otherwise, treat the query as a general search term for location
       qb.where(
-        'route.startLocation LIKE :query OR route.endLocation LIKE :query',
-        {
-          query: `%${query}%`,
-        },
+        '(route.startLocation LIKE :query OR route.endLocation LIKE :query)',
+        { query: `%${query}%` },
       );
     }
-  
-    // Apply offset if provided
+
     if (offset) {
       qb.skip(offset);
     }
   
-    // Apply limit if provided
     if (limit) {
       qb.take(limit);
     }
   
     qb.orderBy('route.id', 'DESC');
   
+  
     return qb.getMany();
   }
+  
   
 
   // Find a route by id

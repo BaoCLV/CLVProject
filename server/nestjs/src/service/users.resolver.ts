@@ -2,14 +2,28 @@ import { Resolver, Context, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { UsersService } from './users.service';
 import { RegisterResponse, LoginResponse, ActivationResponse, LogOutResponse, ForgotPasswordResponse, ResetPasswordResponse, GetUserByEmailResponse, UserListResponse, ChangePasswordResponse, RequestChangePasswordResponse, UpdateUserResponse } from '../types/user.types';
 import { RegisterDto, LoginDto, ActivationDto, ForgotPasswordDto, ResetPasswordDto, ChangePasswordDto, RequestChangePasswordDto, UpdateUserDto } from '../dto/user.dto';
-import { User } from '../entities/user.entity';
+import {  User } from '../entities/user.entity';
 import { BadRequestException, SetMetadata, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../guards/auth.guard';
 import { PermissionsGuard, RequirePermissions, ROLE_KEY } from 'src/guards/permissions.guard';
+import { Avatar } from 'src/entities/avatar.entity';
 
 @Resolver()
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) { }
+
+  @Mutation(() => Avatar)
+  async uploadAvatar(
+    @Args('userId') userId: string,
+    @Args('imageDataBase64') imageDataBase64: string,
+  ): Promise<Avatar> {
+    return this.usersService.uploadAvatar(userId, imageDataBase64);
+  }
+  
+  @Query(() => Avatar, { nullable: true })
+  async getAvatar(@Args('userId') userId: string): Promise<Avatar> {
+    return this.usersService.getAvatar(userId);
+  }
 
   @Query(() => Number)
   async totalUsers(): Promise<Number> {
@@ -148,10 +162,9 @@ async totalUsersForMonth(
   // Create a new user by admin
   @Mutation(() => User)
   async createUser(
-    @Args('data') data: RegisterDto,    // User data
-    @Args('roleId', { type: () => String }) roleId: string  // Role ID (UUID)
+    @Args('data') data: RegisterDto,    
   ): Promise<User> {
-    return this.usersService.createUser(data, roleId);  // Pass roleId to service
+    return this.usersService.createUser(data);
   }
 
   // Mutation to delete a user by id

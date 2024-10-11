@@ -15,12 +15,14 @@ export const CREATE_USER: DocumentNode = gql`
       password: $password,
       phone_number: $phone_number,
       address: $address
+
     }) {
       id
       name
       email
       phone_number
       address
+
     }
   }
 `;

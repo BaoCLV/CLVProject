@@ -24,7 +24,7 @@ export class RegisterDto {
 
   @Field()
   @IsNotEmpty({ message: 'Address is required.' })
-  address: string;
+  address: string; 
 }
 
 @InputType()

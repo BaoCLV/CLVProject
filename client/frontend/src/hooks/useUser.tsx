@@ -13,6 +13,8 @@ import { CREATE_USER } from "../graphql/auth/Actions/createUserByAdmin";
 import { GET_TOTALS } from "../graphql/auth/Actions/countUser";
 import { useRouter } from "next/navigation";
 import { GET_TOTAL_USERS_FOR_MONTH } from "../graphql/auth/Actions/totalMonthUser";
+import { UPLOAD_AVATAR } from "../graphql/auth/Actions/Avatar.action";
+import { GET_AVATAR } from "../graphql/auth/Actions/Avatar";
 
 
 //get loggedin user
@@ -139,7 +141,7 @@ export const useCreateUser = () => {
           email: data.email,
           password: data.password,
           phone_number: data.phone_number,
-          address: data.address
+          address: data.address,
         },
       });
       // localStorage.setItem(
@@ -172,7 +174,7 @@ export const useUpdateUser = () => {
           name: userData.name,
           phone_number: userData.phone_number,
           address: userData.address,
-          roleId: userData.roleId || null,  // Pass roleId, if available, otherwise null
+          roleId: userData.roleId
         },
       });
 
@@ -271,5 +273,46 @@ export const useTotalsUserForMonth = (year: number, month: number) => {
     totalUsersMonth: data?.totalUsersForMonth || 0,
     loading,
     error,
+  };
+};
+
+export const useUploadAvatar = () => {
+  const authClient = useGraphQLClient('auth');
+
+  const [uploadAvatar, { data, loading, error }] = useMutation(UPLOAD_AVATAR,{client: authClient});
+
+  const handleUploadAvatar = async (userId: string, imageDataBase64: string) => {
+    try {
+      const response = await uploadAvatar({
+        variables: { userId, imageDataBase64 },
+      });
+      return response;
+    } catch (err) {
+      console.error('Error uploading avatar:', err);
+      throw err;
+    }
+  };
+
+  return {
+    handleUploadAvatar, 
+    data,  
+    loading, 
+    error, 
+  };
+};
+
+export const useGetAvatar = (userId: string) => {
+  const authClient = useGraphQLClient('auth');
+
+  const { data, loading, error } = useQuery(GET_AVATAR, {
+    client: authClient,
+    variables: { userId },
+    skip: !userId, 
+  });
+
+  return {
+    avatar: data?.getAvatar, 
+    loading,
+    error,  
   };
 };

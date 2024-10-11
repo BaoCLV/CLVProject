@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useCreateUser, useUser } from "../../../hooks/useUser";
-import Sidebar from "../../components/Sidebar";
+import { useRoles } from "../../../hooks/useRole";  // Fetch available roles
+import { useRouter } from "next/navigation"; // Use router for navigation
+import ProfileSidebar from "../../components/pages/admin/ProfileSidebar";
 import Header from "../../components/Header";
 import { toast } from "react-hot-toast";
-// import { ToastContainer } from 'react-toastify';
-import "react-toastify/dist/ReactToastify.css";
-import ProfileSidebar from "../../components/pages/admin/ProfileSidebar";
 import Loading from "../../components/Loading";
 
 // Define the form state interface
@@ -15,6 +14,14 @@ interface CreateUserForm {
   name: string;
   email: string;
   password: string;
+  phone_number: string;
+  address: string;
+}
+
+interface CreatedUser {
+  id: string;
+  name: string;
+  email: string;
   phone_number: string;
   address: string;
 }
@@ -29,11 +36,15 @@ export default function CreateUser() {
   });
 
   const [error, setError] = useState<string | null>(null);
-  const { handlecreateUser } = useCreateUser(); // Mutation to create the user
-  const { user, loading } = useUser();
+  const [createdUsers, setCreatedUsers] = useState<CreatedUser[]>([]); // Track created users
+
+  const { handlecreateUser } = useCreateUser();  // Mutation to create the user
+  const { user, loading: userLoading } = useUser();
+  const { loadingRoles, roles } = useRoles();
+  const router = useRouter(); // Use router for navigation
 
   // Handle input field changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
@@ -58,130 +69,171 @@ export default function CreateUser() {
         email: form.email,
         password: form.password,
         phone_number: form.phone_number,
-        address: form.address,
+        address: form.address, 
       });
+
       if (createdUser) {
         // Show success notification
-        toast.success("Create user successful!", {
-          //icon: "🚚", // Success icon (customize it to anything you want)
-        });
+        toast.success("Create user successful!");
+
+        // Add the newly created user to the list
+        setCreatedUsers(prev => [
+          ...prev,
+          {
+            id: createdUser.id,  // Assuming the createdUser response includes an id
+            name: createdUser.name,
+            email: createdUser.email,
+            phone_number: createdUser.phone_number,
+            address: createdUser.address
+          }
+        ]);
       }
     } catch (error: any) {
       setError(error.message || "Error creating user");
     }
   };
 
+  // Navigate to the user's detail page
+  const handleViewDetails = () => {
+    router.push(`/api/profile/${user.id}`); // Navigate to the user's detail page
+  };
 
-  if (loading) {
-    return (
-        <Loading/>
-    );
+  if (userLoading || loadingRoles) {
+    return <Loading />;
   }
+
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-200">
       <ProfileSidebar />
       <div className="flex flex-col flex-1">
         <Header />
-        <div className="flex flex-col h-screen py-16 px-8">
-          <h4 className="mb-6 text-2xl font-bold text-black">Create a User</h4>
+        <div className="flex-1 bg-gray-200 py-16 px-8">
+          <h4 className="mb-6 text-3xl font-bold text-black">
+            Create User
+          </h4>
 
-          <form className="space-y-4">
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700"
-              >
-                User's Name
+          {/* Create user form */}
+          <form onSubmit={handleCreatingUser} className="space-y-8 bg-white px-8 pb-8 rounded-lg shadow-lg relative">
+            <div className="pl-52 pt-10">
+              {/* Name field */}
+              <label className="block text-lg pb-8">
+                <span className="text-gray-700 text-2xl font-bold">Name</span>
+                <input
+                  type="text"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="Enter Name"
+                  required
+                  className="block w-full mt-2 p-4 text-lg border-black bg-gray-300 rounded-lg focus:border-blue-500 transition duration-150"
+                />
               </label>
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="Enter your username"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-gray-900"
-              />
-            </div>
 
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email
+              {/* Email field */}
+              <label className="block text-lg pb-8">
+                <span className="text-gray-700 text-2xl font-bold">Email</span>
+                <input
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="Enter Email"
+                  required
+                  className="block w-full mt-2 p-4 text-lg border-black bg-gray-300 rounded-lg focus:border-blue-500 transition duration-150"
+                />
               </label>
-              <input
-                type="text"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="Enter your email"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-gray-900"
-              />
-            </div>
 
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Password
+              {/* Password field */}
+              <label className="block text-lg pb-8">
+                <span className="text-gray-700 text-2xl font-bold">Password</span>
+                <input
+                  type="password"
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="Enter Password"
+                  required
+                  className="block w-full mt-2 p-4 text-lg border-black bg-gray-300 rounded-lg focus:border-blue-500 transition duration-150"
+                />
               </label>
-              <input
-                type="text"
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder="Enter your password"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-gray-900"
-              />
-            </div>
 
-            <div>
-              <label
-                htmlFor="phone_number"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Phone Number
+              {/* Phone number field */}
+              <label className="block text-lg pb-8">
+                <span className="text-gray-700 text-2xl font-bold">Phone Number</span>
+                <input
+                  type="tel"
+                  name="phone_number"
+                  value={form.phone_number}
+                  onChange={handleChange}
+                  placeholder="Enter Phone Number"
+                  required
+                  className="block w-full mt-2 p-4 text-lg border-black bg-gray-300 rounded-lg focus:border-blue-500 transition duration-150"
+                />
               </label>
-              <input
-                type="text"
-                name="phone_number"
-                value={form.phone_number}
-                onChange={handleChange}
-                placeholder="Enter your phone number"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-gray-900"
-              />
-            </div>
 
-            <div>
-              <label
-                htmlFor="address"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Address
+              {/* Address field */}
+              <label className="block text-lg pb-8">
+                <span className="text-gray-700 text-2xl font-bold">Address</span>
+                <input
+                  type="text"
+                  name="address"
+                  value={form.address}
+                  onChange={handleChange}
+                  placeholder="Enter Address"
+                  required
+                  className="block w-full mt-2 p-4 text-lg border-black bg-gray-300 rounded-lg focus:border-blue-500 transition duration-150"
+                />
               </label>
-              <input
-                type="text"
-                name="address"
-                value={form.address}
-                onChange={handleChange}
-                placeholder="Enter your address"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-gray-900"
-              />
+
+              {/* Error Message */}
+              {error && <p className="mt-4 text-lg text-red-500">Error: {error}</p>}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="w-full py-4 text-lg font-semibold text-white transition-colors duration-150 bg-blue-600 border border-transparent rounded-lg hover:bg-blue-800"
+              >
+                Create User
+              </button>
             </div>
-
-            {error && <p className="mt-4 text-red-500">Error: {error}</p>}
-
-            {/* Create User Button */}
-            <button
-              type="submit"
-              className="w-full py-2 mt-4 text-lg font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-              onClick={handleCreatingUser}
-            >
-              Create User
-            </button>
           </form>
+
+          {/* Display the list of created users */}
+          {createdUsers.length > 0 && (
+            <div className="mt-8">
+              <h4 className="text-2xl font-bold text-gray-800 mb-4">Recently Created Users</h4>
+              <table className="min-w-full bg-white rounded-lg shadow-md">
+                <thead>
+                  <tr>
+                    <th className="px-4 py-2 border-b">Name</th>
+                    <th className="px-4 py-2 border-b">Email</th>
+                    <th className="px-4 py-2 border-b">Phone Number</th>
+                    <th className="px-4 py-2 border-b">Address</th>
+                    <th className="px-4 py-2 border-b">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {createdUsers.map((user) => (
+                    <tr key={user.id}>
+                      <td className="px-4 py-2 border-b">{user.name}</td>
+                      <td className="px-4 py-2 border-b">{user.email}</td>
+                      <td className="px-4 py-2 border-b">{user.phone_number}</td>
+                      <td className="px-4 py-2 border-b">{user.address}</td>
+                      <td className="px-4 py-2 border-b">
+                        <button
+                          className="text-blue-600 hover:underline"
+                          onClick={() => handleViewDetails()}
+                        >
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
         </div>
       </div>
     </div>

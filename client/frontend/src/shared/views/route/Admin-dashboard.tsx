@@ -13,79 +13,83 @@ import Card from "../../components/pages/admin/card";
 import ProfileSidebar from "../../components/pages/admin/ProfileSidebar";
 import SalesMappingChart from "../../components/pages/admin/saleMap"; // Import your SalesMappingChart component
 import Footer from "../../components/Footer";
+import UserDashboard from "../../components/pages/admin/userTable";
 
 const queryClient = new QueryClient();
 
 function Dashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const itemsPerPage = 10;
+
+  // State for user pagination
+  const pageFromUserUrl = parseInt(searchParams.get("userPage") || "1", 10);
+  const [currentUserPage, setCurrentUserPage] = useState(pageFromUserUrl);
+
+  // State for route pagination
+  const pageFromRouteUrl = parseInt(searchParams.get("routePage") || "1", 10);
+  const [currentRoutePage, setCurrentRoutePage] = useState(pageFromRouteUrl);
 
   // Get the current year and month
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1; // Months are 0-based
 
   // Fetch total users and total routes using custom hooks
+  const { totalUsers, loading: loadingUsers, error: errorUsers } = useTotalsUser();
+  const { totalRoutes, loading: loadingRoutes, error: errorRoutes } = useTotalsRoute();
+  const { totalUsersMonth, loading: loadingUsersThisMonth, error: errorUsersThisMonth } = useTotalsUserForMonth(currentYear, currentMonth);
+  const { totalRoutesMonth, loading: loadingRoutesThisMonth, error: errorRoutesThisMonth } = useTotalsRouteForMonth(currentYear, currentMonth);
+
+  // Fetch routes data (pagination for routes)
   const {
-    totalUsers,
-    loading: loadingUsers,
-    error: errorUsers,
-  } = useTotalsUser();
+    data: routeData,
+    error: routeError,
+    isFetching: isFetchingRoutes,
+    hasNextPage: hasNextRoutePage,
+    hasPreviousPage: hasPreviousRoutePage,
+    isFetchingNextPage: isFetchingNextRoutePage,
+    isFetchingPreviousPage: isFetchingPreviousRoutePage,
+  } = useGetRoutes(currentRoutePage, itemsPerPage);
 
-  const {
-    totalRoutes,
-    loading: loadingRoutes,
-    error: errorRoutes,
-  } = useTotalsRoute();
-
-  const {
-    totalUsersMonth,
-    loading: loadingUsersThisMonth,
-    error: errorUsersThisMonth,
-  } = useTotalsUserForMonth(currentYear, currentMonth);
-
-  const {
-    totalRoutesMonth,
-    loading: loadingRoutesThisMonth,
-    error: errorRoutesThisMonth,
-  } = useTotalsRouteForMonth(currentYear, currentMonth);
-
-  const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
-  const [currentPage, setCurrentPage] = useState(pageFromUrl);
-
-  useEffect(() => {
-    setCurrentPage(pageFromUrl);
-  }, [pageFromUrl]);
-
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-    router.push(`/admin/dashboard/?page=${newPage}`);
+  // Handle user pagination separately
+  const handleUserPageChange = (newPage: number) => {
+    setCurrentUserPage(newPage);
+    router.push(`/admin/dashboard/?userPage=${newPage}`, {scroll:false});
   };
 
-  const {
-    data,
-    error,
-    isFetching,
-    hasNextPage,
-    hasPreviousPage,
-    isFetchingNextPage,
-    isFetchingPreviousPage,
-  } = useGetRoutes(currentPage, itemsPerPage);
+  // Handle route pagination separately
+  const handleRoutePageChange = (newPage: number) => {
+    setCurrentRoutePage(newPage);
+    router.push(`/admin/dashboard/?routePage=${newPage}`,  {scroll:false});
+  };
 
-  if (error instanceof Error) return <p>Error: {error.message}</p>;
+  useEffect(() => {
+    setCurrentUserPage(pageFromUserUrl);
+  }, [pageFromUserUrl]);
 
-  const allRoutes = data?.pages.flatMap((page) => page) ?? [];
+  useEffect(() => {
+    setCurrentRoutePage(pageFromRouteUrl);
+  }, [pageFromRouteUrl]);
+
+  if (routeError instanceof Error) return <p>Error: {routeError.message}</p>;
+
+  const allRoutes = routeData?.pages.flatMap((page) => page) ?? [];
 
   return (
-    <div className="flex min-h-screen bg-gray-200">
-      <ProfileSidebar />
-      <div className="flex flex-col flex-1">
-        <Header />
-        <div className="py-16 px-8">
+    <div className="flex flex-col min-h-screen">
+      {/* Header */}
+      <Header />
+
+      {/* Main layout container */}
+      <div className="flex flex-1">
+
+        <ProfileSidebar />
+
+        {/* Content */}
+        <div className="flex flex-col flex-1 bg-gray-200 py-16 px-8 relative">
           {/* Section Title */}
-          <h2 className="text-2xl font-bold mb-4 text-left text-black">
-            Overview
-          </h2>
+          <h2 className="text-2xl font-bold mb-4 text-left text-black">Overview</h2>
 
           {/* Cards Section */}
           <div className="flex justify-center items-center mb-8 bg-white rounded-lg shadow-md py-8">
@@ -124,9 +128,7 @@ function Dashboard() {
               {loadingUsersThisMonth ? (
                 <Spinner label="Loading Monthly Users..." />
               ) : errorUsersThisMonth ? (
-                <p>
-                  Error loading monthly users: {errorUsersThisMonth.message}
-                </p>
+                <p>Error loading monthly users: {errorUsersThisMonth.message}</p>
               ) : (
                 <Card
                   icon={<FaCalendarAlt className="w-5 h-5 text-white" />}
@@ -141,9 +143,7 @@ function Dashboard() {
               {loadingRoutesThisMonth ? (
                 <Spinner label="Loading Monthly Routes..." />
               ) : errorRoutesThisMonth ? (
-                <p>
-                  Error loading monthly routes: {errorRoutesThisMonth.message}
-                </p>
+                <p>Error loading monthly routes: {errorRoutesThisMonth.message}</p>
               ) : (
                 <Card
                   icon={<FaCalendarAlt className="w-5 h-5 text-white" />}
@@ -157,14 +157,12 @@ function Dashboard() {
           </div>
 
           {/* Section Title */}
-          <h2 className="text-2xl font-bold mb-4 text-left text-black">
-            Routes Table
-          </h2>
+          <h2 className="text-2xl font-bold mb-4 text-left text-black">Routes Table</h2>
 
-          {/* Table Section */}
-          <div className="w-full ">
+          {/* Route Table Section */}
+          <div className="w-full">
             <div className="w-full overflow-x-auto rounded-lg shadow-md">
-              <table className="w-full whitespace-no-wrap border-black  bg-white">
+              <table className="w-full whitespace-no-wrap border-black bg-white">
                 <thead>
                   <tr className="text-xs font-semibold tracking-wide text-left bg-white text-purple-700 uppercase border-b dark:border-black">
                     <th className="px-4 py-3">Route ID</th>
@@ -175,7 +173,7 @@ function Dashboard() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y dark:divide-gray-700 dark:bg-white">
-                  {isFetching && (
+                  {isFetchingRoutes && (
                     <tr>
                       <td colSpan={5} className="text-center py-4">
                         <Spinner label="Loading..." />
@@ -185,20 +183,11 @@ function Dashboard() {
 
                   {allRoutes.length > 0
                     ? allRoutes.map((route: any) => (
-                        <tr
-                          key={route.id}
-                          className="text-blue-700 dark:text-black"
-                        >
+                        <tr key={route.id} className="text-blue-700 dark:text-black">
                           <td className="px-4 py-3 text-sm">{route.id}</td>
-                          <td className="px-4 py-3 text-sm">
-                            {route.startLocation}
-                          </td>
-                          <td className="px-4 py-3 text-sm">
-                            {route.endLocation}
-                          </td>
-                          <td className="px-4 py-3 text-sm">
-                            {route.distance}
-                          </td>
+                          <td className="px-4 py-3 text-sm">{route.startLocation}</td>
+                          <td className="px-4 py-3 text-sm">{route.endLocation}</td>
+                          <td className="px-4 py-3 text-sm">{route.distance}</td>
                           <td className="px-4 py-3 text-sm">
                             <a
                               href={`/api/route/${route.id}`}
@@ -209,25 +198,23 @@ function Dashboard() {
                           </td>
                         </tr>
                       ))
-                    : !isFetching && (
+                    : !isFetchingRoutes && (
                         <tr>
-                          <td colSpan={5} className="text-center py-4">
-                            No routes available
-                          </td>
+                          <td colSpan={5} className="text-center py-4">No routes available</td>
                         </tr>
                       )}
                 </tbody>
               </table>
             </div>
 
-            {/* Pagination Controls */}
+            {/* Pagination Controls for Routes */}
             <div className="flex justify-between px-4 py-3 text-xs font-semibold tracking-wide text-purple-700 uppercase border-t">
               <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage <= 1 || isFetchingPreviousPage}
+                onClick={() => handleRoutePageChange(currentRoutePage - 1)}
+                disabled={currentRoutePage <= 1 || isFetchingPreviousRoutePage}
                 className="px-3 py-1 bg-purple-500 text-white rounded disabled:opacity-50 flex items-center"
               >
-                {isFetchingPreviousPage ? (
+                {isFetchingPreviousRoutePage ? (
                   <>
                     <Spinner className="mr-2" /> Loading...
                   </>
@@ -236,14 +223,14 @@ function Dashboard() {
                 )}
               </button>
 
-              <span>Showing page {currentPage}</span>
+              <span>Showing page {currentRoutePage}</span>
 
               <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={!hasNextPage || isFetchingNextPage}
+                onClick={() => handleRoutePageChange(currentRoutePage + 1)}
+                disabled={!hasNextRoutePage || isFetchingNextRoutePage}
                 className="px-3 py-1 bg-purple-500 text-white rounded disabled:opacity-50 flex items-center"
               >
-                {isFetchingNextPage ? (
+                {isFetchingNextRoutePage ? (
                   <>
                     <Spinner className="mr-2" /> Loading...
                   </>
@@ -253,10 +240,12 @@ function Dashboard() {
               </button>
             </div>
 
+            {/* User Dashboard with Independent Pagination */}
+            <h2 className="text-2xl font-bold mb-4 mt-8 text-left text-black">User Dashboard</h2>
+            <UserDashboard currentPage={currentUserPage} onPageChange={handleUserPageChange} />
+
             {/* Section Title */}
-            <h2 className="text-2xl font-bold mb-4 mt-8 text-left text-black">
-              Routes Map
-            </h2>
+            <h2 className="text-2xl font-bold mb-4 mt-8 text-left text-black">Routes Map</h2>
 
             {/* Map Section */}
             <div className="mt-8 flex ">
@@ -275,6 +264,7 @@ function Dashboard() {
           </div>
         </div>
       </div>
+      <Footer/>
     </div>
   );
 }

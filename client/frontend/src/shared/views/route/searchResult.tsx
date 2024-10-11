@@ -1,21 +1,23 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation"; // To get URL query params and manipulate routes
+import { useSearchParams, useRouter } from "next/navigation";
 import { useLazyQuery } from "@apollo/client";
 import { GET_ROUTES_QUERY } from "@/src/graphql/route/Action/getRoutes.action";
 import { Spinner } from "@nextui-org/react";
-import Sidebar from "../../components/Sidebar";
+import ProfileSidebar from "../../components/pages/admin/ProfileSidebar";
 import Header from "../../components/Header";
+import SearchBar from "../../components/searchBar"; // Import your SearchBar component
 
 function SearchResults() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const query = searchParams.get("query") || ""; // Get query from URL
-  const limit = parseInt(searchParams.get("limit") || "10", 10); // Get limit from URL
-  const offset = parseInt(searchParams.get("offset") || "0", 10); // Get offset from URL
+  const query = searchParams.get("query") || "";
+  const limit = parseInt(searchParams.get("limit") || "10", 10);
+  const offset = parseInt(searchParams.get("offset") || "0", 10);
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchResults, setSearchResults] = useState<any[]>([]); // To store search results
 
   // Use LazyQuery to fetch data when search params change
   const [fetchRoutes, { loading, data, error }] = useLazyQuery(GET_ROUTES_QUERY, {
@@ -34,6 +36,12 @@ function SearchResults() {
     }
   }, [query, limit, offset, fetchRoutes]);
 
+  useEffect(() => {
+    if (data) {
+      setSearchResults(data.routes || []);
+    }
+  }, [data]);
+
   // Function to handle page navigation (pagination)
   const handlePageChange = (newPage: number) => {
     const newOffset = (newPage - 1) * limit;
@@ -41,40 +49,57 @@ function SearchResults() {
     router.push(`?query=${query}&limit=${limit}&offset=${newOffset}`);
   };
 
+  // Function to handle new search queries from SearchBar
+  const handleSearchResults = (searchQuery: string) => {
+    setCurrentPage(1); // Reset to first page when a new search is made
+    router.push(`?query=${searchQuery}&limit=${limit}&offset=0`);
+  };
+
   if (loading) return <Spinner label="Loading..." />;
   if (error) return <p className="text-red-500">Error: {error.message}</p>;
 
-  const routes = data?.routes || []; // Ensure results are fetched
+  const routes = searchResults || [];
 
   return (
-    <div className="flex h-screen">
-      <Sidebar />
-      <div className="flex flex-col bg-gray-200  flex-1">
+    <div className="flex h-screen bg-gray-50">
+      <ProfileSidebar />
+      <div className="flex flex-col flex-1">
         <Header />
-          <h1 className="p-4 text-2xl font-bold mb-2 text-black">Search Results</h1>
+        <main className="flex-1 px-4 py-6 md:px-8 bg-white rounded-xl shadow-lg mt-6">
+          {/* Header and Search Bar */}
+          <div className="flex flex-wrap justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold text-blue-600">Search Results for "{query}"</h1>
 
-          <div className="p-2 w-full overflow-hidden rounded-lg shadow-xs">
+            {/* Search Bar */}
+            <div className="flex-1 max-w-xs">
+              <SearchBar getSearchResults={handleSearchResults} />
+            </div>
+          </div>
+
+          <div className="w-full">
             <div className="w-full overflow-x-auto">
-              <table className="w-full whitespace-no-wrap bg-white">
+              <table className="w-full whitespace-no-wrap table-auto bg-white shadow-lg rounded-lg overflow-hidden">
                 <thead>
-                  <tr className="text-xs font-semibold tracking-wide text-left bg-white text-purple-700 uppercase border-b dark:border-black">
-                    <th className="px-4 py-3">Start Location</th>
-                    <th className="px-4 py-3">End Location</th>
-                    <th className="px-4 py-3">Distance (km)</th>
-                    <th className="px-4 py-3">Actions</th>
+                  <tr className="text-xs font-semibold tracking-wide text-left text-blue-600 uppercase border-b border-gray-200 bg-gray-50">
+                    <th className="px-6 py-4">ID</th>
+                    <th className="px-6 py-4">Start Location</th>
+                    <th className="px-6 py-4">End Location</th>
+                    <th className="px-6 py-4">Distance (km)</th>
+                    <th className="px-6 py-4">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y dark:divide-gray-700 dark:bg-white">
+                <tbody className="bg-white divide-y divide-gray-100">
                   {routes.length > 0 ? (
                     routes.map((route: any) => (
-                      <tr key={route.id} className="text-blue-700 dark:text-black">
-                        <td className="px-4 py-3 text-sm">{route.startLocation}</td>
-                        <td className="px-4 py-3 text-sm">{route.endLocation}</td>
-                        <td className="px-4 py-3 text-sm">{route.distance}</td>
-                        <td className="px-4 py-3 text-sm">
+                      <tr key={route.id} className="hover:bg-blue-50 transition-colors">
+                        <td className="px-6 py-4 text-sm">{route.id}</td>
+                        <td className="px-6 py-4 text-sm">{route.startLocation}</td>
+                        <td className="px-6 py-4 text-sm">{route.endLocation}</td>
+                        <td className="px-6 py-4 text-sm">{route.distance}</td>
+                        <td className="px-6 py-4 text-sm">
                           <a
                             href={`/api/route/${route.id}`}
-                            className="text-blue-600 hover:underline dark:text-blue-400"
+                            className="text-blue-600 hover:text-blue-500 hover:underline transition"
                           >
                             View Details
                           </a>
@@ -83,8 +108,8 @@ function SearchResults() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="text-center py-4">
-                        No results found for {query}.
+                      <td colSpan={5} className="text-center py-6 text-gray-600">
+                        No results found for "{query}"
                       </td>
                     </tr>
                   )}
@@ -93,32 +118,32 @@ function SearchResults() {
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex justify-between px-4 py-3 text-xs font-semibold tracking-wide text-purple-700 uppercase border-t bg-gray-50 dark:bg-gray-800">
+            <div className="flex justify-between items-center py-6 px-4 mt-4 border-t border-gray-200">
               {/* Previous Button */}
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage <= 1}
-                className="px-3 py-1 bg-purple-500 text-white rounded disabled:opacity-50 flex items-center"
+                className="px-4 py-2 text-white rounded-lg bg-blue-600 hover:bg-blue-700 transition disabled:opacity-50"
               >
                 Previous
               </button>
 
               {/* Current Page Display */}
-              <span>Showing page {currentPage}</span>
+              <span className="text-gray-600">Page {currentPage}</span>
 
               {/* Next Button */}
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={routes.length < limit}
-                className="px-3 py-1 bg-purple-500 text-white rounded disabled:opacity-50 flex items-center"
+                className="px-4 py-2 text-white rounded-lg bg-blue-600 hover:bg-blue-700 transition disabled:opacity-50"
               >
                 Next
               </button>
             </div>
           </div>
-        </div>
+        </main>
       </div>
-
+    </div>
   );
 }
 

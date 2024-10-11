@@ -42,8 +42,8 @@ export default function SearchBar({ getSearchResults }: SearchBarProps) {
 
   return (
     <form onSubmit={handleSearch} className="flex items-center space-x-2 p-2">
-      <div className="flex items-center w-full"> {/* Wrapper to hold icon and input */}
-        <AiOutlineSearch className="text-blue-500 mr-2" size={20} /> {/* Purple search icon */}
+      <div className="flex items-center w-full">
+        <AiOutlineSearch className="text-blue-500 mr-2" size={20} /> 
         <Input
           isClearable
           variant="underlined"
@@ -52,7 +52,7 @@ export default function SearchBar({ getSearchResults }: SearchBarProps) {
           value={query}
           onChange={handleInputChange}
           aria-label="Search routes"
-          className="h-8 bg-gray-300 text-black rounded" // Light green background and black text
+          className="h-8 bg-gray-300 text-black rounded"
         />
       </div>
       {error && <p className="text-red-500">Error: {error.message}</p>}

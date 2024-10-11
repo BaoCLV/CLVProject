@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter } from 'next/navigation';
-import { useUser } from '../../../hooks/useUser';
-import { format } from 'date-fns'; // Ensure date-fns is installed: npm install date-fns
+import { useUser, useGetAvatar } from '../../../hooks/useUser';
+import { format } from 'date-fns';
 import Header from '../../components/Header';
-import ProfileSidebar from '../../components/pages/admin/ProfileSidebar';
 import { Avatar } from '@nextui-org/react';
 import Loading from '../../components/Loading';
+import Footer from '../../components/Footer';
+import Sidebar from '../../components/Sidebar';
 
 interface UserDetailProps {
   userId: string;
@@ -16,12 +17,15 @@ export default function UserProfile({ userId }: UserDetailProps) {
   const router = useRouter();
 
   // Fetch user data using the useUser hook
-  const { loading, user } = useUser();
+  const { loading: userLoading, user } = useUser();
+  
+  // Fetch avatar data using the useGetAvatar hook
+  const { loading: avatarLoading, avatar, error: avatarError } = useGetAvatar(userId);
 
-  // Handler for updating user details
-  const handleUpdate = () => {
-    router.push(`/api/profile/${userId}/update`);
-  };
+  // Fix the avatar string format
+  const fixedAvatarSrc = avatar?.imageDataBase64 
+    ? avatar.imageDataBase64.replace('dataimage/jpegbase64', 'data:image/jpeg;base64,') 
+    : '/img/default-avatar.jpg';
 
   // Function to safely format the date by replacing the space with 'T'
   const formatDate = (dateString: string) => {
@@ -34,73 +38,95 @@ export default function UserProfile({ userId }: UserDetailProps) {
     }
   };
 
-  if (loading) return (
-    <Loading/>
-  );
+  if (userLoading || avatarLoading) return <Loading />;
   if (!user) return <p>User not found</p>;
+  if (avatarError) return <p>Error loading avatar: {avatarError.message}</p>;
 
   return (
-    <div className="flex h-screen bg-gray-200">
-      <ProfileSidebar />
-      <div className="flex flex-col flex-1">
-        <Header />
-        <div className="flex-1 bg-gray-200 p-10">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex flex-col md:flex-row items-center justify-between bg-blue-50 shadow-lg rounded-xl p-8">
-              <div className="flex flex-col items-center md:items-start space-y-4">
-                {/* User Profile Photo */}
-                <Avatar
-              as="button"
-              className="w-32 h-32 rounded-full border-4 border-blue-600 object-cover shadow-lg transition-transform"
-              src={ user.image}
-            />
-                {/* User Info */}
-                <h1 className="text-3xl font-bold text-blue-900">{user.name}</h1>
-              </div>
+    <div className="flex flex-col min-h-screen">
+      {/* Header */}
+      <Header />
 
-              {/* Action Buttons */}
-              <div className="flex mt-6 md:mt-0 space-x-4">
-                <button
-                  onClick={handleUpdate}
-                  className="px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 font-semibold rounded-lg shadow-md transition-all duration-300 ease-in-out transform hover:scale-105"
-                >
-                  Update Profile
-                </button>
-                <a
-                  href="/"
-                  className="px-6 py-2 text-blue-600 hover:text-blue-700 hover:underline font-semibold rounded-lg border border-blue-600 shadow-md transition-all duration-300 ease-in-out"
-                >
-                  Back to Dashboard
-                </a>
-              </div>
+      {/* Main layout container */}
+      <div className="flex flex-1">
+
+        <Sidebar />
+
+        {/* Content */}
+        <div className="flex flex-col flex-1 bg-gray-200 py-16 px-8 relative">
+          <h4 className="mb-6 text-3xl font-bold text-black">Profile Details</h4>
+
+          <div className="space-y-8 bg-white px-8 pb-8 rounded-lg shadow-lg h-full overflow-y-auto">
+            {/* Avatar and User Info */}
+            <div className="flex py-8 ">
+              <Avatar
+                src={fixedAvatarSrc}
+                className="w-40 h-40 rounded-full border-4 border-blue-600 object-cover shadow-lg transition-transform"
+                alt="User Avatar"
+              />
             </div>
 
-            {/* User Details */}
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* User Info Cards */}
-              <div className="bg-white shadow-md rounded-xl p-6 border border-blue-100">
-                <h3 className="text-lg font-semibold text-blue-800">Email</h3>
-                <p className="mt-2 text-blue-600">{user.email}</p>
+            {/* Buttons: Positioned to the right */}
+            <div className="absolute pt-10 top-24 right-20 flex flex-col space-y-4">
+              <button
+                onClick={() => router.push(`/api/profile/${userId}/update`)}
+                className="py-4 text-lg font-semibold text-white transition-colors duration-150 bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700"
+              >
+                Update Profile
+              </button>
+              <a
+                href="/"
+                className="py-4 text-lg font-semibold text-center text-blue-600 hover:text-blue-700 hover:underline transition-colors duration-150 border border-blue-600 rounded-lg bg-white"
+              >
+                Back to Dashboard
+              </a>
+            </div>
+
+            <div>
+              {/* Static field: User ID */}
+              <div className="block text-lg pb-8">
+                <span className="text-gray-700 text-2xl font-bold">User ID</span>
+                <p className="block w-full mt-2 p-4 bg-gray-200 text-lg border-black rounded-lg">{user.id}</p>
               </div>
 
-              <div className="bg-white shadow-md rounded-xl p-6 border border-blue-100">
-                <h3 className="text-lg font-semibold text-blue-800">Phone Number</h3>
-                <p className="mt-2 text-blue-600">{user.phone_number}</p>
+              {/* Static field: Email */}
+              <div className="block text-lg pb-8">
+                <span className="text-gray-700 text-2xl font-bold">Email</span>
+                <p className="block w-full mt-2 p-4 bg-gray-200 text-lg border-black rounded-lg">{user.email}</p>
               </div>
 
-              <div className="bg-white shadow-md rounded-xl p-6 border border-blue-100">
-                <h3 className="text-lg font-semibold text-blue-800">Address</h3>
-                <p className="mt-2 text-blue-600">{user.address}</p>
+              {/* Static field: Name */}
+              <div className="block text-lg pb-8">
+                <span className="text-gray-700 text-2xl font-bold">Name</span>
+                <p className="block w-full mt-2 p-4 text-lg border-black bg-gray-200 rounded-lg">{user.name}</p>
               </div>
 
-              <div className="bg-white shadow-md rounded-xl p-6 border border-blue-100">
-                <h3 className="text-lg font-semibold text-blue-800">Joined</h3>
-                <p className="mt-2 text-blue-600">{formatDate(user.createdAt)}</p>
+              {/* Static field: Phone Number */}
+              <div className="block text-lg pb-8">
+                <span className="text-gray-700 text-2xl font-bold">Phone Number</span>
+                <p className="block w-full mt-2 p-4 text-lg border-black bg-gray-200 rounded-lg">{user.phone_number}</p>
+              </div>
+
+              {/* Static field: Address */}
+              <div className="block text-lg pb-8">
+                <span className="text-gray-700 text-2xl font-bold">Address</span>
+                <p className="block w-full mt-2 p-4 text-lg border-black bg-gray-200 rounded-lg">{user.address}</p>
+              </div>
+
+              {/* Static field: Joined Date */}
+              <div className="block text-lg pb-8">
+                <span className="text-gray-700 text-2xl font-bold">Joined</span>
+                <p className="block w-full mt-2 p-4 text-lg border-black bg-gray-200 rounded-lg">
+                  {formatDate(user.createdAt)}
+                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

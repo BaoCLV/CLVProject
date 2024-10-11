@@ -1,6 +1,5 @@
 import Loading from "@/src/shared/components/Loading";
-import App from "@/src/shared/views/route/Admin-dashboard";
-import UserDashboard from "@/src/shared/components/pages/admin/userTable";
+import CreateRoute from "@/src/shared/views/route/createRoute";
 import React, { Suspense } from "react";
 
 const Page = () => {
@@ -8,7 +7,7 @@ const Page = () => {
     <div>
 
       <Suspense fallback={<Loading/>}>
-        <App />
+        <CreateRoute />
       </Suspense>
     </div>
   );

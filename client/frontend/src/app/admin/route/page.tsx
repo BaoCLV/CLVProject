@@ -1,5 +1,5 @@
 
-import App from '@/src/shared/views/route/userRoute';
+import RoutePage from '@/src/shared/components/pages/admin/RoutePage'
 import { Suspense } from 'react';
 import Loading from '@/src/shared/components/Loading';
 
@@ -8,7 +8,7 @@ export default function Page({ params }: { params: { userId: string } }) {
     <div>
 
       <Suspense fallback={<Loading/>}>
-        <App />
+        <RoutePage />
       </Suspense>
     </div>
   );

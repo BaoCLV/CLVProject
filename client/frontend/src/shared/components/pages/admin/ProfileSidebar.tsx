@@ -18,19 +18,19 @@ const ProfileSidebar = () => {
       router.push(`/api/profile/${user?.id}/route`); 
     } else if (key === "changePassword") {
       router.push(`/api/profile/${user?.id}/change-password`); 
+    } else if (key === "userlist") {
+      router.push(`/admin/userlist`); 
+    } else if (key === "routelist") {
+      router.push(`/admin/route`); 
+    } else if (key === "createUser") {
+      router.push(`/admin/createUser`); 
+    } else if (key === "createRoute") {
+      router.push(`/admin/createRoute`); 
     }
-  };
+  }; 
 
   return (
-    <aside className="sticky top-0 z-20 w-64 h-screen bg-white shadow-lg flex-shrink-0 flex flex-col">
-      {/* Sidebar Logo */}
-      <a href="/" className="text-3xl font-bold text-blue-600 p-6 cursor-pointer hover:scale-105 transition-transform">
-        <img
-          src="https://cyberlogitec.com.vn/wp-content/uploads/2024/09/logo-ngang_3-1.svg"
-          alt="Logo"
-          className="h-8"
-        />
-      </a>
+    <aside className="sticky top-10 py-16 w-64 h-screen bg-white shadow-lg flex-shrink-0 flex flex-col">
 
       {/* Sidebar Links */}
       <ul className="mt-4 space-y-2">
@@ -53,41 +53,41 @@ const ProfileSidebar = () => {
             <span>Dashboard</span>
           </a>
         </li>
-
-        {/* Profile */}
+        {/* Route List */}
         <li className="relative px-6 py-3">
           <span
             className={`absolute inset-y-0 left-0 w-1 ${
-              pathname === `/api/profile/${user?.id}` ? "bg-blue-600" : ""
+              pathname === `/admin/route` ? "bg-blue-600" : ""
             } rounded-tr-lg rounded-br-lg`}
             aria-hidden="true"
           ></span>
           <a
             className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 cursor-pointer ${
-              pathname === `/api/profile/${user?.id}`
+              pathname === `/admin/route`
                 ? "text-blue-600"
                 : "text-gray-800 hover:text-blue-500"
             }`}
-            onClick={() => handleNavigation("profile")}
+            onClick={() => handleNavigation("routelist")}
           >
-            <span>Profile</span>
+            <span>Route list</span>
           </a>
         </li>
-        {/* manage user */}
+
+        {/* User List */}
         <li className="relative px-6 py-3">
           <span
             className={`absolute inset-y-0 left-0 w-1 ${
-              pathname === '/admin/userlist' ? 'bg-purple-800' : ''
-            }`}
+              pathname === `/admin/userlist` ? "bg-blue-600" : ""
+            } rounded-tr-lg rounded-br-lg`}
             aria-hidden="true"
           ></span>
           <a
-            className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 ${
-              pathname === '/admin/userlist'
-                ? 'text-purple-800'
-                : 'text-black hover:text-gray-800'
+            className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 cursor-pointer ${
+              pathname === `/admin/userlist`
+                ? "text-blue-600"
+                : "text-gray-800 hover:text-blue-500"
             }`}
-            href="/admin/userlist"
+            onClick={() => handleNavigation("userlist")}
           >
             <span>User List</span>
           </a>
@@ -96,19 +96,38 @@ const ProfileSidebar = () => {
         <li className="relative px-6 py-3">
           <span
             className={`absolute inset-y-0 left-0 w-1 ${
-              pathname === '/api/user/createUser' ? 'bg-purple-800' : ''
+              pathname === '/admin/createUser' ? 'bg-blue-600' : ''
             }`}
             aria-hidden="true"
           ></span>
           <a
-            className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 ${
-              pathname === '/api/user/createUser'
-                ? 'text-purple-800'
-                : 'text-black hover:text-gray-800'
+            className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 cursor-pointer ${
+              pathname === '/admin/createUser'
+                ? 'text-blue-600'
+                : "text-gray-800 hover:text-blue-500"
             }`}
-            href="/api/user/createUser"
+            onClick={() => handleNavigation("createUser")}
           >
             <span>Create User</span>
+          </a>
+        </li>
+        {/* create route */}
+                <li className="relative px-6 py-3">
+          <span
+            className={`absolute inset-y-0 left-0 w-1 ${
+              pathname === '/admin/createRoute' ? 'bg-blue-600' : ''
+            }`}
+            aria-hidden="true"
+          ></span>
+          <a
+            className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 cursor-pointer ${
+              pathname === '/admin/createRoute'
+                ? 'text-blue-600'
+                : "text-gray-800 hover:text-blue-500"
+            }`}
+            onClick={() => handleNavigation("createRoute")}
+          >
+            <span>Create Route</span>
           </a>
         </li>
         {/* Change Password */}
@@ -117,7 +136,7 @@ const ProfileSidebar = () => {
             className={`absolute inset-y-0 left-0 w-1 ${
               pathname === `/api/profile/${user?.id}/change-password`
                 ? "bg-blue-600"
-                : ""
+                : "text-gray-800 hover:text-blue-500"
             } rounded-tr-lg rounded-br-lg`}
             aria-hidden="true"
           ></span>

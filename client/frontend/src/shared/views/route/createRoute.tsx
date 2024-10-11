@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "../../../hooks/useUser";
-import Sidebar from "../../components/Sidebar";
+import ProfileSidebar from "../../components/pages/admin/ProfileSidebar";
 import Header from "../../components/Header";
 import { useCreateRoute } from "../../../hooks/useRoute";
 import * as turf from "@turf/turf";
@@ -154,9 +154,7 @@ export default function CreateRoute() {
       console.log("Route created:", createdRoute);
 
       // Show success notification
-      toast.success("Order shipping successful!", {
-        //icon: "🚚", // Success icon (customize it to anything you want)
-      });
+      toast.success("Route created successfully!");
     } catch (error: any) {
       setError(error.message || "Error creating route");
     }
@@ -174,14 +172,15 @@ export default function CreateRoute() {
   }
 
   return (
-    <div className="flex h-screen">
-      <Sidebar />
-      <div className="flex flex-col flex-1 bg-gray-200 border-black">
+    <div className="flex h-screen bg-gray-200">
+      <ProfileSidebar />
+      <div className="flex flex-col flex-1">
         <Header />
-        <div className="flex flex-col h-screen p-8">
-          <h4 className="mb-6 text-2xl font-bold text-black">Create a Route</h4>
+        <div className="flex-1 bg-gray-200 py-16 px-8">
+          <h4 className="mb-6 text-3xl font-bold text-black">Create Route</h4>
 
-          <form className="space-y-4">
+          {/* Form for creating a route */}
+          <form onSubmit={handleCalculateDistance} className="space-y-8 bg-white px-8 pb-8 rounded-lg shadow-lg">
             <div>
               <label
                 htmlFor="startLocation"
@@ -219,7 +218,6 @@ export default function CreateRoute() {
             <button
               type="submit"
               className="w-full py-2 text-lg font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              onClick={handleCalculateDistance}
             >
               Calculate Distance
             </button>
@@ -241,7 +239,6 @@ export default function CreateRoute() {
                     >
                       <TileLayer
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                       />
                       <Marker position={coordinates[0]} icon={customIcon} />
                       <Marker position={coordinates[1]} icon={customIcon} />
@@ -264,10 +261,9 @@ export default function CreateRoute() {
             {/* Place Order Button */}
             {form.distance > 0 && (
               <button
-                type="submit"
+                type="button"
                 className="w-full py-2 mt-4 text-lg font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
                 onClick={handlePlaceOrder}
-                disabled={form.distance === 0}
               >
                 Place Order
               </button>

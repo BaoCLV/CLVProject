@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Role } from '../entities/role.entity';
-import { User } from '../../../nestjs/src/entities/user.entity';
 import { Permission } from 'src/entities/permission.entity';
 import { RoleService } from './roles.service';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -17,7 +16,7 @@ import { RoleController } from './roles.controller';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forFeature([User, Role, Permission]),
+    TypeOrmModule.forFeature([ Role, Permission]),
     GraphQLModule.forRoot<ApolloFederationDriverConfig>({
       driver: ApolloFederationDriver,
       autoSchemaFile: {
@@ -37,7 +36,7 @@ import { RoleController } from './roles.controller';
           username: url ? undefined : configService.get<string>('DB_USER'),
           password: url ? undefined : configService.get<string>('DB_PASSWORD'),
           database: url ? undefined : configService.get<string>('DB_NAME'),
-          entities: [User, Role, Permission],
+          entities: [Role, Permission],
           synchronize: true,
         };
       },

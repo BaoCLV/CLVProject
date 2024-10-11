@@ -6,9 +6,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Spinner } from "@nextui-org/react";
 import { useGetAllUser, useUser } from '@/src/hooks/useUser';
 import { useRoles } from '@/src/hooks/useRole'; // Import useRoles hook
-import Header from '../../components/Header';
-import ProfileSidebar from '../../components/pages/admin/ProfileSidebar';
-import Loading from '../../components/Loading';
+import Header from '../../Header';
+import ProfileSidebar from './ProfileSidebar';
+import Loading from '../../Loading';
 
 const queryClient = new QueryClient();
 
@@ -67,12 +67,7 @@ function UserDashboard() {
   console.log('Fetched users:', allUsers); // Debugging: log users
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <ProfileSidebar />
-      <div className="flex flex-col flex-1">
-        <Header />
-        <div className="dark p-4">
-          <h1 className="text-2xl font-bold mb-4 text-black">User List</h1>
+    <div>
           <div className="w-full overflow-hidden rounded-lg shadow-xs">
             <div className="w-full overflow-x-auto">
               <table className="w-full whitespace-no-wrap border-black bg-white">
@@ -101,7 +96,7 @@ function UserDashboard() {
                         console.log(`User: ${user.name}, RoleId: ${user.roleId}`);
 
                         // Match user's roleId with fetched roles
-                        const userRoleName = roles.find((r) => r.id === user.roleId)?.name || "No role";
+                        const userRoleName = roles.find((r: { id: any; }) => r.id === user.roleId)?.name || "No role";
 
                         console.log(`Matched role for ${user.name}: ${userRoleName}`); // Debugging
 
@@ -167,9 +162,7 @@ function UserDashboard() {
               </button>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+          </div>
   );
 }
 

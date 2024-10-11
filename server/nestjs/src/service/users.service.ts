@@ -13,6 +13,7 @@ import { lastValueFrom, Observable } from 'rxjs';
 import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
 import { join } from 'path';
 import { Transport } from '@nestjs/microservices';
+import { Avatar } from 'src/entities/avatar.entity';
 
 
 interface UserData {
@@ -21,10 +22,11 @@ interface UserData {
   password: string;
   phone_number: string;
   address: string;
+  roleId: string;
 }
 
 interface RoleServiceClient {
-  GetRoleByName(data: { roleNames: string }): Observable<{ roleId: string }>;
+  GetRoleByName(data: { name: string }): Observable<{ role: {id:string} }>;
 }
 
 @Injectable()
@@ -35,8 +37,8 @@ export class UsersService implements OnModuleInit {
     transport: Transport.GRPC,
     options: {
       package: 'role',
-      protoPath: join('./src/protos/roles.proto'), // Path to role proto file
-      url: 'localhost:5001', // Role service gRPC endpoint
+      protoPath: join('./src/protos/roles.proto'),
+      url: '0.0.0.0:50053',
     },
   })
   private roleClient: ClientGrpc;
@@ -44,8 +46,10 @@ export class UsersService implements OnModuleInit {
   private roleService: RoleServiceClient;
 
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Avatar) 
+    private readonly avatarRepository: Repository<Avatar>,
+    
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly kafkaProducerService: KafkaProducerService,
@@ -105,40 +109,30 @@ export class UsersService implements OnModuleInit {
       throw new BadRequestException('User with this phone number already exists');
     }
   
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    // Create the user object
-    const user = this.userRepository.create({
+ 
+    const roleResponse = await lastValueFrom(this.roleService.GetRoleByName({ name: 'user' }));
+    
+    if (!roleResponse || !roleResponse.role) {
+      throw new BadRequestException('Role "user" not found');
+    }
+    const roleId = roleResponse.role.id;
+    console.log(roleId)
+    const user = {
       name,
       email,
       password: hashedPassword,
       phone_number,
       address,
-    });
-    
-    // Fetch the "User" role from the RoleService via gRPC (expecting role IDs as strings)
-    const roleResponse = await lastValueFrom(this.roleService.GetRoleByName({ roleNames: 'user' }));
-    
-    if (!roleResponse || !roleResponse.roles.length) {
-      throw new BadRequestException('Role "User" not found');
-    }
+      roleId,
+    };
   
-    const roleId = roleResponse.roles[0];  // Expecting the role ID as a string
-    
-    // Assign the roleId to the user
-    user.roleId = roleId;
+    const activationToken = await this.createActivationToken(user);
   
-    // Save the new user with the assigned roleId
-    const savedUser = await this.userRepository.save(user);
-    
-    // Create an activation token for the new user
-    const activationToken = await this.createActivationToken(savedUser);
-  
-    // Produce a Kafka event for user registration
     await this.kafkaProducerService.sendUserRegisteredEvent({
-      email: savedUser.email,
-      name: savedUser.name,
+      email: user.email,
+      name: user.name,
       activation_token: activationToken.Token,
       activation_code: activationToken.ActivationCode,
     });
@@ -160,13 +154,14 @@ export class UsersService implements OnModuleInit {
       throw new BadRequestException('Invalid activation code');
     }
 
-    const { name, email, password, phone_number, address } = newUser.user;
+    const { name, email, password, phone_number, address, roleId } = newUser.user;
     const user = this.userRepository.create({
       name,
       email,
       password,
       phone_number,
       address,
+      roleId
     });
 
     const savedUser = await this.userRepository.save(user);
@@ -403,11 +398,9 @@ export class UsersService implements OnModuleInit {
       throw new BadRequestException(`User with ID ${id} not found`);
     }
   
-    // Update user properties
     Object.assign(user, updateUserDto);
   
-    // If roleId is provided, assign the role to the user
-    if (updateUserDto.roleId) {
+    if (updateUserDto.roleId !== undefined && updateUserDto.roleId !== null) {
       user.roleId = updateUserDto.roleId;
     }
   
@@ -415,16 +408,26 @@ export class UsersService implements OnModuleInit {
     return await this.userRepository.save(user);
   }
 
-  // Create a user
-  async createUser(data: RegisterDto, roleId: string): Promise<User> {
-    const newUser = this.userRepository.create(data);
+  async createUser(data: RegisterDto): Promise<User> {
+    const roleResponse = await lastValueFrom(this.roleService.GetRoleByName({ name: 'user' }));
     
-    // Assign the roleId to the new user
-    newUser.roleId = roleId;
-
+    if (!roleResponse || !roleResponse.role) {
+      throw new BadRequestException('Role "user" not found');
+    }
+  
+    const roleId = roleResponse.role.id;
+  
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(data.password, 10); 
+  
+    const newUser = this.userRepository.create({
+      ...data,
+      password: hashedPassword,  
+      roleId: roleId, 
+    });
+    // Save the new user to the database
     return await this.userRepository.save(newUser);
   }
-
   
 
   // Count the total number of users
@@ -453,5 +456,40 @@ export class UsersService implements OnModuleInit {
     } else {
       throw new Error(`User with id ${id} not found`);
     }
+  }
+  async uploadAvatar(userId: string, imageDataBase64: string): Promise<Avatar> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+  
+    if (!user) {
+      throw new Error('User not found');
+    }
+  
+    // Check if the user already has an avatar
+    let avatar = await this.avatarRepository.findOne({ where: { userId: user.id } });
+  
+    if (avatar) {
+      // Update the existing avatar using the setter
+      avatar.imageDataBase64 = imageDataBase64;
+    } else {
+      // Create a new avatar
+      avatar = this.avatarRepository.create({
+        userId: user.id,
+        imageDataBase64,  // Use setter to convert base64 to Buffer
+      });
+    }
+  
+    // Save (insert or update) the avatar
+    return this.avatarRepository.save(avatar);
+  }
+  
+
+  async getAvatar(userId: string): Promise<Avatar> {
+    const avatar = await this.avatarRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
+
+  
+    return avatar;
   }
 };

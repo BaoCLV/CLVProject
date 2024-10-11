@@ -1,6 +1,7 @@
 import { ObjectType, Field } from '@nestjs/graphql';
 import { Directive } from '@nestjs/graphql';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToOne } from 'typeorm';
+import { Avatar } from './avatar.entity';
 
 @ObjectType()
 @Entity()
@@ -22,7 +23,7 @@ export class User {
   @Column()
   password: string;
 
-  // Now roles is a single UUID string field, not an array
+  // Role reference
   @Field(() => String)
   @Column({ type: 'uuid', nullable: true })
   roleId: string;
@@ -46,4 +47,10 @@ export class User {
   @Field()
   @CreateDateColumn({ type: 'timestamp', onUpdate: 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
+
+  @Field(() => Avatar, { nullable: true })
+  @OneToOne(() => Avatar, avatar => avatar.user, { cascade: true, eager: true })
+  avatar: Avatar;
 }
+
+
