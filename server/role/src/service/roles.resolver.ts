@@ -13,8 +13,7 @@ export class RoleResolver {
   // Query to get all roles with their permissions
   @Query(() => [Role])
   async findAllRoles(): Promise<Role[]> {
-    const { roles } = await this.rolePermissionService.findAllRoles();
-    return roles;
+    return this.rolePermissionService.findAllRoles();
   }
 
   // Query to get all permissions
@@ -47,5 +46,13 @@ export class RoleResolver {
   ): Promise<Role> {
     const { role } = await this.rolePermissionService.assignPermissionToRole({ roleId, permissionId });
     return role;
+  }
+
+  @Mutation(() => Role)
+  async createRole(
+    @Args('name') name: string,
+    @Args('permissionIds', { type: () => [String] }) permissionIds: string[],
+  ): Promise<Role> {
+    return this.rolePermissionService.createRole(name, permissionIds);
   }
 }

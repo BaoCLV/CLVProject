@@ -8,6 +8,7 @@ export const CREATE_ROUTE_MUTATION: DocumentNode = gql`
       startLocation
       endLocation
       distance
+      price
       userId
     }
   }

@@ -1,9 +1,6 @@
 "use client";
 
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
-import App from "../views/route/Admin-dashboard";
+
 import { QueryClient, QueryClientProvider } from "react-query";
 import LandingPage from "./LandingScreen";
 

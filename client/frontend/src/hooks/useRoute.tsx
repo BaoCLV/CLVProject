@@ -21,6 +21,7 @@ export const useCreateRoute = () => {
     startLocation: string;
     endLocation: string;
     distance: number;
+    price: number;
   }) => {
     try {
       const response = await createRoute({
@@ -64,7 +65,9 @@ export const useUpdateRoute = () => {
   const handleUpdateRoute = async (id: number, data: { 
     startLocation: string; 
     endLocation: string; 
-    distance: number; 
+    distance: number;
+    price: number;
+    status: string;
   }) => {
     try {
       const response = await updateRoute({

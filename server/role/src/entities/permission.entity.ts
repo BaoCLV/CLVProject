@@ -1,5 +1,6 @@
 import { Directive, Field, ObjectType, registerEnumType } from '@nestjs/graphql';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Role } from './role.entity';
 
 enum ClientPermission {
   Create = 'create',
@@ -14,16 +15,18 @@ registerEnumType(ClientPermission, {
   name: 'ClientPermission',
 });
 
-
 @ObjectType()
 @Entity()
 @Directive('@key(fields: "id")')
 export class Permission {
   @Field()
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')  // Changed from regular id to UUID if required
   id: string;
 
-  @Field(() => ClientPermission)
+  @Field()
   @Column({ unique: true })
-  name: ClientPermission;
+  name: string;
+
+  @ManyToMany(() => Role, (role) => role.permissions)
+  roles: Role[];  // Back reference to roles
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useGetRoute, useUpdateRoute } from '../../../hooks/useRoute'; // Ensure the correct path to your hooks
+import { useGetRoute, useUpdateRoute } from '../../../hooks/useRoute';
 import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
@@ -12,7 +12,7 @@ import ProfileSidebar from '../../components/pages/admin/ProfileSidebar';
 
 // Custom marker icon
 const customIcon = L.icon({
-  iconUrl: '/img/map-marker.png', // Place the image in the public folder
+  iconUrl: '/img/map-marker.png',
   iconSize: [38, 38],
   iconAnchor: [19, 38],
   popupAnchor: [0, -30],
@@ -22,6 +22,8 @@ interface UpdateRouteForm {
   startLocation: string;
   endLocation: string;
   distance: number;
+  price: number;
+  status: string;
 }
 
 interface UpdateRouteProps {
@@ -32,9 +34,11 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   const [form, setForm] = useState<UpdateRouteForm>({
     startLocation: '',
     endLocation: '',
-    distance: 0,
+    distance: 0, // Auto-calculated
+    price: 0,    // Auto-calculated
+    status: 'pending',
   });
-  const [coordinates, setCoordinates] = useState<[number, number][]>([]); // Store coordinates of start and end locations
+  const [coordinates, setCoordinates] = useState<[number, number][]>([]);
   const [message, setMessage] = useState<string>('');
   const [error, setError] = useState<string>('');
 
@@ -42,23 +46,36 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   const { handleUpdateRoute } = useUpdateRoute();
 
   const OPEN_CAGE_API_KEY = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY;
+  const PRICE_PER_KM = 1.5; // Example: price per kilometer
 
   useEffect(() => {
     if (route) {
       setForm({
         startLocation: route.startLocation,
         endLocation: route.endLocation,
-        distance: route.distance,
+        distance: 0, // Reset distance for re-calculation
+        price: 0,    // Reset price for re-calculation
+        status: route.status || 'pending',
       });
 
-      // Geocode start and end locations
       geocodeLocations(route.startLocation, route.endLocation);
     }
   }, [route]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: name === 'distance' ? Number(value) : value }));
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    // Re-geocode and recalculate if start or end location changes
+    if (name === 'startLocation' || name === 'endLocation') {
+      geocodeLocations(
+        name === 'startLocation' ? value : form.startLocation,
+        name === 'endLocation' ? value : form.endLocation
+      );
+    }
   };
 
   const geocodeLocation = async (location: string): Promise<[number, number]> => {
@@ -80,10 +97,34 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
       const startCoords = await geocodeLocation(startLocation);
       const endCoords = await geocodeLocation(endLocation);
       setCoordinates([startCoords, endCoords]);
+
+      const distance = calculateDistance(startCoords, endCoords);
+      const price = distance * PRICE_PER_KM;
+
+      setForm((prev) => ({
+        ...prev,
+        distance,
+        price,
+      }));
     } catch (err) {
       console.error('Error geocoding locations:', err);
       setError('Failed to fetch coordinates for locations');
     }
+  };
+
+  // Haversine formula to calculate distance between two coordinates
+  const calculateDistance = (coords1: [number, number], coords2: [number, number]): number => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (coords2[0] - coords1[0]) * (Math.PI / 180);
+    const dLng = (coords2[1] - coords1[1]) * (Math.PI / 180);
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(coords1[0] * (Math.PI / 180)) * Math.cos(coords2[0] * (Math.PI / 180)) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in kilometers
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -94,11 +135,12 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
         startLocation: form.startLocation,
         endLocation: form.endLocation,
         distance: form.distance,
+        price: form.price,
+        status: form.status,
       });
 
       setMessage('Route updated successfully.');
       setError('');
-      await geocodeLocations(form.startLocation, form.endLocation);
     } catch (err) {
       setError('Failed to update route.');
       setMessage('');
@@ -106,7 +148,7 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
     }
   };
 
-  if (loading) return <Loading/>;
+  if (loading) return <Loading />;
   if (fetchError) return <p>Error: {fetchError.message}</p>;
 
   function AutoZoom() {
@@ -123,7 +165,7 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
     <div className="flex h-screen bg-gray-50">
       <ProfileSidebar />
       <div className="flex flex-col flex-1">
-        <Header />
+        {/* <Header /> */}
         <div className="flex-1 bg-gray-100 dark:bg-gray-600 py-16 px-8">
           <h4 className="mb-6 text-2xl font-bold text-gray-700 dark:text-gray-300">
             Update Route
@@ -141,6 +183,7 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
                 className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
               />
             </label>
+
             <label className="block text-lg">
               <span className="text-gray-900 dark:text-gray-100">End Location</span>
               <input
@@ -153,20 +196,45 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
                 className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
               />
             </label>
+
             <label className="block text-lg">
               <span className="text-gray-900 dark:text-gray-100">Distance (km)</span>
               <input
                 type="number"
                 name="distance"
                 value={form.distance}
-                onChange={handleChange}
-                placeholder="Enter Distance"
-                required
-                min={0}
-                step={0.01}
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
+                readOnly
+                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 form-input bg-gray-200"
               />
             </label>
+
+            <label className="block text-lg">
+              <span className="text-gray-900 dark:text-gray-100">Price ($)</span>
+              <input
+                type="number"
+                name="price"
+                value={form.price}
+                readOnly
+                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 form-input bg-gray-200"
+              />
+            </label>
+
+            <label className="block text-lg">
+              <span className="text-gray-900 dark:text-gray-100">Status</span>
+              <select
+                name="status"
+                value={form.status}
+                onChange={handleChange}
+                required
+                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-select"
+              >
+                <option value="pending">Pending</option>
+                <option value="delivering">Delivering</option>
+                <option value="success">Success</option>
+                <option value="cancel">Cancel</option>
+              </select>
+            </label>
+
             <button
               type="submit"
               className="w-full py-4 text-lg font-semibold text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"
@@ -177,7 +245,6 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
             {error && <p className="mt-4 text-lg text-red-500">Error: {error}</p>}
           </form>
 
-          {/* Display Map */}
           {coordinates.length === 2 && (
             <div className="h-[400px] w-full mt-8">
               <MapContainer

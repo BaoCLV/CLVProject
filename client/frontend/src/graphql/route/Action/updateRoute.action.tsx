@@ -7,6 +7,8 @@ mutation UpdateRoute($id: String!, $data: UpdateRouteDto!) {
     startLocation
     endLocation
     distance
+    price
+    status
     userId
   }
 }

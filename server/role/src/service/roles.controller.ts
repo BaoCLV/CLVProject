@@ -9,7 +9,7 @@ export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
   @GrpcMethod('RoleService', 'FindAllRoles')
-  async findAllRoles(): Promise<{ roles: Role[] }> {
+  async findAllRoles(): Promise< Role[] > {
     return this.roleService.findAllRoles();
   }
 

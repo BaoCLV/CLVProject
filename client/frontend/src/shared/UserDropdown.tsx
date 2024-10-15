@@ -7,53 +7,61 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@nextui-org/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { CgProfile } from "react-icons/cg";
 import AuthScreen from "../shared/screens/AuthScreen";
 import { useCreateUserSocial, useUser, useGetAvatar } from "../hooks/useUser";
-import { useRoles } from "../hooks/useRole"; // Use the useRoles hook
+import { useRoles } from "../hooks/useRole";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 const UserDropDown = () => {
-  const [signedIn, setSignedIn] = useState(false);
   const [open, setOpen] = useState(false);
   const { user, loading: userLoading } = useUser();
-  const { data } = useSession();
+  const { data: sessionData } = useSession();
   const router = useRouter();
-  const { handlecreateUserSocial } = useCreateUserSocial(data?.user);
+  const { handlecreateUserSocial } = useCreateUserSocial(sessionData?.user);
 
   // Fetch the avatar for the logged-in user
-  const { loading: avatarLoading, avatar, error: avatarError } = useGetAvatar(user?.id);
+  const { loading: avatarLoading, avatar } = useGetAvatar(user?.id);
 
   // Fetch all roles and compare the user's roleId with the role.id
-  const { loadingRoles, errorRoles, roles } = useRoles();
+  const { loadingRoles, roles } = useRoles();
 
-  // Find the user's role based on user.roleId
-  const userRole = roles.find((role: any) => role.id === user?.roleId);
+  // Find the user's role based on user.roleId (Memoized for optimization)
+  const userRole = useMemo(
+    () => roles.find((role: any) => role.id === user?.roleId),
+    [roles, user?.roleId]
+  );
 
-  // Check if the user is admin or superadmin
-  const isAdmin = userRole?.name === "admin" || userRole?.name === "superadmin";
+  // Check if the user is admin or superadmin (Memoized to avoid redundant calculations)
+  const isAdmin = useMemo(
+    () => userRole?.name === "admin" || userRole?.name === "superadmin",
+    [userRole]
+  );
 
-  // Fix the avatar string format if needed
-  const fixedAvatarSrc = avatar?.imageDataBase64
-    ? avatar.imageDataBase64.replace("dataimage/jpegbase64", "data:image/jpeg;base64,")
-    : "/img/default-avatar.jpg"; // Default avatar fallback
-
-  useEffect(() => {
-    if (!userLoading) {
-      setSignedIn(!!user);
+  // Fix the avatar string format (Memoized for efficiency)
+  const fixedAvatarSrc = useMemo(() => {
+    if (avatar?.imageDataBase64) {
+      return avatar.imageDataBase64.replace(
+        "dataimage/jpegbase64",
+        "data:image/jpeg;base64,"
+      );
     }
-    if (data?.user) {
-      setSignedIn(true);
+    return "/img/default-avatar.jpg"; // Default avatar fallback
+  }, [avatar]);
+
+  // Handle user session and creation of social user
+  useEffect(() => {
+    if (user && sessionData?.user) {
       handlecreateUserSocial();
     }
-  }, [userLoading, user, open, data]);
+  }, [user, sessionData?.user, handlecreateUserSocial]);
 
   const logoutHandler = () => {
-    if (data?.user) {
+    if (sessionData?.user) {
       signOut();
     } else {
       Cookies.remove("access_token");
@@ -64,25 +72,30 @@ const UserDropDown = () => {
   };
 
   const handleNavigation = (key: any) => {
-    if (key === "createRoute") {
-      router.push("/");
-    } else if (key === "settings") {
-      router.push(`/api/profile/${user?.id}`);
-    } else if (key === "dashboard") {
-      router.push(`/admin/dashboard`);
+    switch (key) {
+      case "createRoute":
+        router.push("/");
+        break;
+      case "settings":
+        router.push(`/api/profile/${user?.id}`);
+        break;
+      case "dashboard":
+        router.push(`/admin/dashboard`);
+        break;
+      default:
+        break;
     }
   };
 
   return (
     <div className="flex items-center z-50 gap-4 ml-auto">
-      {signedIn ? (
+      {user ? (
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
             <Avatar
               as="button"
               className="transition-transform"
-              // Display the avatar from DB or fallback to default
-              src={ fixedAvatarSrc}
+              src={fixedAvatarSrc}
               alt="User Avatar"
             />
           </DropdownTrigger>
@@ -90,15 +103,14 @@ const UserDropDown = () => {
             <DropdownItem key="settings" className="h-14 gap-2">
               <p className="font-semibold text-white">Signed in as</p>
               <p className="font-semibold text-white">
-                {data?.user ? data.user.email : user?.email}
+                {sessionData?.user?.email || user?.email}
               </p>
             </DropdownItem>
-            {!loadingRoles && isAdmin ? (
+            {!loadingRoles && isAdmin && (
               <DropdownItem className="font-semibold text-white" key="dashboard">
                 Dashboard
               </DropdownItem>
-            ) : null}
-
+            )}
             <DropdownItem className="font-semibold text-white" key="settings">
               My Profile
             </DropdownItem>

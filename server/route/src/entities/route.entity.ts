@@ -20,6 +20,13 @@ export class Route {
   @Column('float')
   distance: number;
 
+  @Field(() => Float)
+  @Column('float')
+  price: number;
+
+  @Field()
+  @Column({ default: 'pending' })
+  status: string;
 
   @Field()
   @Column('uuid')

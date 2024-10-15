@@ -4,20 +4,19 @@ import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { useGetRoutes } from "@/src/hooks/useRoute";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Spinner } from "@nextui-org/react"; // Ensure you have the Spinner component installed
+import { Spinner } from "@nextui-org/react";
 import { useUser } from "@/src/hooks/useUser";
-import Header from "../../Header";
-
-import SearchBar from "../../searchBar";
+import { FaPlus } from "react-icons/fa";
 import ProfileSidebar from "./ProfileSidebar";
 import Footer from "../../Footer";
+import SearchBar from "../../searchBar";
 
 const queryClient = new QueryClient();
 
 function RoutePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const itemsPerPage = 20;
+  const itemsPerPage = 20.0;
 
   const { user, loading: userLoading } = useUser();
 
@@ -25,6 +24,8 @@ function RoutePage() {
   const [currentPage, setCurrentPage] = useState(pageFromUrl);
 
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const handleSearchResults = (results: any) => {
     setSearchResults(results);
@@ -63,29 +64,100 @@ function RoutePage() {
   if (error instanceof Error) return <p>Error: {error.message}</p>;
 
   // Filter routes by the logged-in user's ID
-  const Routes =
-    data?.pages.flatMap((page) =>page) ?? [];
+  let Routes = data?.pages.flatMap((page) => page) ?? [];
+
+  // Utility function to return color classes based on route status
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "pending":
+        return "bg-gray-200 text-gray-700";
+      case "delivering":
+        return "bg-blue-200 text-blue-700";
+      case "finish":
+        return "bg-green-200 text-green-700";
+      case "cancel":
+        return "bg-red-200 text-red-700";
+      default:
+        return "bg-gray-200 text-gray-700";
+    }
+  };
+
+  // Sort function
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      // If the same column is clicked again, toggle the sort direction
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      // If a different column is clicked, set it as the new sort column and reset direction to ascending
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  // Apply sorting to Routes
+  if (sortColumn) {
+    Routes = Routes.sort((a, b) => {
+      const aValue = a[sortColumn];
+      const bValue = b[sortColumn];
+
+      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+  }
+
+  // Function to render the sort symbols for both ascending and descending
+  const renderSortSymbols = (column: string) => {
+    const active = sortColumn === column;
+
+    return (
+      <span className="ml-2">
+        <span
+          className={`${
+            active && sortDirection === "asc" ? "text-blue-600" : "text-gray-400"
+          }`}
+        >
+          ▲
+        </span>
+        <span
+          className={`ml-1 ${
+            active && sortDirection === "desc" ? "text-blue-600" : "text-gray-400"
+          }`}
+        >
+          ▼
+        </span>
+      </span>
+    );
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header */}
-      <Header />
-
       {/* Main layout container */}
       <div className="flex flex-1">
-
         <ProfileSidebar />
 
         {/* Content */}
         <div className="flex flex-col flex-1 bg-gray-200 py-16 px-8 relative">
-          {/* Header and Search Bar */}
-          <div className="flex flex-wrap justify-between items-center mb-6">
+          {/* Header with Search Bar and Create Route Button */}
+          <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold text-blue-600">Route Page</h1>
+          </div>
 
+          {/* Search Bar and Create Route Button Wrapper */}
+          <div className="flex items-center mb-6 space-x-4">
             {/* Search Bar */}
-            <div className="flex-1 max-w-xs">
+            <div className="flex-1">
               <SearchBar getSearchResults={handleSearchResults} />
             </div>
+
+            {/* Create Route Button */}
+            <button
+              onClick={() => router.push("/admin/createRoute")}  // Redirect to create-route page
+              className="flex items-center gap-2 px-6 py-3 text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition"
+            >
+              <FaPlus className="text-white" />  {/* Plus icon */}
+              Create Route
+            </button>
           </div>
 
           <div className="w-full">
@@ -93,17 +165,24 @@ function RoutePage() {
               <table className="w-full whitespace-no-wrap table-auto bg-white shadow-lg rounded-lg overflow-hidden">
                 <thead>
                   <tr className="text-xs font-semibold tracking-wide text-left text-blue-600 uppercase border-b border-gray-200 bg-gray-50">
-                    <th className="px-6 py-4">Route ID</th>
                     <th className="px-6 py-4">Start Location</th>
                     <th className="px-6 py-4">End Location</th>
-                    <th className="px-6 py-4">Distance (km)</th>
+                    <th className="px-6 py-4 cursor-pointer" onClick={() => handleSort("distance")}>
+                      Distance (km) {renderSortSymbols("distance")}
+                    </th>
+                    <th className="px-6 py-4 cursor-pointer" onClick={() => handleSort("price")}>
+                      Price {renderSortSymbols("price")}
+                    </th>
+                    <th className="px-6 py-4 cursor-pointer" onClick={() => handleSort("status")}>
+                      Status {renderSortSymbols("status")}
+                    </th>
                     <th className="px-6 py-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
                   {isFetching && (
                     <tr>
-                      <td colSpan={5} className="text-center py-6">
+                      <td colSpan={6} className="text-center py-6">
                         <Spinner label="Loading..." />
                       </td>
                     </tr>
@@ -113,9 +192,8 @@ function RoutePage() {
                     ? Routes.map((route: any) => (
                         <tr
                           key={route.id}
-                          className="hover:bg-blue-50 transition-colors"
+                          className="hover:bg-blue-50 text-black transition-colors"
                         >
-                          <td className="px-6 py-4 text-sm">{route.id}</td>
                           <td className="px-6 py-4 text-sm">
                             {route.startLocation}
                           </td>
@@ -124,6 +202,12 @@ function RoutePage() {
                           </td>
                           <td className="px-6 py-4 text-sm">
                             {route.distance}
+                          </td>
+                          <td className="px-6 py-4 text-sm">
+                            {route.price}
+                          </td>
+                          <td className={`px-6 py-4 text-sm font-medium ${getStatusColor(route.status)} rounded-lg`}>
+                            {route.status}
                           </td>
                           <td className="px-6 py-4 text-sm">
                             <a
@@ -138,7 +222,7 @@ function RoutePage() {
                     : !isFetching && (
                         <tr>
                           <td
-                            colSpan={5}
+                            colSpan={6}
                             className="text-center py-6 text-gray-600"
                           >
                             No routes available for this user
@@ -179,7 +263,7 @@ function RoutePage() {
           </div>
         </div>
       </div>
-      <Footer/>
+      <Footer />
     </div>
   );
 }

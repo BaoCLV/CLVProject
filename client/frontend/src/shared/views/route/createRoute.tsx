@@ -25,6 +25,7 @@ interface CreateRouteForm {
   startLocation: string;
   endLocation: string;
   distance: number;
+  price: number;
 }
 
 export default function CreateRoute() {
@@ -32,6 +33,7 @@ export default function CreateRoute() {
     startLocation: "",
     endLocation: "",
     distance: 0,
+    price: 0,
   });
 
   const [coordinates, setCoordinates] = useState<[number, number][]>([]); // To store the lat/lng of the start and end locations
@@ -46,7 +48,7 @@ export default function CreateRoute() {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: name === "price" ? Number(value) : value, // Ensure price is a number
     }));
   };
 
@@ -114,6 +116,7 @@ export default function CreateRoute() {
       setForm((prev) => ({
         ...prev,
         distance: calculatedDistance,
+        price: calculatedDistance * 10000, // Set default price based on distance
       }));
 
       // Update coordinates for the map
@@ -137,8 +140,8 @@ export default function CreateRoute() {
       return;
     }
 
-    if (form.distance === 0) {
-      setError("Please calculate the distance first.");
+    if (form.distance === 0 || form.price === 0) {
+      setError("Please calculate the distance and price first.");
       return;
     }
 
@@ -149,6 +152,7 @@ export default function CreateRoute() {
         startLocation: form.startLocation,
         endLocation: form.endLocation,
         distance: form.distance,
+        price: form.price, // Include price when creating the route
       });
 
       console.log("Route created:", createdRoute);
@@ -175,7 +179,7 @@ export default function CreateRoute() {
     <div className="flex h-screen bg-gray-200">
       <ProfileSidebar />
       <div className="flex flex-col flex-1">
-        <Header />
+        {/* <Header /> */}
         <div className="flex-1 bg-gray-200 py-16 px-8">
           <h4 className="mb-6 text-3xl font-bold text-black">Create Route</h4>
 
@@ -248,12 +252,28 @@ export default function CreateRoute() {
                   </div>
                 )}
 
+                <div>
+                  <label
+                    htmlFor="price"
+                    className="block text-sm font-medium text-gray-700 mt-4"
+                  >
+                    Price (VND)
+                  </label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={form.price}
+                    onChange={handleChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                  />
+                </div>
+
                 <p className="mt-8 text-lg font-bold">
                   Price:{" "}
                   {new Intl.NumberFormat("vi-VN", {
                     style: "currency",
                     currency: "VND",
-                  }).format(form.distance * 10000)}
+                  }).format(form.price)}
                 </p>
               </>
             )}

@@ -49,7 +49,7 @@ const Navbar = () => {
   return (
     <div>
       <nav className="navbar fixed top-0 left-0 w-full bg-white shadow-lg z-50">
-        <div className="mx-auto flex justify-between items-center p-4">
+        <div className=" flex mx-auto justify-between items-center p-4">
           {/* Logo */}
           <a href="/" className="flex items-left hover:scale-110 transition-transform duration-200">
             <img

@@ -22,10 +22,8 @@ const ProfileSidebar = () => {
       router.push(`/admin/userlist`); 
     } else if (key === "routelist") {
       router.push(`/admin/route`); 
-    } else if (key === "createUser") {
-      router.push(`/admin/createUser`); 
-    } else if (key === "createRoute") {
-      router.push(`/admin/createRoute`); 
+    } else if (key === "rolelist") {
+      router.push(`/admin/rolelist`); 
     }
   }; 
 
@@ -69,7 +67,7 @@ const ProfileSidebar = () => {
             }`}
             onClick={() => handleNavigation("routelist")}
           >
-            <span>Route list</span>
+            <span>Route List</span>
           </a>
         </li>
 
@@ -92,42 +90,23 @@ const ProfileSidebar = () => {
             <span>User List</span>
           </a>
         </li>
-        {/* create user */}
+        {/* Role List */}
         <li className="relative px-6 py-3">
           <span
             className={`absolute inset-y-0 left-0 w-1 ${
-              pathname === '/admin/createUser' ? 'bg-blue-600' : ''
-            }`}
+              pathname === `/admin/rolelist` ? "bg-blue-600" : ""
+            } rounded-tr-lg rounded-br-lg`}
             aria-hidden="true"
           ></span>
           <a
             className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 cursor-pointer ${
-              pathname === '/admin/createUser'
-                ? 'text-blue-600'
+              pathname === `/admin/rolelist`
+                ? "text-blue-600"
                 : "text-gray-800 hover:text-blue-500"
             }`}
-            onClick={() => handleNavigation("createUser")}
+            onClick={() => handleNavigation("rolelist")}
           >
-            <span>Create User</span>
-          </a>
-        </li>
-        {/* create route */}
-                <li className="relative px-6 py-3">
-          <span
-            className={`absolute inset-y-0 left-0 w-1 ${
-              pathname === '/admin/createRoute' ? 'bg-blue-600' : ''
-            }`}
-            aria-hidden="true"
-          ></span>
-          <a
-            className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 cursor-pointer ${
-              pathname === '/admin/createRoute'
-                ? 'text-blue-600'
-                : "text-gray-800 hover:text-blue-500"
-            }`}
-            onClick={() => handleNavigation("createRoute")}
-          >
-            <span>Create Route</span>
+            <span>Role List</span>
           </a>
         </li>
         {/* Change Password */}

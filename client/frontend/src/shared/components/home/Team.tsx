@@ -12,7 +12,7 @@ const TeamSection = () => {
               <div className="overflow-hidden mb-4">
                 <img
                   className="w-full h-72 object-cover rounded-lg transition-transform duration-500 hover:scale-110"
-                  src="/img/team-1.jpg"
+                  src="/img/testimonial-2.jpg"
                   alt="Team Member"
                 />
               </div>
@@ -36,7 +36,7 @@ const TeamSection = () => {
               <div className="overflow-hidden mb-4">
                 <img
                   className="w-full h-72 object-cover rounded-lg transition-transform duration-500 hover:scale-110"
-                  src="/img/team-2.jpg"
+                  src="/img/testimonial-2.jpg"
                   alt="Team Member"
                 />
               </div>

@@ -1,5 +1,5 @@
 import { ObjectType, Field, InputType, Float } from '@nestjs/graphql';
-import { IsNotEmpty, IsString, IsNumber, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsUUID, IsOptional } from 'class-validator';
 
 @ObjectType()
 export class RouteDto {
@@ -12,11 +12,17 @@ export class RouteDto {
   @Field()
   endLocation: string;
 
-  @Field(() => Float) // Ensure distance is a Float
+  @Field(() => Float)
   distance: number;
 
+  @Field(() => Float)  
+  price: number;
+
   @Field()
-  userId: string;  // Reference to the user who created the route
+  status: string;  
+
+  @Field()
+  userId: string;
 }
 
 @InputType()
@@ -36,6 +42,16 @@ export class CreateRouteDto {
   @IsNumber()
   distance: number;
 
+  @Field(() => Float)  
+  @IsNotEmpty()
+  @IsNumber()
+  price: number;  
+
+  @Field(() => String, { defaultValue: 'pending' })
+  @IsOptional()
+  @IsString()
+  status?: string;  
+
   @Field(() => String)
   @IsNotEmpty()
   @IsUUID()
@@ -52,7 +68,14 @@ export class UpdateRouteDto {
   @IsString()
   endLocation?: string;
 
-  @Field(() => Float, { nullable: true }) // Change to Float for consistency
+  @Field(() => Float, { nullable: true })
   @IsNumber()
   distance?: number;
+
+  @Field(() => Float, { nullable: true }) 
+  @IsNumber()
+  price?: number;  
+  @Field(() => String, { nullable: true })  
+  @IsString()
+  status?: string; 
 }

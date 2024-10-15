@@ -17,9 +17,9 @@ export class RoleService {
 
   // gRPC method to get all roles
   @GrpcMethod('RoleService', 'FindAllRoles')
-  async findAllRoles(): Promise<{ roles: Role[] }> {
-    const roles = await this.roleRepository.find({ relations: ['permissions'] });
-    return { roles };
+  async findAllRoles(): Promise<Role[]> {
+    console.log(Role)
+    return this.roleRepository.find({ relations: ['permissions'] });
   }
 
   // gRPC method to get all permissions
@@ -89,4 +89,16 @@ export class RoleService {
     const updatedRole = await this.roleRepository.save(role);
     return { role: updatedRole };
   }
+
+  async createRole(name: string, permissionIds: string[]): Promise<Role> {
+    // Fetch the permissions by their IDs
+    const permissions = await this.permissionRepository.findByIds(permissionIds);
+
+    // Create the new role with the associated permissions
+    const newRole = this.roleRepository.create({ name, permissions });
+
+    // Save the new role in the database
+    return this.roleRepository.save(newRole);
+  }
 }
+
