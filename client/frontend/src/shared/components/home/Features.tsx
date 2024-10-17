@@ -1,4 +1,5 @@
 import '@fortawesome/fontawesome-free/css/all.min.css'; // Ensure this is imported for Font Awesome
+import Image from 'next/image';
 
 const FeaturesSection = () => {
   return (
@@ -36,7 +37,7 @@ const FeaturesSection = () => {
           {/* Image Section */}
           <div className="w-full lg:w-1/2 relative animate-fadeInRight" style={{ minHeight: '400px' }}>
             <div className="absolute inset-0">
-              <img
+              <Image
                 src="/img/feature.jpg"
                 alt="Feature"
                 className="w-full h-full object-cover rounded-lg"

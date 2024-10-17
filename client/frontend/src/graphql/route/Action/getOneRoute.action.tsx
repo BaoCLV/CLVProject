@@ -7,6 +7,8 @@ query GetRoute($id: String!) {
       startLocation
       endLocation
       distance
+      price
+      status
       createdAt
       updatedAt
     }

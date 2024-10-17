@@ -1,16 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Spinner } from "@nextui-org/react";
 import { FaPlus } from "react-icons/fa";
-import { useRoles } from '@/src/hooks/useRole';
-import ProfileSidebar from '../../components/pages/admin/ProfileSidebar';
-import Footer from '../../components/Footer';
+import { useRoles } from "@/src/hooks/useRole";
+import ProfileSidebar from "../../components/pages/admin/ProfileSidebar";
+import Footer from "../../components/Footer";
 import SearchBar from "../../components/searchBar"; // Import SearchBar component
-import { QueryClient, QueryClientProvider } from 'react-query';
-import Modal from '../../components/Modal';  // Import Modal component
-import CreateRole from './createRole'; // Import CreateRole form component
+import { QueryClient, QueryClientProvider } from "react-query";
+import Modal from "../../components/Modal"; // Import Modal component
+import CreateRole from "./createRole"; // Import CreateRole form component
+import EditRole from "./updateRole"; // Import EditRole form component
+import Header from "../../components/Header";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +26,8 @@ function RoleDashboard() {
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<any>(null); // For the role to edit
 
   // Pagination and search state
   const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
@@ -51,6 +55,12 @@ function RoleDashboard() {
     }
   };
 
+  // Handle opening the edit role modal
+  const handleOpenEditModal = (role: any) => {
+    setSelectedRole(role);
+    setIsEditModalOpen(true);
+  };
+
   // Determine the roles to display based on search results
   const rolesToDisplay = searchResults.length > 0 ? searchResults : allRoles;
 
@@ -69,6 +79,7 @@ function RoleDashboard() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Main layout container */}
+      <Header/>
       <div className="flex flex-1">
         <ProfileSidebar />
 
@@ -80,10 +91,10 @@ function RoleDashboard() {
 
             {/* Search Bar */}
             <div className="flex items-center gap-4">
-              <SearchBar onSearch={handleSearch} />
+              <SearchBar  getSearchResults={handleSearch} />
               {/* Create Role Button */}
               <button
-                onClick={() => setIsModalOpen(true)}  // Open modal on click
+                onClick={() => setIsModalOpen(true)} // Open modal on click
                 className="flex items-center gap-2 px-6 py-3 text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition"
               >
                 <FaPlus className="text-white" />
@@ -99,32 +110,46 @@ function RoleDashboard() {
                 <thead>
                   <tr className="text-xs font-semibold tracking-wide text-left text-blue-600 uppercase border-b border-gray-200 bg-gray-50">
                     <th className="px-6 py-4">Role Name</th>
-                    <th className="px-6 py-4">Permissions</th> {/* New column for permissions */}
+                    <th className="px-6 py-4">Permissions</th>{" "}
+                    <th className="px-6 py-4">Action</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
                   {rolesToDisplay.length > 0 ? (
                     rolesToDisplay.map((role: any) => (
-                      <tr key={role.id} className="hover:bg-blue-50 text-black transition-colors">
+                      <tr
+                        key={role.id}
+                        className="hover:bg-blue-50 text-black transition-colors"
+                      >
                         <td className="px-6 py-4 text-sm">{role.name}</td>
 
-                        {/* Display role permissions */}
+                        {/* Display role permissions inline, separated by commas */}
                         <td className="px-6 py-4 text-sm">
                           {role.permissions && role.permissions.length > 0 ? (
-                            <ul>
-                              {role.permissions.map((permission: any) => (
-                                <li key={permission.id}>{permission.name}</li>
-                              ))}
-                            </ul>
+                            role.permissions
+                              .map((permission: any) => permission.name)
+                              .join("  ||  ")
                           ) : (
                             <span>No permissions assigned</span>
                           )}
+                        </td>
+                        <td>
+                          {" "}
+                          <button
+                            onClick={() => handleOpenEditModal(role)} // Open edit modal
+                            className="text-blue-600 hover:text-blue-500 hover:underline transition"
+                          >
+                            View Details
+                          </button>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="text-center py-6 text-gray-600">
+                      <td
+                        colSpan={3}
+                        className="text-center py-6 text-gray-600"
+                      >
                         No roles available
                       </td>
                     </tr>
@@ -155,12 +180,22 @@ function RoleDashboard() {
           </div>
         </div>
       </div>
-      
+
       <Footer />
 
       {/* Modal for Create Role */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <CreateRole onClose={() => setIsModalOpen(false)} />  {/* Pass onClose function to close modal */}
+        <CreateRole onClose={() => setIsModalOpen(false)} />
+      </Modal>
+
+      {/* Modal for Edit Role */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+      >
+        {selectedRole && (
+          <EditRole role={selectedRole} onClose={() => setIsEditModalOpen(false)} />
+        )}
       </Modal>
     </div>
   );

@@ -28,4 +28,6 @@ const ReactEchart = forwardRef<null | EChartsReactCore, ReactEchartProps>(
   },
 );
 
+ReactEchart.displayName = "ReactEchart";
+
 export default ReactEchart;

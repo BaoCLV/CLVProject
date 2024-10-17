@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 // Lazy load Leaflet to prevent window-related issues during SSR
 const LeafletMap = dynamic(() => import("../leafletMap"), { ssr: false }); // Disable SSR for the map component
 
@@ -9,13 +9,14 @@ import { useUser } from "../../../hooks/useUser";
 import dynamic from "next/dynamic";
 
 interface CreateRouteFormProps {
-  onSubmit: (startLocation: string, endLocation: string, distance: number) => void;
+  onSubmit: (startLocation: string, endLocation: string, distance: number, price: number) => void;
 }
 
 const CreateRouteForm = ({ onSubmit }: CreateRouteFormProps) => {
   const [startLocation, setStartLocation] = useState("");
   const [endLocation, setEndLocation] = useState("");
   const [distance, setDistance] = useState<number | null>(null);
+  const [price, setPrice] = useState<number | null>(null);
   const [coordinates, setCoordinates] = useState<[number, number][]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -24,63 +25,72 @@ const CreateRouteForm = ({ onSubmit }: CreateRouteFormProps) => {
 
   const OPEN_CAGE_API_KEY = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY;
 
-  const geocodeLocation = async (location: string): Promise<[number, number] | null> => {
-    if (!location) return null;
-    if (!OPEN_CAGE_API_KEY) throw new Error("OpenCage API key is missing");
-
+  const geocodeLocation = useCallback(async (location: string): Promise<[number, number]> => {
     const response = await fetch(
       `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(location)}&key=${OPEN_CAGE_API_KEY}`
     );
     const data = await response.json();
-
-    if (data.results.length === 0) return null;
-
+  
+    if (data.results.length === 0) {
+      throw new Error('Location not found');
+    }
+  
     const { lat, lng } = data.results[0].geometry;
     return [lat, lng];
+  }, [OPEN_CAGE_API_KEY]);
+
+  const calculateDistance = (coords1: [number, number], coords2: [number, number]): number => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (coords2[0] - coords1[0]) * (Math.PI / 180);
+    const dLng = (coords2[1] - coords1[1]) * (Math.PI / 180);
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(coords1[0] * (Math.PI / 180)) * Math.cos(coords2[0] * (Math.PI / 180)) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
   };
 
-  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
-    const point1 = turf.point([lng1, lat1]);
-    const point2 = turf.point([lng2, lat2]);
-    return turf.distance(point1, point2, { units: "kilometers" });
-  };
-
-  const updateMapAndDistance = async () => {
+  const updateMapAndDistance = useCallback(async () => {
     try {
       const [lat1, lng1] = (await geocodeLocation(startLocation)) || [null, null];
       const [lat2, lng2] = (await geocodeLocation(endLocation)) || [null, null];
-
+  
       if (lat1 && lng1 && lat2 && lng2) {
-        const calculatedDistance = Math.round(calculateDistance(lat1, lng1, lat2, lng2));
+        const calculatedDistance = Math.round(calculateDistance([lat1, lng1], [lat2, lng2]));
         setDistance(calculatedDistance);
+        setPrice(calculatedDistance*100)
         setCoordinates([[lat1, lng1], [lat2, lng2]]);
       }
     } catch (error) {
       setError("Error geocoding locations");
     }
-  };
+  }, [startLocation, endLocation]);
 
   useEffect(() => {
     const timer = setTimeout(updateMapAndDistance, 500);
     return () => clearTimeout(timer);
-  }, [startLocation, endLocation]);
+  }, [startLocation, endLocation, updateMapAndDistance]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     if (loading) {
       toast.info("Please wait, checking authentication...");
       return;
     }
-
+  
     if (!user) {
       toast.info("Please login or sign up to continue.");
       setShowAuthModal(true);
-    } else if (distance !== null) {
-      onSubmit(startLocation, endLocation, distance);
+    } else if (distance !== null && price !== null) {
+      onSubmit(startLocation, endLocation, distance, price);
+    } else {
+      toast.error("Failed to calculate distance or price. Please try again.");
     }
   };
-
   return (
     <div className="relative flex flex-col md:flex-row h-[600px] bg-gray-50">
       <div className="w-full md:w-1/2 p-8 flex flex-col justify-top bg-white shadow-md">
@@ -124,7 +134,7 @@ const CreateRouteForm = ({ onSubmit }: CreateRouteFormProps) => {
       </div>
       {/* Map section is dynamically loaded on client side */}
       <div className="w-full md:w-1/2 h-96 md:h-full p-4">
-        {isClient && <LeafletMap coordinates={coordinates} />}
+        { <LeafletMap coordinates={coordinates} />}
       </div>
       {showAuthModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">

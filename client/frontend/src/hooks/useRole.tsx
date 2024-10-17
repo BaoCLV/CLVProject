@@ -3,6 +3,7 @@ import { useMutation, useQuery } from '@apollo/client';
 import { GET_ALL_PERMISSIONS} from '../graphql/role/Action/GetAllPermission';
 import { GET_ALL_ROLES } from '../graphql/role/Action/GetAllRoles';
 import { CREATE_ROLE } from '../graphql/role/Action/createRole';
+import { UPDATE_ROLE } from '../graphql/role/Action/UpdateRole';
 
 // Hook to fetch all permissions
 export const usePermissions = () => {
@@ -46,4 +47,25 @@ export const useCreateRole = () => {
     loading,
     error,
   };
+};
+
+export const useUpdateRole = ()  => {
+  const [updateRoleMutation, { loading, error }] = useMutation(UPDATE_ROLE);
+
+  // Wrapper function to handle the mutation
+  const updateRole = async (roleId: string, updateRoleInput: string[]) => {
+    try {
+      const response = await updateRoleMutation({
+        variables: {
+          roleId,
+          updateRoleInput,
+        },
+      });
+      return response.data.updateRole;
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  return { updateRole, loading, error };
 };

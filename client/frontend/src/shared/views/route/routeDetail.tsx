@@ -8,10 +8,11 @@ import {
   useUpdateRoute,
 } from "../../../hooks/useRoute";
 import { useUser } from "../../../hooks/useUser";
+import { useRoles } from "../../../hooks/useRole";
 import Header from "../../components/Header";
-import Sidebar from "../../components/Sidebar";
+import ProfileSidebar from "../../components/pages/admin/ProfileSidebar";
 import Footer from "../../components/Footer";
-import { Spinner } from "@nextui-org/react";
+import Loading from "../../components/Loading";
 import {
   MapContainer,
   TileLayer,
@@ -21,11 +22,10 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import Loading from "../../components/Loading";
 
 const OPEN_CAGE_API_KEY = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY;
 
-// Define your custom marker icon
+// Custom marker icon
 const customIcon = L.icon({
   iconUrl: "/img/map-marker.png",
   iconSize: [38, 38],
@@ -39,17 +39,15 @@ interface RouteDetailProps {
 
 export default function RouteDetail({ routeId }: RouteDetailProps) {
   const router = useRouter();
-
   const { route, loading: routeLoading, error } = useGetRoute(routeId);
   const { user, loading: userLoading } = useUser();
+  const { loadingRoles, roles } = useRoles();
   const { handleDeleteRoute } = useDeleteRoute();
   const { handleUpdateRoute } = useUpdateRoute();
-
   const [coordinates, setCoordinates] = useState<[number, number][]>([]);
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodeError, setGeocodeError] = useState<string | null>(null);
 
-  // Geocode location to lat/lng using OpenCage API
   const geocodeLocation = async (
     location: string
   ): Promise<[number, number]> => {
@@ -77,11 +75,9 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
       if (route) {
         try {
           setIsGeocoding(true);
-          const [startLat, startLng] = await geocodeLocation(
-            route.startLocation
-          );
+          const [startLat, startLng] = await geocodeLocation(route.startLocation);
           const [endLat, endLng] = await geocodeLocation(route.endLocation);
-
+  
           setCoordinates([
             [startLat, startLng],
             [endLat, endLng],
@@ -93,14 +89,14 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
         }
       }
     };
-
+  
     fetchCoordinates();
   }, [route]);
 
   const handleDelete = async () => {
     try {
       await handleDeleteRoute(routeId);
-      router.push("/");
+      router.push("/admin/route");
     } catch (err) {
       console.error("Error deleting route:", err);
     }
@@ -110,7 +106,7 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
     router.push(`/api/route/${routeId}/update`);
   };
 
-  if (routeLoading || userLoading || isGeocoding) {
+  if (routeLoading || userLoading || isGeocoding || loadingRoles) {
     return <Loading />;
   }
 
@@ -118,115 +114,108 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
   if (geocodeError) return <p>Error: {geocodeError}</p>;
   if (!route) return <p>Route not found</p>;
 
-  // Fit the map bounds to show both markers using the useMap hook
+  const role = roles.find((role: { id: any }) => role.id === user.roleId);
+  const roleName = role?.name || "No role";
+
+  const hasUpdatePermission = role?.permissions
+    .map((perm: any) => perm.name)
+    .includes("update");
+
+  const hasDeletePermission = role?.permissions
+    .map((perm: any) => perm.name)
+    .includes("delete");
+
   function AutoZoom() {
     const map = useMap();
     useEffect(() => {
       if (coordinates.length === 2) {
         map.fitBounds(coordinates);
       }
-    }, [coordinates, map]);
+    }, [ map]);
     return null;
   }
 
   return (
-    <div className="flex flex-col flex-1">
+    <div className="flex flex-col h-screen">
       <Header />
-      <div className="flex-1 h-screen p-24">
-        <div className="bg-white rounded-lg shadow-lg p-8 space-y-8">
-          {/* Title */}
-          <h2 className="text-4xl font-bold text-center text-blue-600">
-            Route Details
-          </h2>
 
-          {/* Route Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-gray-50 p-6 rounded-lg shadow-md">
-              <span className="block text-gray-700 text-lg font-semibold">
-                Route ID
-              </span>
-              <p className="mt-2 text-2xl font-bold text-gray-900">
-                {route.id}
-              </p>
+      <div className="flex flex-1">
+        <ProfileSidebar />
+
+        <div className="flex flex-1 bg-gray-200 py-16 px-8">
+          <div className="w-full flex flex-col space-y-8">
+            <div className="flex space-x-8">
+              <div className="w-1/2 bg-white p-6 rounded-lg shadow-md">
+                <h2 className="text-4xl font-bold pb-8 text-blue-600">
+                  Route Details
+                </h2>
+                <div className="grid grid-cols-1 gap-8">
+                  {[
+                    { label: "Route ID", value: route.id },
+                    { label: "Start Location", value: route.startLocation },
+                    { label: "End Location", value: route.endLocation },
+                    { label: "Distance (km)", value: `${route.distance.toFixed(2)} km` },
+                    { label: "Price", value: `${route.price.toFixed(2)} $` },
+                    { label: "Status", value: route.status},
+                  ].map(({ label, value }) => (
+                    <div key={label}>
+                      <span className="block text-gray-700 text-lg font-semibold">
+                        {label}
+                      </span>
+                      <p className="mt-2 text-2xl font-bold text-gray-900">
+                        {value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Map Display Section */}
+              <div className="w-1/2 h-[800px] rounded-lg shadow-lg overflow-hidden">
+                {coordinates.length === 2 && (
+                  <MapContainer
+                    center={coordinates[0]}
+                    zoom={10}
+                    scrollWheelZoom={false}
+                    className="h-full w-full"
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    <Marker position={coordinates[0]} icon={customIcon} />
+                    <Marker position={coordinates[1]} icon={customIcon} />
+                    <Polyline positions={coordinates} />
+                    <AutoZoom />
+                  </MapContainer>
+                )}
+              </div>
             </div>
 
-            <div className="bg-gray-50 p-6 rounded-lg shadow-md">
-              <span className="block text-gray-700 text-lg font-semibold">
-                Start Location
-              </span>
-              <p className="mt-2 text-2xl font-bold text-gray-900">
-                {route.startLocation}
-              </p>
-            </div>
-
-            <div className="bg-gray-50 p-6 rounded-lg shadow-md">
-              <span className="block text-gray-700 text-lg font-semibold">
-                End Location
-              </span>
-              <p className="mt-2 text-2xl font-bold text-gray-900">
-                {route.endLocation}
-              </p>
-            </div>
-
-            <div className="bg-gray-50 p-6 rounded-lg shadow-md">
-              <span className="block text-gray-700 text-lg font-semibold">
-                Distance (km)
-              </span>
-              <p className="mt-2 text-2xl font-bold text-gray-900">
-                {route.distance} km
-              </p>
-            </div>
-          </div>
-
-          {/* Map Display */}
-          {coordinates.length === 2 && (
-            <div className="mt-8 h-[400px] w-full rounded-lg shadow-lg overflow-hidden">
-              <MapContainer
-                center={coordinates[0]}
-                zoom={10}
-                scrollWheelZoom={false}
-                className="h-full w-full"
-              >
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
-                <Marker position={coordinates[0]} icon={customIcon} />
-                <Marker position={coordinates[1]} icon={customIcon} />
-                <Polyline positions={coordinates} />
-                <AutoZoom />
-              </MapContainer>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex justify-between items-center mt-8">
-            <button
-              onClick={() => router.push("/")}
-              className="text-blue-600 font-bold hover:underline"
-            >
-              Back to Dashboard
-            </button>
-
-            {user?.roles?.includes("admin") && (
-              <div className="space-x-4">
+            {/* Action Buttons under Form and Map */}
+            <div className="flex justify-end items-center mt-8 space-x-4">
+              {hasUpdatePermission && (
                 <button
                   onClick={handleUpdate}
                   className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300"
                 >
                   Update Route
                 </button>
+              )}
+
+              {hasDeletePermission && (
                 <button
                   onClick={handleDelete}
                   className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition duration-300"
                 >
                   Delete Route
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
+
       <Footer />
     </div>
   );

@@ -9,17 +9,5 @@ async function bootstrap() {
     origin: '*',
   });
   await app.listen(4000); 
-
-
-  const grpcApp = await NestFactory.createMicroservice<MicroserviceOptions>(RouteModule, {
-    transport: Transport.GRPC,
-    options: {
-      package: 'route',
-      protoPath: join('./src/protos/route.proto'),
-      url: '0.0.0.0:50052',
-    },
-  });
-
-  await grpcApp.listen();
 }
 bootstrap();

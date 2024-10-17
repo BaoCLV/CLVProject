@@ -1,9 +1,8 @@
+import { useState, useRef, useEffect } from 'react';
 
-import { useEffect, useRef, useState } from "react";
-
-export const useInView = (threshold = 0.1) => {
+export const useInView = (threshold = 0.1): [React.MutableRefObject<HTMLDivElement | null>, boolean] => {
+  const ref = useRef<HTMLDivElement | null>(null); // Initialize the ref with null instead of false
   const [isInView, setIsInView] = useState(false);
-  const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -14,15 +13,15 @@ export const useInView = (threshold = 0.1) => {
     );
 
     if (ref.current) {
-      observer.observe(ref.current);
+      observer.observe(ref.current); // Start observing the ref
     }
 
     return () => {
       if (ref.current) {
-        observer.unobserve(ref.current);
+        observer.unobserve(ref.current); // Clean up observer on unmount
       }
     };
   }, [threshold]);
 
-  return [ref, isInView]; // Ensure the hook returns [ref, isInView]
+  return [ref, isInView];
 };

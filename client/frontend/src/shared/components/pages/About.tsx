@@ -1,4 +1,5 @@
 'use client'
+import Image from "next/image";
 import { useInView } from "../../../hooks/useInView";
 import Footer from "../Footer";
 import Navbar from "../home/Navbar";
@@ -25,7 +26,7 @@ const AboutPage = () => {
               aboutInView ? "translate-x-0 opacity-100" : "-translate-x-10 opacity-0"
             }`}
           >
-            <img
+            <Image
               src="/img/about.jpg"
               alt="About us"
               className="rounded-lg shadow-lg w-full"
@@ -81,7 +82,7 @@ const AboutPage = () => {
               missionInView ? "translate-x-0 opacity-100" : "translate-x-10 opacity-0"
             }`}
           >
-            <img
+            <Image
               src="/img/mission.jpg"
               alt="Mission"
               className="rounded-lg shadow-lg w-full"
@@ -99,7 +100,7 @@ const AboutPage = () => {
               visionInView ? "translate-x-0 opacity-100" : "-translate-x-10 opacity-0"
             }`}
           >
-            <img
+            <Image
               src="/img/vision.png"
               alt="Vision"
               className="rounded-lg shadow-lg w-full"
@@ -138,7 +139,7 @@ const AboutPage = () => {
                 teamInView ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
               }`}
             >
-              <img
+              <Image
                 src="/img/team-1.jpg"
                 alt="Team Member 1"
                 className="w-full h-64 object-cover rounded-lg mb-4"
@@ -153,7 +154,7 @@ const AboutPage = () => {
                 teamInView ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
               }`}
             >
-              <img
+              <Image
                 src="/img/team-2.jpg"
                 alt="Team Member 2"
                 className="w-full h-64 object-cover rounded-lg mb-4"
@@ -168,7 +169,7 @@ const AboutPage = () => {
                 teamInView ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
               }`}
             >
-              <img
+              <Image
                 src="/img/team-3.jpg"
                 alt="Team Member 3"
                 className="w-full h-64 object-cover rounded-lg mb-4"

@@ -1,12 +1,16 @@
+import dynamic from 'next/dynamic';
 import Loading from "@/src/shared/components/Loading";
-import CreateRoute from "@/src/shared/views/route/createRoute";
-import React, { Suspense } from "react";
+import { Suspense } from 'react';
+
+// Dynamically import CreateRoute
+const CreateRoute = dynamic(() => import('@/src/shared/views/route/createRoute'), {
+  suspense: true
+});
 
 const Page = () => {
   return (
     <div>
-
-      <Suspense fallback={<Loading/>}>
+      <Suspense fallback={<Loading />}>
         <CreateRoute />
       </Suspense>
     </div>

@@ -8,8 +8,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { JwtService } from "@nestjs/jwt";
 import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
 import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
-import { Role } from '../../../role/src/entities/role.entity';
-import { Permission } from '../../../role/src/entities/permission.entity';
+
 import { SeedService } from 'src/seeder/SeedService';
 import { Avatar } from 'src/entities/avatar.entity';
 
@@ -18,7 +17,7 @@ import { Avatar } from 'src/entities/avatar.entity';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forFeature([User, Avatar, Role, Permission]),
+    TypeOrmModule.forFeature([User, Avatar]),
     GraphQLModule.forRoot<ApolloFederationDriverConfig>({
       driver: ApolloFederationDriver,
       autoSchemaFile: {
@@ -38,7 +37,7 @@ import { Avatar } from 'src/entities/avatar.entity';
           username: url ? undefined : configService.get<string>('DB_USER'),
           password: url ? undefined : configService.get<string>('DB_PASSWORD'),
           database: url ? undefined : configService.get<string>('DB_NAME'),
-          entities: [User, Avatar, Role, Permission],
+          entities: [User, Avatar],
           synchronize: true,
         };
       },

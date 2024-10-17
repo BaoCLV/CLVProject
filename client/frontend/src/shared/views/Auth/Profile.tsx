@@ -76,7 +76,7 @@ export default function UserProfile({ userId }: UserDetailProps) {
               </button>
               <a
                 href="/"
-                className="py-4 text-lg font-semibold text-center text-blue-600 hover:text-blue-700 hover:underline transition-colors duration-150 border border-blue-600 rounded-lg bg-white"
+                className="py-4 px-4 text-lg font-semibold text-center text-blue-600 hover:text-blue-700 hover:underline transition-colors duration-150 border border-blue-600 rounded-lg bg-white"
               >
                 Back to Dashboard
               </a>

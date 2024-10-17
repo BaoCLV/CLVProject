@@ -1,5 +1,5 @@
+import Image from "next/image";
 import { useInView } from "../../../hooks/useInView";
-import Link from "next/link"; // Import Link from Next.js
 
 const AboutSection = () => {
   const [ref, isInView] = useInView(0.1); // Trigger animations
@@ -13,7 +13,7 @@ const AboutSection = () => {
             isInView ? "translate-x-0 opacity-100" : "-translate-x-10 opacity-0"
           }`}
         >
-          <img
+          <Image
             src="/img/about.jpg"
             alt="About us"
             className="rounded-lg shadow-lg w-full"

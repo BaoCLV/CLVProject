@@ -1,34 +1,35 @@
 version: '3.8'
 
 services:
-  # client:
-  #   build:
-  #     context: ./client/frontend
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - '3000:3000'
-  #   depends_on:
-  #     - api-auth
-  #   environment:
-  #     - API_URL=http://api-auth:3001
+  client:
+    build:
+      context: ./client/frontend
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api-auth
+    environment:
+      - API_URL=http://api-auth:3001
 
-  # api-auth:
-  #   build:
-  #     context: ./server/nestjs
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - '3001:3001'
-  #   depends_on:
-  #     - db
-  #     - kafka
-  #   environment:
-  #     - DATABASE_URL=postgresql://postgres:password@db:5432/CLVproject
-  #     - DB_USER=postgres
-  #     - DB_PASSWORD=password
-  #     - DB_HOST=db
-  #     - DB_PORT=5432
-  #     - DB_NAME=CLVproject
-      
+  api-auth:
+    build:
+      context: ./server/nestjs
+      dockerfile: Dockerfile
+    ports:
+      - '3001:3001'
+    depends_on:
+      - db
+      - kafka
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME}
+      - KAFKA_BROKER=kafka:9092  # Use Kafka service name
+
   route-api:
     build:
       context: ./server/route
@@ -38,28 +39,28 @@ services:
     depends_on:
       - db
     environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/CLVproject
-      - DB_USER=postgres
-      - DB_PASSWORD=password
+      - DATABASE_URL=${DATABASE_URL}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
       - DB_HOST=db
       - DB_PORT=5432
-      - DB_NAME=CLVproject
+      - DB_NAME=${DB_NAME}
 
-  # role-api:
-  #   build:
-  #     context: ./server/role
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - '3003:3003'
-  #   depends_on:
-  #     - db
-  #   environment:
-  #     - DATABASE_URL=postgresql://postgres:password@db:5432/CLVproject
-  #     - DB_USER=postgres
-  #     - DB_PASSWORD=password
-  #     - DB_HOST=db
-  #     - DB_PORT=5432
-  #     - DB_NAME=CLVproject
+  role-api:
+    build:
+      context: ./server/role
+      dockerfile: Dockerfile
+    ports:
+      - '3003:3003'
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME}
 
   gateway-api:
     build:
@@ -68,12 +69,12 @@ services:
     ports:
       - '5000:5000'
     environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/CLVproject
-      - DB_USER=postgres
-      - DB_PASSWORD=password
+      - DATABASE_URL=${DATABASE_URL}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
       - DB_HOST=db
       - DB_PORT=5432
-      - DB_NAME=CLVproject
+      - DB_NAME=${DB_NAME}
 
   notification-api:
     build:
@@ -84,28 +85,40 @@ services:
     depends_on:
       - kafka
     environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/CLVproject
-      - DB_USER=postgres
-      - DB_PASSWORD=password
+      - DATABASE_URL=${DATABASE_URL}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
       - DB_HOST=db
       - DB_PORT=5432
-      - DB_NAME=CLVproject
+      - DB_NAME=${DB_NAME}
+      - KAFKA_BROKER=kafka:9092  # Kafka service name instead of localhost
+
   db:
     image: postgres:13
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: CLVproject
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   zookeeper:
     image: 'confluentinc/cp-zookeeper:latest'
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      test: ["CMD", "echo", "ruok", "|", "nc", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   kafka:
     image: 'confluentinc/cp-kafka:latest'
@@ -114,8 +127,16 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092  # Use Kafka service name for internal communication
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "kafka:9092"]  # Use kafka service name
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:

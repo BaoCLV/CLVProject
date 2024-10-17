@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { usePathname } from "next/navigation";
 import UserDropDown from "../../UserDropdown";
+import Image from "next/image";
 
 const services = [
   {
@@ -52,7 +53,7 @@ const Navbar = () => {
         <div className=" flex mx-auto justify-between items-center p-4">
           {/* Logo */}
           <a href="/" className="flex items-left hover:scale-110 transition-transform duration-200">
-            <img
+            <Image
               src="https://cyberlogitec.com.vn/wp-content/uploads/2024/09/logo-ngang_3-1.svg"
               alt="Logo"
               className="h-8 pl-5"

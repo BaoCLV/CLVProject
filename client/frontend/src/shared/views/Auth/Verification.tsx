@@ -107,7 +107,7 @@ const Verification: FC<Props> = ({ setActiveState, isEmailChange = false }) => {
             type="number"
             key={key}
             ref={inputRefs[index]}
-            className={`w-[65px] h-[65px] bg-transparent border-[3px] rounded-[10px] flex items-center text-white justify-center text-[18px] font-Poppins outline-none text-center ${
+            className={`w-[65px] h-[65px] bg-transparent border-[3px] rounded-[10px] flex items-center text-black justify-center text-[18px] font-Poppins outline-none text-center ${
               invalidError ? "shake border-red-500" : "border-white"
             }`}
             placeholder=""

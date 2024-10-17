@@ -43,29 +43,6 @@ const Sidebar = () => {
             Profile
           </span>
         </li>
-
-        {/* Create New Route */}
-        <li
-          className="relative px-6 py-3 cursor-pointer"
-          onClick={() => handleNavigation("myRoute")}
-        >
-          <span
-            className={`absolute inset-y-0 left-0 w-1 ${
-              pathname === '/api/route/createRoute' ? 'bg-purple-800' : ''
-            }`}
-            aria-hidden="true"
-          ></span>
-          <span
-            className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 ${
-              pathname === '/api/route/createRoute'
-                ? 'text-purple-800'
-                : 'text-black hover:text-gray-800'
-            }`}
-          >
-            Create new route
-          </span>
-        </li>
-
         {/* Change Password */}
         <li
           className="relative px-6 py-3 cursor-pointer"

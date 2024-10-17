@@ -5,6 +5,7 @@ import Player from "lottie-react";
 import airplaneAnimation from "@/src/animations/airplane.json";
 import Navbar from "../../home/Navbar";
 import Footer from "../../Footer";
+import Image from "next/image";
 
 const AirFreight = () => {
   return (
@@ -42,7 +43,7 @@ const AirFreight = () => {
           <section className="w-full mb-16 transition-all duration-700 bg-cyan-300 ease-in-out transform hover:scale-105">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="w-full md:w-1/2">
-                <img
+                <Image
                   src="/img/air-freight-features.jpg"
                   alt="Air Freight Features"
                   className="rounded-lg shadow-lg w-full"
@@ -76,7 +77,7 @@ const AirFreight = () => {
                 </p>
               </div>
               <div className="w-full md:w-1/2">
-                <img
+                <Image
                   src="/img/how-it-works-air-freight.jpg"
                   alt="How Air Freight Works"
                   className="rounded-lg shadow-lg w-full"
@@ -89,7 +90,7 @@ const AirFreight = () => {
           <section className="w-full mb-16 transition-all duration-700 bg-blue-400 ease-in-out transform hover:scale-105">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="w-full md:w-1/2">
-                <img
+                <Image
                   src="/img/contact-air-freight.jpg"
                   alt="Contact Us"
                   className="rounded-lg shadow-lg w-full"

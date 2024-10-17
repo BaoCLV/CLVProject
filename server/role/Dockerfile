@@ -1,23 +1,30 @@
-# Use a specific version for better stability
-FROM node:18
+FROM node:18 AS build
 
-# Set working directory
+
 WORKDIR /app
 
-# Copy only the necessary files first to leverage Docker cache
 COPY package.json pnpm-lock.yaml ./
 
-# Install pnpm and dependencies in one step to reduce image layers
 RUN npm install -g pnpm && pnpm install --frozen-lockfile
 
-# Copy the rest of the application files
 COPY . .
 
-# Build the application
+COPY ./src/protos ./src/protos
+
 RUN pnpm build
 
-# Expose the port
+FROM node:18 AS production
+
+WORKDIR /app
+
+RUN npm install -g pnpm
+
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/src/protos ./src/protos
+
 EXPOSE 3003
 
-# Start the application in development mode
-CMD ["pnpm", "start:dev"]
+
+CMD ["pnpm", "start:prod"]

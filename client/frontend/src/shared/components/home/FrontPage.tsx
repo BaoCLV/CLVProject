@@ -38,7 +38,7 @@ const FrontPage = () => {
     setModalOpen(true);
   };
 
-  const handleFormSubmit = async (startLocation: string, endLocation: string, distance: number) => {
+  const handleFormSubmit = async (startLocation: string, endLocation: string, distance: number, price: number) => {
     if (!user || !user.id) {
       setFeedback("Error: User not logged in.");
       return;
@@ -50,6 +50,7 @@ const FrontPage = () => {
         startLocation,
         endLocation,
         distance,
+        price,
       };
       const newRoute = await handleCreateRoute(routeData);
       setModalOpen(false);

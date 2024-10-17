@@ -10,6 +10,7 @@ import { useRoles } from '@/src/hooks/useRole';
 import ProfileSidebar from '../../components/pages/admin/ProfileSidebar';
 import Footer from '../../components/Footer';
 import SearchBar from "../../components/searchBar"; // Import SearchBar component
+import Header from '../../components/Header';
 
 const queryClient = new QueryClient();
 
@@ -77,6 +78,7 @@ function UserDashboard() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Main layout container */}
+      <Header/>
       <div className="flex flex-1">
         <ProfileSidebar />
 
@@ -88,7 +90,7 @@ function UserDashboard() {
 
             {/* Search Bar */}
             <div className="flex items-center gap-4">
-              <SearchBar onSearch={handleSearch} /> {/* Include search bar */}
+            <SearchBar  getSearchResults={handleSearch} />
               {/* Create User Button */}
               <button
                 onClick={() => router.push("/admin/createUser")} // Navigate to the create-user page

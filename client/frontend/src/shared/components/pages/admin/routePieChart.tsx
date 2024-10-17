@@ -4,8 +4,12 @@ import PieChart from '../../PieChart';
 import { useEffect, useState } from 'react';
 
 const RoutePieChart = () => {
-  const { data, isFetching, error } = useGetRoutes();
-  
+  // Provide the required arguments to useGetRoutes
+  const currentPage = 1;
+  const itemsPerPage = 1000; 
+
+  const { data, isFetching, error } = useGetRoutes(currentPage, itemsPerPage);
+
   const [routeStatusCount, setRouteStatusCount] = useState({
     pending: 0,
     delivering: 0,
@@ -48,7 +52,7 @@ const RoutePieChart = () => {
   }
 
   if (error) {
-    return <p>Error loading routes: {error.message}</p>;
+    return <p>Error loading routes</p>;
   }
 
   return (

@@ -38,7 +38,7 @@ const UserDropDown = () => {
 
   // Check if the user is admin or superadmin (Memoized to avoid redundant calculations)
   const isAdmin = useMemo(
-    () => userRole?.name === "admin" || userRole?.name === "superadmin",
+    () => userRole?.name === "admin" || userRole?.name === "Super Admin",
     [userRole]
   );
 
@@ -99,18 +99,25 @@ const UserDropDown = () => {
               alt="User Avatar"
             />
           </DropdownTrigger>
-          <DropdownMenu aria-label="Profile Actions" variant="flat" onAction={handleNavigation}>
+          <DropdownMenu
+            aria-label="Profile Actions"
+            variant="flat"
+            onAction={handleNavigation}
+          >
             <DropdownItem key="settings" className="h-14 gap-2">
               <p className="font-semibold text-white">Signed in as</p>
               <p className="font-semibold text-white">
                 {sessionData?.user?.email || user?.email}
               </p>
             </DropdownItem>
-            {!loadingRoles && isAdmin && (
-              <DropdownItem className="font-semibold text-white" key="dashboard">
+            {!loadingRoles && isAdmin ? (
+              <DropdownItem
+                className="font-semibold text-white"
+                key="dashboard"
+              >
                 Dashboard
               </DropdownItem>
-            )}
+            ) : <DropdownItem></DropdownItem>}
             <DropdownItem className="font-semibold text-white" key="settings">
               My Profile
             </DropdownItem>
@@ -125,7 +132,10 @@ const UserDropDown = () => {
           </DropdownMenu>
         </Dropdown>
       ) : (
-        <CgProfile className="text-2xl cursor-pointer" onClick={() => setOpen(!open)} />
+        <CgProfile
+          className="text-2xl cursor-pointer"
+          onClick={() => setOpen(!open)}
+        />
       )}
       {open && <AuthScreen setOpen={setOpen} />}
     </div>

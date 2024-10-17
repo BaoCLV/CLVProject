@@ -1,6 +1,5 @@
 import { ObjectType, Field, Int, InputType, registerEnumType } from '@nestjs/graphql';
-import { IsNotEmpty, IsString, IsNumber, IsEnum, IsArray, IsUUID } from 'class-validator';
-import { User } from '../../../nestjs/src/entities/user.entity';
+import { IsNotEmpty, IsString, IsNumber, IsEnum, IsArray, IsUUID } from 'class-validator'
 import { ClientPermission } from 'src/enum/permissions.enum';
 
 export enum ClientRole {
@@ -28,8 +27,6 @@ export class RoleDto {
   @IsNumber()
   rank: number;
 
-  @Field(() => [User], { nullable: true })
-  users: User[];
 
   @Field(() => [ClientPermission], { nullable: true })
   permissions: ClientPermission[];

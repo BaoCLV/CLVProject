@@ -10,6 +10,7 @@ import { FaPlus } from "react-icons/fa";
 import ProfileSidebar from "./ProfileSidebar";
 import Footer from "../../Footer";
 import SearchBar from "../../searchBar";
+import Header from "../../Header";
 
 const queryClient = new QueryClient();
 
@@ -67,18 +68,38 @@ function RoutePage() {
   let Routes = data?.pages.flatMap((page) => page) ?? [];
 
   // Utility function to return color classes based on route status
-  const getStatusColor = (status: string) => {
+  const getStatusLabel = (status: string) => {
     switch (status.toLowerCase()) {
       case "pending":
-        return "bg-gray-200 text-gray-700";
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+            Pending
+          </span>
+        );
       case "delivering":
-        return "bg-blue-200 text-blue-700";
-      case "finish":
-        return "bg-green-200 text-green-700";
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+            Delivering
+          </span>
+        );
+      case "success":
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+            Success
+          </span>
+        );
       case "cancel":
-        return "bg-red-200 text-red-700";
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+            Canceled
+          </span>
+        );
       default:
-        return "bg-gray-200 text-gray-700";
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+            Unknown
+          </span>
+        );
     }
   };
 
@@ -114,14 +135,18 @@ function RoutePage() {
       <span className="ml-2">
         <span
           className={`${
-            active && sortDirection === "asc" ? "text-blue-600" : "text-gray-400"
+            active && sortDirection === "asc"
+              ? "text-blue-600"
+              : "text-gray-400"
           }`}
         >
           ▲
         </span>
         <span
           className={`ml-1 ${
-            active && sortDirection === "desc" ? "text-blue-600" : "text-gray-400"
+            active && sortDirection === "desc"
+              ? "text-blue-600"
+              : "text-gray-400"
           }`}
         >
           ▼
@@ -133,6 +158,7 @@ function RoutePage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Main layout container */}
+      <Header />
       <div className="flex flex-1">
         <ProfileSidebar />
 
@@ -152,10 +178,10 @@ function RoutePage() {
 
             {/* Create Route Button */}
             <button
-              onClick={() => router.push("/admin/createRoute")}  // Redirect to create-route page
+              onClick={() => router.push("/admin/createRoute")} // Redirect to create-route page
               className="flex items-center gap-2 px-6 py-3 text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition"
             >
-              <FaPlus className="text-white" />  {/* Plus icon */}
+              <FaPlus className="text-white" /> {/* Plus icon */}
               Create Route
             </button>
           </div>
@@ -167,13 +193,22 @@ function RoutePage() {
                   <tr className="text-xs font-semibold tracking-wide text-left text-blue-600 uppercase border-b border-gray-200 bg-gray-50">
                     <th className="px-6 py-4">Start Location</th>
                     <th className="px-6 py-4">End Location</th>
-                    <th className="px-6 py-4 cursor-pointer" onClick={() => handleSort("distance")}>
+                    <th
+                      className="px-6 py-4 cursor-pointer"
+                      onClick={() => handleSort("distance")}
+                    >
                       Distance (km) {renderSortSymbols("distance")}
                     </th>
-                    <th className="px-6 py-4 cursor-pointer" onClick={() => handleSort("price")}>
+                    <th
+                      className="px-6 py-4 cursor-pointer"
+                      onClick={() => handleSort("price")}
+                    >
                       Price {renderSortSymbols("price")}
                     </th>
-                    <th className="px-6 py-4 cursor-pointer" onClick={() => handleSort("status")}>
+                    <th
+                      className="px-6 py-4 cursor-pointer"
+                      onClick={() => handleSort("status")}
+                    >
                       Status {renderSortSymbols("status")}
                     </th>
                     <th className="px-6 py-4">Actions</th>
@@ -201,14 +236,13 @@ function RoutePage() {
                             {route.endLocation}
                           </td>
                           <td className="px-6 py-4 text-sm">
-                            {route.distance}
+                            {route.distance.toFixed(2)}
                           </td>
+                          <td className="px-6 py-4 text-sm">{route.price.toFixed(2)}</td>
                           <td className="px-6 py-4 text-sm">
-                            {route.price}
+                            {getStatusLabel(route.status)}
                           </td>
-                          <td className={`px-6 py-4 text-sm font-medium ${getStatusColor(route.status)} rounded-lg`}>
-                            {route.status}
-                          </td>
+
                           <td className="px-6 py-4 text-sm">
                             <a
                               href={`/api/route/${route.id}`}

@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import { useCreateRole, usePermissions } from '@/src/hooks/useRole';
-  // Import the custom hook
+import React, { useState, useEffect } from "react";
+import { useUpdateRole, usePermissions } from '@/src/hooks/useRole'; // Import hooks
 
-interface CreateRoleProps {
+interface EditRoleProps {
+  role: any; // Role object to edit
   onClose: () => void;
 }
 
@@ -11,13 +11,18 @@ interface Permission {
   name: string;
 }
 
-const CreateRole = ({ onClose }: CreateRoleProps) => {
-  const [roleName, setRoleName] = useState("");
-  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
-  
-  const { createRole, loading: createLoading, error: createError } = useCreateRole();
-  const {  permissions } = usePermissions();  // Fetch permissions
+const EditRole = ({ role, onClose }: EditRoleProps) => {
+  const [roleName, setRoleName] = useState(role.name);
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>(role.permissions.map((p: any) => p.id)); // Preselect permissions
 
+  const { updateRole, loading: updateLoading, error: updateError } = useUpdateRole();
+  const { permissions } = usePermissions();  // Fetch all permissions
+
+  useEffect(() => {
+    setSelectedPermissions(role.permissions.map((p: any) => p.id)); // Set initial selected permissions from role
+  }, [role]);
+
+  // Handle permission checkbox changes
   const handlePermissionChange = (permissionId: string) => {
     setSelectedPermissions((prevPermissions) => {
       if (prevPermissions.includes(permissionId)) {
@@ -28,21 +33,21 @@ const CreateRole = ({ onClose }: CreateRoleProps) => {
     });
   };
 
+  // Handle submit for updating role
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createRole(roleName, selectedPermissions);  // Create the role with permissions
-      onClose();  // Close the modal after successful creation
+      await updateRole(roleName, selectedPermissions); 
+      onClose(); 
     } catch (err) {
-      console.error("Error creating role:", err);
+      console.error("Error updating role:", err);
     }
   };
 
 
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <h2 className="text-2xl font-semibold text-gray-800">Create New Role</h2>
+      <h2 className="text-2xl font-semibold text-gray-800">Edit Role: {role.name}</h2>
 
       {/* Role Name */}
       <div>
@@ -51,7 +56,7 @@ const CreateRole = ({ onClose }: CreateRoleProps) => {
           type="text"
           value={roleName}
           onChange={(e) => setRoleName(e.target.value)}
-          className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2"
+          className="mt-1 block w-full border bg-white border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2"
           placeholder="Enter role name"
           required
         />
@@ -61,13 +66,13 @@ const CreateRole = ({ onClose }: CreateRoleProps) => {
       <div>
         <label className="block text-sm font-medium text-gray-700">Permissions</label>
         <div className="mt-2 grid grid-cols-2 gap-4">
-        {permissions.map((permission: Permission ) => (
+          {permissions.map((permission: Permission) => (
             <div key={permission.id} className="flex items-center">
               <input
                 type="checkbox"
                 id={permission.id}
                 value={permission.id}
-                checked={selectedPermissions.includes(permission.id)}
+                checked={selectedPermissions.includes(permission.id)} // Pre-select based on role
                 onChange={() => handlePermissionChange(permission.id)}
                 className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
@@ -80,20 +85,20 @@ const CreateRole = ({ onClose }: CreateRoleProps) => {
       </div>
 
       {/* Error Message */}
-      {createError && <p className="text-red-500">{createError.message}</p>}
+      {updateError && <p className="text-red-500">{updateError.message}</p>}
 
       {/* Submit Button */}
       <div className="flex justify-end">
         <button
           type="submit"
           className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition"
-          disabled={createLoading}
+          disabled={updateLoading}
         >
-          {createLoading ? "Creating..." : "Create Role"}
+          {updateLoading ? "Updating..." : "Update Role"}
         </button>
       </div>
     </form>
   );
 };
 
-export default CreateRole;
+export default EditRole;

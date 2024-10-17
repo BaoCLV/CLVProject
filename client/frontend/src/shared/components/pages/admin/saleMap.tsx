@@ -10,26 +10,31 @@ import {
 } from 'echarts/components';
 import { MapChart, MapSeriesOption } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
-import { CallbackDataParams } from 'echarts/types/src/util/types.js';
 import EChartsReactCore from 'echarts-for-react/lib/core';
-import world from '@/src/animations/world.json';
-import ReactEchart from './ReactEhart';
+import world from '@/src/animations/world.json'; // World geoJSON
+import ReactEchart from './ReactEhart'; // Assuming you have a wrapper around ECharts
 import { GET_ROUTES_QUERY } from '@/src/graphql/route/Action/getRoutes.action';
-import { getCountryByCity } from '@/src/libs/geolocation';
+import { getCountryByCity } from '@/src/libs/geolocation'; // Geolocation utility
 
 echarts.use([TooltipComponent, GeoComponent, MapChart, CanvasRenderer]);
-//@ts-ignore
+// @ts-ignore
 echarts.registerMap('world', { geoJSON: world });
 
 type EChartsOption = echarts.ComposeOption<
   TooltipComponentOption | GeoComponentOption | MapSeriesOption
 >;
 
+interface Route {
+  startLocation: string;
+  endLocation: string;
+}
+
 interface SalesMappingChartProps {
   salesMappingChartRef: MutableRefObject<EChartsReactCore | null>;
+  routes: Route[];
   style?: {
     height?: number;
-    width?: number;
+    width?: number | string;
   };
   minZoomLevel: number;
   maxZoomLevel: number;
@@ -38,6 +43,7 @@ interface SalesMappingChartProps {
 
 const SalesMappingChart = ({
   salesMappingChartRef,
+  routes,
   style,
   minZoomLevel,
   maxZoomLevel,
@@ -46,56 +52,40 @@ const SalesMappingChart = ({
   const theme = useTheme();
   const [countries, setCountries] = useState<Set<string>>(new Set());
 
-  // GraphQL query to fetch startLocation and endLocation
-  const { loading, error, data } = useQuery(GET_ROUTES_QUERY, {
-    variables: { query: "" },
-  });
-
-  // Fetch countries by cities concurrently
   useEffect(() => {
     const fetchCountries = async () => {
-      if (data) {
-        const allCities = new Set<string>();
+      const allCities = new Set<string>();
+      routes.forEach((route) => {
+        if (route.startLocation) allCities.add(route.startLocation);
+        if (route.endLocation) allCities.add(route.endLocation);
+      });
 
-        // Collect all unique cities (startLocation and endLocation)
-        data.routes.forEach((route: any) => {
-          if (route.startLocation) allCities.add(route.startLocation);
-          if (route.endLocation) allCities.add(route.endLocation);
-        });
+      const fetchPromises = Array.from(allCities).map((city) =>
+        getCountryByCity(city).catch((error) => {
+          console.error(`Failed to fetch country for city ${city}`, error);
+          return null;
+        })
+      );
 
-        // Fetch all country data concurrently using Promise.all
-        const fetchPromises = Array.from(allCities).map((city) =>
-          getCountryByCity(city).catch((error) => {
-            console.error(`Failed to fetch country for city ${city}`, error);
-            return null;
-          })
-        );
-
-        const fetchedCountries = await Promise.all(fetchPromises);
-
-        // Filter and add only unique countries to the set
-        const countrySet = new Set<string>();
-        fetchedCountries.forEach((country) => {
-          if (country) countrySet.add(country);
-        });
-
-        setCountries(countrySet); // Update state with unique countries
-      }
+      const fetchedCountries = await Promise.all(fetchPromises);
+      const countrySet = new Set<string>();
+      fetchedCountries.forEach((country) => {
+        if (country) countrySet.add(country);
+      });
+      setCountries(countrySet);
     };
 
     fetchCountries();
-  }, [data]);
+  }, [routes]);
 
-  // Process the locations into a format for ECharts
   const salesMappingChartOption = useMemo(() => {
     if (!countries || countries.size === 0) return {};
 
-    // Prepare the data for ECharts, highlighting countries
     const chartData = Array.from(countries).map((country) => ({
       name: country,
       value: 1,
       itemStyle: {
-        areaColor: theme.palette.success.main, 
+        areaColor: theme.palette.success.main,
       },
     }));
 
@@ -104,10 +94,7 @@ const SalesMappingChart = ({
         trigger: 'item',
         showDelay: 0,
         transitionDuration: 0.2,
-        formatter: (params: CallbackDataParams) => {
-          const { name } = params;
-          return `${name}`;
-        },
+        formatter: (params: any) => `${params.name}`, // Tooltip with country name
       },
       series: [
         {
@@ -128,10 +115,7 @@ const SalesMappingChart = ({
       ],
     };
     return option;
-  }, [theme, countries]);
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
+  }, [theme, countries, minZoomLevel, maxZoomLevel]);
 
   return (
     <ReactEchart

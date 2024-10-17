@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useInView } from "../../../hooks/useInView";
+import Image from "next/image";
 
 const services = [
   {
@@ -79,7 +80,7 @@ const ServicesSection = () => {
               >
                 <div className="bg-white min-h-[600px] p-6 shadow-lg rounded-lg">
                   <div className="overflow-hidden mb-4">
-                    <img
+                    <Image
                       src={service.image}
                       alt={service.title}
                       className="w-full h-100 object-cover transition-transform duration-500 ease-in-out hover:scale-105"

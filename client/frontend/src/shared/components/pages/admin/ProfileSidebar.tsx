@@ -16,8 +16,6 @@ const ProfileSidebar = () => {
       router.push(`/api/profile/${user?.id}`); 
     } else if (key === "myRoute") {
       router.push(`/api/profile/${user?.id}/route`); 
-    } else if (key === "changePassword") {
-      router.push(`/api/profile/${user?.id}/change-password`); 
     } else if (key === "userlist") {
       router.push(`/admin/userlist`); 
     } else if (key === "routelist") {
@@ -107,27 +105,6 @@ const ProfileSidebar = () => {
             onClick={() => handleNavigation("rolelist")}
           >
             <span>Role List</span>
-          </a>
-        </li>
-        {/* Change Password */}
-        <li className="relative px-6 py-3">
-          <span
-            className={`absolute inset-y-0 left-0 w-1 ${
-              pathname === `/api/profile/${user?.id}/change-password`
-                ? "bg-blue-600"
-                : "text-gray-800 hover:text-blue-500"
-            } rounded-tr-lg rounded-br-lg`}
-            aria-hidden="true"
-          ></span>
-          <a
-            className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 cursor-pointer ${
-              pathname === `/api/profile/${user?.id}/change-password`
-                ? "text-blue-600"
-                : "text-gray-800 hover:text-blue-500"
-            }`}
-            onClick={() => handleNavigation("changePassword")}
-          >
-            <span>Change Password</span>
           </a>
         </li>
       </ul>

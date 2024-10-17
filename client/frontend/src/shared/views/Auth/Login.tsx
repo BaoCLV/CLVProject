@@ -1,6 +1,5 @@
 "use client";
 
-import styles from "../../../utils/styles";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +13,7 @@ import { signIn } from "next-auth/react";
 import { useGraphQLClient } from "../../../hooks/useGraphql";
 import { FcGoogle } from "react-icons/fc";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 // Define the form schema using Zod for validation
 const formSchema = z.object({
@@ -33,11 +33,9 @@ const Login = ({
 }) => {
   // Use authClient for authentication operations
   const authClient = useGraphQLClient("auth");
-  const router = useRouter(); 
-  // Initialize mutation with authClient
+  const router = useRouter();
   const [login, { loading }] = useMutation(LOGIN_USER, { client: authClient });
 
-  // React Hook Form setup with Zod resolver for validation
   const {
     register,
     handleSubmit,
@@ -49,29 +47,18 @@ const Login = ({
 
   const [show, setShow] = useState(false); // Toggle password visibility
 
-  // Handle form submission
   const onSubmit = async (data: LoginSchema) => {
     try {
-      const loginData = {
-        email: data.email,
-        password: data.password,
-      };
-
-      // Execute the login mutation
-      const response = await login({
-        variables: loginData,
-      });
+      const loginData = { email: data.email, password: data.password };
+      const response = await login({ variables: loginData });
 
       if (response.data.login.user) {
         toast.success("Login Successful!");
-        //handle cookies req.cookies
-        // Set authentication tokens in cookies
         Cookies.set("refresh_token", response.data.login.refreshToken);
         Cookies.set("access_token", response.data.login.accessToken);
-        router.push('/');
-        setOpen(false); 
+        router.push("/");
+        setOpen(false);
         reset();
-
         window.location.reload();
       } else {
         toast.error(response.data.login.error.message);
@@ -83,80 +70,113 @@ const Login = ({
   };
 
   return (
-    <div>
-      <h1 className={`${styles.title}`}>CLVProject Welcome</h1>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <label className={`${styles.label}`}>Enter your Email</label>
-        <input
-          {...register("email")}
-          type="email"
-          placeholder="email"
-          className={`${styles.input}`}
-        />
-        {errors.email && (
-          <span className="text-red-500 block mt-1">{errors.email.message}</span>
-        )}
-        <div className="w-full mt-5 relative mb-1">
-          <label htmlFor="password" className={`${styles.label}`}>
-            Enter your password
-          </label>
-          <input
-            {...register("password")}
-            type={show ? "text" : "password"}
-            placeholder="password"
-            className={`${styles.input}`}
+    <div className="flex-1 h-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-xl border-md">
+      <div className="flex flex-col overflow-y-auto md:flex-row">
+        {/* Image Section */}
+        <div className="h-32 md:h-auto w-1/2">
+          <Image
+            aria-hidden="true"
+            className="object-cover w-full h-full"
+            src="/img/login-office.jpeg"
+            alt="Office"
           />
-          {!show ? (
-            <AiOutlineEyeInvisible
-              className="absolute bottom-3 right-2 z-1 cursor-pointer"
-              size={20}
-              onClick={() => setShow(true)}
-            />
-          ) : (
-            <AiOutlineEye
-              className="absolute bottom-3 right-2 z-1 cursor-pointer"
-              size={20}
-              onClick={() => setShow(false)}
-            />
-          )}
-        </div>
-        {errors.password && (
-          <span className="text-red-500">{errors.password.message}</span>
-        )}
-        <div className="w-full mt-5">
-          <span
-            className={`${styles.label} text-[#2190ff] block text-right cursor-pointer`}
-            onClick={() => setActiveState("Forgot-Password")}
-          >
-            Forgot your password?
-          </span>
-          <input
-            type="submit"
-            value="Login"
-            disabled={isSubmitting || loading}
-            className={`${styles.button} mt-3`}
-          />
-        </div>
-        <br />
-        <h5 className="text-center pt-4 font-Poppins text-[16px] text-white">
-          Or join with
-        </h5>
-        <div className="flex items-center justify-center my-3"
-          onClick={() => signIn()}
-        >
-          <FcGoogle size={30} className="cursor-pointer mr-2" />
         </div>
 
-        <h5 className="text-center pt-4 font-Poppins text-[14px]">
-          Not have any account?
-          <span
-            className="text-[#2190ff] pl-1 cursor-pointer"
-            onClick={() => setActiveState("Signup")}
-          >
-            Sign up
-          </span>
-        </h5>
-      </form>
+        {/* Form Section */}
+        <div className="flex items-center justify-center p-6 sm:p-12 md:w-1/2 bg-white">
+          <div className="w-full">
+            <h1 className="mb-4 text-xl font-semibold text-black">Login</h1>
+
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <label className="block text-sm">
+                <span className="text-black">Email</span>
+                <input
+                  {...register("email")}
+                  type="email"
+                  placeholder="Enter your email"
+                  className="block w-full mt-1 bg-white text-sm border-2 border-black p-3 text-lg transition duration-300 ease-in-out focus:border-blue-600 focus:outline-none"
+                />
+                {errors.email && (
+                  <span className="text-red-500 block mt-1">
+                    {errors.email.message}
+                  </span>
+                )}
+              </label>
+
+              <label className="block mt-4 text-sm">
+                <span className="text-black">Password</span>
+                <div className="relative">
+                  <input
+                    {...register("password")}
+                    type={show ? "text" : "password"}
+                    placeholder="Enter your password"
+                    className="block w-full mt-1 bg-white text-sm border-2 border-black p-3 text-lg transition duration-300 ease-in-out focus:border-blue-600 focus:outline-none"
+                  />
+                  {show ? (
+                    <AiOutlineEye
+                      className="absolute right-3 top-3 text-gray-500 cursor-pointer"
+                      onClick={() => setShow(false)}
+                      size={24}
+                    />
+                  ) : (
+                    <AiOutlineEyeInvisible
+                      className="absolute right-3 top-3 text-gray-500 cursor-pointer"
+                      onClick={() => setShow(true)}
+                      size={24}
+                    />
+                  )}
+                </div>
+                {errors.password && (
+                  <span className="text-red-500 block mt-1">
+                    {errors.password.message}
+                  </span>
+                )}
+              </label>
+
+              <div className="mt-4">
+                <a
+                  href="#"
+                  className="text-sm text-blue-600 hover:underline"
+                  onClick={() => setActiveState("Forgot-Password")}
+                >
+                  Forgot your password?
+                </a>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting || loading}
+                className="block w-full px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white bg-blue-600 border border-transparent rounded-lg active:bg-blue-600 hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue"
+              >
+                Log in
+              </button>
+
+              <hr className="my-8" />
+
+              <button
+                className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium leading-5 text-black transition-colors duration-150 border border-gray-300 rounded-lg hover:border-gray-500 focus:outline-none focus:shadow-outline-gray"
+                onClick={() => signIn("google")}
+              >
+                <FcGoogle size={24} className="mr-2" />
+                Sign in with Google
+              </button>
+
+              <div className="mt-4">
+                <p className="text-sm text-center text-black">
+                  Not have any account?
+                  <a
+                    href="#"
+                    className="text-blue-600 hover:underline pl-1"
+                    onClick={() => setActiveState("Signup")}
+                  >
+                    Sign up
+                  </a>
+                </p>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

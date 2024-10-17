@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useGetRoute, useUpdateRoute } from '../../../hooks/useRoute';
 import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
@@ -9,6 +9,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import Loading from '../../components/Loading';
 import ProfileSidebar from '../../components/pages/admin/ProfileSidebar';
+import Footer from '../../components/Footer';
 
 // Custom marker icon
 const customIcon = L.icon({
@@ -92,15 +93,15 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
     return [lat, lng];
   };
 
-  const geocodeLocations = async (startLocation: string, endLocation: string) => {
+  const geocodeLocations = useCallback(async (startLocation: string, endLocation: string) => {
     try {
       const startCoords = await geocodeLocation(startLocation);
       const endCoords = await geocodeLocation(endLocation);
       setCoordinates([startCoords, endCoords]);
-
+  
       const distance = calculateDistance(startCoords, endCoords);
       const price = distance * PRICE_PER_KM;
-
+  
       setForm((prev) => ({
         ...prev,
         distance,
@@ -110,7 +111,21 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
       console.error('Error geocoding locations:', err);
       setError('Failed to fetch coordinates for locations');
     }
-  };
+  }, [geocodeLocation]);
+  
+  useEffect(() => {
+    if (route) {
+      setForm({
+        startLocation: route.startLocation,
+        endLocation: route.endLocation,
+        distance: 0,
+        price: 0,
+        status: route.status || 'pending',
+      });
+  
+      geocodeLocations(route.startLocation, route.endLocation);
+    }
+  }, [route, geocodeLocations]);
 
   // Haversine formula to calculate distance between two coordinates
   const calculateDistance = (coords1: [number, number], coords2: [number, number]): number => {
@@ -157,115 +172,123 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
       if (coordinates.length === 2) {
         map.fitBounds(coordinates);
       }
-    }, [coordinates, map]);
+    }, [map]);
     return null;
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <ProfileSidebar />
-      <div className="flex flex-col flex-1">
-        {/* <Header /> */}
-        <div className="flex-1 bg-gray-100 dark:bg-gray-600 py-16 px-8">
-          <h4 className="mb-6 text-2xl font-bold text-gray-700 dark:text-gray-300">
-            Update Route
-          </h4>
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <label className="block text-lg">
-              <span className="text-gray-900 dark:text-gray-100">Start Location</span>
-              <input
-                type="text"
-                name="startLocation"
-                value={form.startLocation}
-                onChange={handleChange}
-                placeholder="Enter Start Location"
-                required
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
-              />
-            </label>
+    <div className="flex flex-col h-screen">
+      <Header />
+      <div className="flex flex-1">
+        <ProfileSidebar />
 
-            <label className="block text-lg">
-              <span className="text-gray-900 dark:text-gray-100">End Location</span>
-              <input
-                type="text"
-                name="endLocation"
-                value={form.endLocation}
-                onChange={handleChange}
-                placeholder="Enter End Location"
-                required
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
-              />
-            </label>
+        <div className="flex flex-1 bg-gray-200 py-16 px-8">
+          <div className="w-full flex flex-col space-y-8">
+            <div className="flex space-x-8">
+              {/* Update Form Section */}
+              <div className="w-1/2 bg-white p-6 rounded-lg shadow-md">
+                <h2 className="text-4xl font-bold pb-8 text-blue-600">Update Route</h2>
+                <form onSubmit={handleSubmit} className="space-y-8">
+                  <label className="block text-lg ">
+                    <span className="text-gray-900 font-bold">Start Location</span>
+                    <input
+                      type="text"
+                      name="startLocation"
+                      value={form.startLocation}
+                      onChange={handleChange}
+                      placeholder="Enter Start Location"
+                      required
+                      className="block w-full mt-2 p-4 text-lg bg-gray-200 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </label>
 
-            <label className="block text-lg">
-              <span className="text-gray-900 dark:text-gray-100">Distance (km)</span>
-              <input
-                type="number"
-                name="distance"
-                value={form.distance}
-                readOnly
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 form-input bg-gray-200"
-              />
-            </label>
+                  <label className="block text-lg">
+                    <span className="text-gray-900 font-bold">End Location</span>
+                    <input
+                      type="text"
+                      name="endLocation"
+                      value={form.endLocation}
+                      onChange={handleChange}
+                      placeholder="Enter End Location"
+                      required
+                      className="block w-full mt-2 p-4 text-lg bg-gray-200 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </label>
 
-            <label className="block text-lg">
-              <span className="text-gray-900 dark:text-gray-100">Price ($)</span>
-              <input
-                type="number"
-                name="price"
-                value={form.price}
-                readOnly
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 form-input bg-gray-200"
-              />
-            </label>
+                  <label className="block text-lg">
+                    <span className="text-gray-900 font-bold">Distance (km)</span>
+                    <input
+                      type="number"
+                      name="distance"
+                      value={form.distance.toFixed(2)}
+                      readOnly
+                      className="block w-full mt-2 p-4 text-lg border-gray-300 rounded-md bg-white"
+                    />
+                  </label>
 
-            <label className="block text-lg">
-              <span className="text-gray-900 dark:text-gray-100">Status</span>
-              <select
-                name="status"
-                value={form.status}
-                onChange={handleChange}
-                required
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-select"
-              >
-                <option value="pending">Pending</option>
-                <option value="delivering">Delivering</option>
-                <option value="success">Success</option>
-                <option value="cancel">Cancel</option>
-              </select>
-            </label>
+                  <label className="block text-lg">
+                    <span className="text-gray-900 font-bold">Price ($)</span>
+                    <input
+                      type="number"
+                      name="price"
+                      value={form.price.toFixed(2)}
+                      readOnly
+                      className="block w-full mt-2 p-4 text-lg border-gray-300 rounded-md bg-white"
+                    />
+                  </label>
 
-            <button
-              type="submit"
-              className="w-full py-4 text-lg font-semibold text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"
-            >
-              Update Route
-            </button>
-            {message && <p className="mt-4 text-lg text-green-500">{message}</p>}
-            {error && <p className="mt-4 text-lg text-red-500">Error: {error}</p>}
-          </form>
+                  <label className="block text-lg">
+                    <span className="text-gray-900 font-bold">Status</span>
+                    <select
+                      name="status"
+                      value={form.status}
+                      onChange={handleChange}
+                      required
+                      className="block w-full mt-2 p-4 bg-gray-200 text-lg border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="delivering">Delivering</option>
+                      <option value="success">Success</option>
+                      <option value="cancel">Cancel</option>
+                    </select>
+                  </label>
 
-          {coordinates.length === 2 && (
-            <div className="h-[400px] w-full mt-8">
-              <MapContainer
-                center={coordinates[0]}
-                zoom={10}
-                scrollWheelZoom={false}
-                className="h-full w-full"
-              >
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
-                <Marker position={coordinates[0]} icon={customIcon} />
-                <Marker position={coordinates[1]} icon={customIcon} />
-                <Polyline positions={coordinates} />
-                <AutoZoom />
-              </MapContainer>
+                  <button
+                    type="submit"
+                    className="w-full py-4 text-lg font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                  >
+                    Update Route
+                  </button>
+                </form>
+                {message && <p className="mt-4 text-lg text-green-500">{message}</p>}
+                {error && <p className="mt-4 text-lg text-red-500">{error}</p>}
+              </div>
+
+              {/* Map Display Section */}
+              <div className="w-1/2 h-[800px] rounded-lg shadow-lg overflow-hidden">
+                {coordinates.length === 2 && (
+                  <MapContainer
+                    center={coordinates[0]}
+                    zoom={10}
+                    scrollWheelZoom={false}
+                    className="h-full w-full"
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    <Marker position={coordinates[0]} icon={customIcon} />
+                    <Marker position={coordinates[1]} icon={customIcon} />
+                    <Polyline positions={coordinates} />
+                    <AutoZoom />
+                  </MapContainer>
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
+      <Footer/>
     </div>
   );
 }
