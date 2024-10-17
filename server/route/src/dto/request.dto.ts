@@ -1,5 +1,6 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
+import GraphQLJSON from 'graphql-type-json'
 
 @InputType()
 export class CreateRequestDto {
@@ -17,4 +18,9 @@ export class CreateRequestDto {
   @IsString()
   @IsNotEmpty()
   requestType: string;
+
+  @Field(() => GraphQLJSON, { nullable: true })
+  @IsObject()
+  @IsOptional()
+  proposedChanges?: Record<string, any>;  
 }

@@ -29,7 +29,7 @@ interface SalesMappingChartProps {
   salesMappingChartRef: MutableRefObject<EChartsReactCore | null>;
   style?: {
     height?: number;
-    width?: number;
+    width?: string;
   };
   minZoomLevel: number;
   maxZoomLevel: number;

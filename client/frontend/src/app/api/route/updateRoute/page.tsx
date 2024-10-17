@@ -1,13 +1,12 @@
 import Loading from "@/src/shared/components/Loading";
-import UserDashboard from "@/src/shared/views/user/userDashboard";
+import UserRoutesDashboard from "@/src/shared/views/route/userRoute";
 import React, { Suspense } from "react";
 
 const Page = () => {
   return (
     <div>
-
       <Suspense fallback={<Loading/>}>
-        <UserDashboard/>
+        <UserRoutesDashboard />
       </Suspense>
     </div>
   );

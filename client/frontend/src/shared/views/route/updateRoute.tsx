@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useGetRoute, useUpdateRoute } from '../../../hooks/useRoute'; // Ensure the correct path to your hooks
+import { useCreateRequest, useGetRoute, useUpdateRoute } from '../../../hooks/useRoute'; // Ensure the correct path to your hooks
 import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
@@ -9,6 +9,9 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import Loading from '../../components/Loading';
 import ProfileSidebar from '../../components/pages/admin/ProfileSidebar';
+import toast from 'react-hot-toast';
+import { useUser } from '@/src/hooks/useUser';
+import { useRouter } from 'next/navigation';
 
 // Custom marker icon
 const customIcon = L.icon({
@@ -25,7 +28,7 @@ interface UpdateRouteForm {
 }
 
 interface UpdateRouteProps {
-  routeId: number;
+  routeId: string;
 }
 
 export default function UpdateRoute({ routeId }: UpdateRouteProps) {
@@ -37,9 +40,11 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   const [coordinates, setCoordinates] = useState<[number, number][]>([]); // Store coordinates of start and end locations
   const [message, setMessage] = useState<string>('');
   const [error, setError] = useState<string>('');
-
-  const { route, loading, error: fetchError } = useGetRoute(routeId);
-  const { handleUpdateRoute } = useUpdateRoute();
+  const { user, loading } = useUser(); // Get user and loading state from the useUser hook
+  const { route, loading: routeLoading, error: fetchError } = useGetRoute(routeId);
+  const router = useRouter()
+  // const { handleUpdateRoute } = useUpdateRoute();
+  const createRequest = useCreateRequest();
 
   const OPEN_CAGE_API_KEY = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY;
 
@@ -86,27 +91,38 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();  // Prevent form from submitting the traditional way
     try {
-      await handleUpdateRoute(routeId, {
-        startLocation: form.startLocation,
-        endLocation: form.endLocation,
-        distance: form.distance,
-      });
+      {
+        const userId = user.id;
+        const requestType = "update";
+        const proposedChanges = {
+          startLocation: form.startLocation,
+          endLocation: form.endLocation,
+          distance: form.distance
+        }
 
-      setMessage('Route updated successfully.');
-      setError('');
-      await geocodeLocations(form.startLocation, form.endLocation);
+        await createRequest(userId, routeId, requestType, proposedChanges)
+
+        setMessage('Request route update successfully.');
+        setError('');
+        await geocodeLocations(form.startLocation, form.endLocation);
+        // useEffect(() => {
+        //   if (typeof window !== 'undefined') {
+        //     router.push(`/api/route/request/${userId}`);
+        //   }
+        // }, []);
+        router.push(`/api/route/request/${userId}`);
+      }
     } catch (err) {
-      setError('Failed to update route.');
+      setError('Failed to make a request route update.');
       setMessage('');
-      console.error('Error updating route:', err);
+      console.error('Error making a request route update:', err);
     }
   };
 
-  if (loading) return <Loading/>;
+  if (loading || routeLoading) return <Loading />;
   if (fetchError) return <p>Error: {fetchError.message}</p>;
 
   function AutoZoom() {
@@ -171,7 +187,7 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
               type="submit"
               className="w-full py-4 text-lg font-semibold text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"
             >
-              Update Route
+              Request Update
             </button>
             {message && <p className="mt-4 text-lg text-green-500">{message}</p>}
             {error && <p className="mt-4 text-lg text-red-500">Error: {error}</p>}

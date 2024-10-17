@@ -78,7 +78,7 @@ export default function CreateUser() {
     );
   }
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
       <ProfileSidebar />
       <div className="flex flex-col flex-1">
         <Header />

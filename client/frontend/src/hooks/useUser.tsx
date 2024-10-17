@@ -13,6 +13,7 @@ import { CREATE_USER } from "../graphql/auth/Actions/createUserByAdmin";
 import { GET_TOTALS } from "../graphql/auth/Actions/countUser";
 import { useRouter } from "next/navigation";
 import { GET_TOTAL_USERS_FOR_MONTH } from "../graphql/auth/Actions/totalMonthUser";
+import { GET_ALL_USER_NO_QUERY } from "../graphql/auth/Actions/getAllUserNoQuery";
 
 
 //get loggedin user
@@ -39,6 +40,7 @@ export const useGetUserById = (id: string) => {
   const { data, loading, error } = useQuery(GET_USER_BY_ID, {
     variables: { id },
     client: authClient,
+    skip: !id
   });
 
   const user = data?.getUserById?.user;
@@ -210,6 +212,8 @@ export const useGetAllUser = (currentPage: number, itemsPerPage: number) => {
         },
       });
 
+      console.log({data})
+
       if (!data?.getAllUsers) {
         throw new Error('Failed to fetch users');
       }
@@ -271,5 +275,17 @@ export const useTotalsUserForMonth = (year: number, month: number) => {
     totalUsersMonth: data?.totalUsersForMonth || 0,
     loading,
     error,
+  };
+};
+
+export const getAllUserNoQuery = () => {
+  const authClient = useGraphQLClient('auth');
+  const { data: userData, loading: userLoading, error: userError } = useQuery(GET_ALL_USER_NO_QUERY, {client: authClient});
+
+  // Returning the results along with loading and error states
+  return {
+    user: userData?.findAllUser || [],
+    userLoading,
+    userError
   };
 };

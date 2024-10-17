@@ -16,7 +16,7 @@ import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
     ConfigModule.forRoot({
     isGlobal: true,
   }),
-  TypeOrmModule.forFeature([Route]),
+  TypeOrmModule.forFeature([Route, Request]),
 
   GraphQLModule.forRoot<ApolloFederationDriverConfig>({
     driver: ApolloFederationDriver,
@@ -36,7 +36,7 @@ import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
         username: url ? undefined : configService.get<string>('DB_USER'),
         password: url ? undefined : configService.get<string>('DB_PASSWORD'),
         database: url ? undefined : configService.get<string>('DB_NAME'),
-        entities: [Route],
+        entities: [Route, Request],
         synchronize: true,
       };
     },

@@ -34,7 +34,7 @@ const customIcon = L.icon({
 });
 
 interface RouteDetailProps {
-  routeId: number;
+  routeId: string
 }
 
 export default function RouteDetail({ routeId }: RouteDetailProps) {
@@ -206,6 +206,13 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
               className="text-blue-600 font-bold hover:underline"
             >
               Back to Dashboard
+            </button>
+
+            <button
+              onClick={() => router.push(`/api/route/${routeId}/update`)}
+              className="text-blue-600 font-bold hover:underline"
+            >
+              Request Update
             </button>
 
             {user?.roles?.includes("admin") && (

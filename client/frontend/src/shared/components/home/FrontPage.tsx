@@ -10,6 +10,7 @@ import { useUser } from "../../../hooks/useUser";
 import { useInView } from "../../../hooks/useInView";
 import Player from "lottie-react";
 import logisticsAnimation from "@/src/animations/home.json";
+import { useRoles } from "@/src/hooks/useRole";
 
 // Slogans for logistics
 const logisticsAdSentences = [
@@ -37,10 +38,18 @@ const FrontPage = () => {
 
   const { handleCreateRoute } = useCreateRoute(); // Hook to create a route
   const { user, loading } = useUser(); // Use the useUser hook to get user and error
+  const { loadingRoles, errorRoles, roles } = useRoles(); // Fetch roles here
+  const roleName = roles.find((r: any) => r.id === user?.roleId)?.name || "No role";
+  console.log(roleName)
+
+  const handleUpdate = () => {
+    router.push(`/api/profile/${user.id}/route`);
+  };
 
   const createRouteHandler = () => {
     setModalOpen(true);
   };
+
 
   const handleFormSubmit = async (
     startLocation: string,
@@ -69,6 +78,8 @@ const FrontPage = () => {
       setFeedback("Failed to create the route.");
     }
   };
+
+
 
   return (
     <div className="relative flex items-center justify-center h-screen">
@@ -111,6 +122,16 @@ const FrontPage = () => {
               className="px-4 sm:px-8 py-2 sm:py-4 bg-blue-500 text-white text-base sm:text-lg hover:bg-blue-700 transition duration-300 ease-in-out"
             >
               Login / Sign Up
+            </button>
+          )}
+
+          {/* Conditionally render the Login / Sign Up button if user is not logged in */}
+          {roleName == "user"  && (
+            <button
+              onClick={handleUpdate}
+              className="px-4 sm:px-8 py-2 sm:py-4 bg-blue-500 text-white text-base sm:text-lg hover:bg-blue-700 transition duration-300 ease-in-out"
+            >
+              My Routes
             </button>
           )}
         </div>

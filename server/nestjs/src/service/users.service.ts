@@ -23,8 +23,16 @@ interface UserData {
   address: string;
 }
 
+interface RoleResponse {
+  role: {
+    id: string;
+    name: string;
+    permissions?: any[];
+  };
+}
+
 interface RoleServiceClient {
-  GetRoleByName(data: { roleNames: string }): Observable<{ roleId: string }>;
+  GetRoleByName(data: { name: string }): Observable<RoleResponse>;
 }
 
 @Injectable()
@@ -36,7 +44,7 @@ export class UsersService implements OnModuleInit {
     options: {
       package: 'role',
       protoPath: join('./src/protos/roles.proto'), // Path to role proto file
-      url: 'localhost:5001', // Role service gRPC endpoint
+      url: 'localhost:5003', // Role service gRPC endpoint
     },
   })
   private roleClient: ClientGrpc;
@@ -64,7 +72,7 @@ export class UsersService implements OnModuleInit {
     // Apply query filtering if provided
     if (query) {
       usersQuery.where(
-        'user.name LIKE :query OR user.email LIKE :query OR user.address LIKE :query OR user.phone_number LIKE :query',
+        'user.name LIKE :query OR user.email LIKE :query OR user.phone_number LIKE :query',
         {
           query: `%${query}%`,
         },
@@ -82,6 +90,7 @@ export class UsersService implements OnModuleInit {
     }
 
     usersQuery.orderBy('user.id', 'DESC');
+
     const users = await usersQuery.getMany()
 
     if (!users.length) {
@@ -93,21 +102,21 @@ export class UsersService implements OnModuleInit {
   @GrpcMethod('UserService', 'Register')
   async register(registerDto: RegisterDto): Promise<RegisterResponse> {
     const { name, email, password, phone_number, address } = registerDto;
-    
+
     // Check if a user with the same email or phone number exists
     const existingUser = await this.userRepository.findOne({ where: { email } });
     const existingPhone = await this.userRepository.findOne({ where: { phone_number } });
-    
+
     if (existingUser) {
       throw new BadRequestException('User with this email already exists');
     }
     if (existingPhone) {
       throw new BadRequestException('User with this phone number already exists');
     }
-  
+
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     // Create the user object
     const user = this.userRepository.create({
       name,
@@ -116,25 +125,26 @@ export class UsersService implements OnModuleInit {
       phone_number,
       address,
     });
-    
+
     // Fetch the "User" role from the RoleService via gRPC (expecting role IDs as strings)
-    const roleResponse = await lastValueFrom(this.roleService.GetRoleByName({ roleNames: 'user' }));
-    
-    if (!roleResponse || !roleResponse.roles.length) {
-      throw new BadRequestException('Role "User" not found');
+    const roleResponse = await lastValueFrom(this.roleService.GetRoleByName({ name: 'user' }));
+    // const roleResponseId = roleResponse.role.id
+    if (!roleResponse || !roleResponse.role.id?.length) {
+
+      throw new BadRequestException('Role "user" not found');
     }
-  
-    const roleId = roleResponse.roles[0];  // Expecting the role ID as a string
-    
+
+    const roleId = roleResponse.role.id;  // Expecting the role ID as a string
+
     // Assign the roleId to the user
     user.roleId = roleId;
-  
+
     // Save the new user with the assigned roleId
     const savedUser = await this.userRepository.save(user);
-    
+
     // Create an activation token for the new user
     const activationToken = await this.createActivationToken(savedUser);
-  
+
     // Produce a Kafka event for user registration
     await this.kafkaProducerService.sendUserRegisteredEvent({
       email: savedUser.email,
@@ -142,7 +152,8 @@ export class UsersService implements OnModuleInit {
       activation_token: activationToken.Token,
       activation_code: activationToken.ActivationCode,
     });
-  
+
+    console.log(activationToken.ActivationCode)
     return {
       activation_token: activationToken.Token,
     };
@@ -398,19 +409,19 @@ export class UsersService implements OnModuleInit {
   async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     // Find the user by ID
     const user = await this.userRepository.findOne({ where: { id } });
-  
+
     if (!user) {
       throw new BadRequestException(`User with ID ${id} not found`);
     }
-  
+
     // Update user properties
     Object.assign(user, updateUserDto);
-  
+
     // If roleId is provided, assign the role to the user
     if (updateUserDto.roleId) {
       user.roleId = updateUserDto.roleId;
     }
-  
+
     // Save the updated user
     return await this.userRepository.save(user);
   }
@@ -418,14 +429,14 @@ export class UsersService implements OnModuleInit {
   // Create a user
   async createUser(data: RegisterDto, roleId: string): Promise<User> {
     const newUser = this.userRepository.create(data);
-    
+
     // Assign the roleId to the new user
     newUser.roleId = roleId;
 
     return await this.userRepository.save(newUser);
   }
 
-  
+
 
   // Count the total number of users
   async countUsers(): Promise<number> {
@@ -435,7 +446,7 @@ export class UsersService implements OnModuleInit {
   async countUsersForMonth(year: number, month: number): Promise<number> {
     const startOfMonth = new Date(year, month - 1, 1);
     const endOfMonth = new Date(year, month, 0, 23, 59, 59); // Last day of the month
-  
+
     return this.userRepository.count({
       where: {
         createdAt: Between(startOfMonth, endOfMonth),
@@ -454,4 +465,10 @@ export class UsersService implements OnModuleInit {
       throw new Error(`User with id ${id} not found`);
     }
   }
+
+    //get all users without query
+    async findAllUsers(): Promise<UserListResponse> {
+      const users = await this.userRepository.createQueryBuilder('user').getMany();
+      return { users };
+    }
 };
