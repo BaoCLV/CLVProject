@@ -18,11 +18,10 @@ async function bootstrap() {
     options: {
       package: 'role',
       protoPath,
-      url: '0.0.0.0:50053',
+      url: '0.0.0.0:5003',
     },
   });
   await grpcApp.listen();
 }
-
 
 bootstrap();

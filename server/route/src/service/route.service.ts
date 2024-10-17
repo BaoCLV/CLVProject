@@ -1,15 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
+import { Between, Repository, UpdateResult } from 'typeorm';
 import { Route } from '../entities/route.entity';
 import { CreateRouteDto, UpdateRouteDto } from '../dto/route.dto';
+import { Request } from 'src/entities/request.entity';
+import { CreateRequestDto } from 'src/dto/request.dto';
+import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
 
 @Injectable()
 export class RoutesService {
   constructor(
     @InjectRepository(Route)
     private readonly routeRepository: Repository<Route>,
-  ) {}
+    @InjectRepository(Request)
+    private readonly requestRepository: Repository<Request>,
+    private readonly kafkaProducerService: KafkaProducerService,
+  ) { }
 
   // Create route with price and status
   async create(data: CreateRouteDto): Promise<Route> {
@@ -94,4 +100,103 @@ export class RoutesService {
       },
     });
   }
+
+  //get all routes without query
+  async findAllRoutes(): Promise<{ routes: Route[] }> {
+    const routes = await this.routeRepository.createQueryBuilder('route').getMany();
+    return { routes };
+  }
+
+  // REQUEST
+  async createRequest(createRequestDto: CreateRequestDto) {
+    const request = this.requestRepository.create(createRequestDto);
+    await this.kafkaProducerService.sendRequestCreateRouteEvent(request);
+    return this.requestRepository.save(request);
+  }
+
+  async approveRequest(id: string): Promise<UpdateResult> {
+    await this.kafkaProducerService.sendRequestApproveRouteEvent({ id });
+    return this.requestRepository.update(id, { status: 'approved' });
+  }
+
+  async rejectRequest(id: string): Promise<UpdateResult> {
+    await this.kafkaProducerService.sendRequestRejectRouteEvent({ id });
+    return this.requestRepository.update(id, { status: 'rejected' });
+  }
+
+  async getAllRequest({
+    query,
+    limit,
+    offset,
+  }: { query?: string; limit?: number; offset?: number }): Promise<Request[]> {
+    const qb = this.requestRepository.createQueryBuilder('request');
+
+    // Apply query filtering if provided
+    if (query) {
+      qb.where(
+        'request.requestType LIKE :query OR request.status LIKE :query',
+        {
+          query: `%${query}%`,
+        },
+      );
+    }
+
+    // Apply offset if provided
+    if (offset) {
+      qb.skip(offset);
+    }
+
+    // Apply limit if provided
+    if (limit) {
+      qb.take(limit);
+    }
+
+    qb.orderBy('request.id', 'DESC');
+
+    return qb.getMany();
+  }
+
+  // Find all request by  userid
+  async getAllRequestByUserId({
+    userId,
+    query,
+    limit,
+    offset,
+  }: { userId: string; query?: string; limit?: number; offset?: number }): Promise<Request[]> {
+    const qb = this.requestRepository.createQueryBuilder('request');
+    qb.where('request.userId = :userId', { userId });
+    // Apply query filtering if provided
+    if (query) {
+      qb.andWhere(
+        'request.requestType LIKE :query OR request.status LIKE :query',
+        {
+          query: `%${query}%`,
+        },
+      );
+    }
+
+    // Apply offset if provided
+    if (offset) {
+      qb.skip(offset);
+    }
+
+    // Apply limit if provided
+    if (limit) {
+      qb.take(limit);
+    }
+
+    qb.orderBy('request.id', 'DESC');
+
+    return qb.getMany();
+  }
+
+  // Find a request by id
+  async findOneRequestById(id: string): Promise<Request> {
+    const request = await this.requestRepository.findOne({ where: { id } });
+    if (!request) {
+      throw new NotFoundException(`Request with id "${id}" not found`);
+    }
+    return request;
+  }
+
 }

@@ -34,7 +34,7 @@ const customIcon = L.icon({
 });
 
 interface RouteDetailProps {
-  routeId: number;
+  routeId: string
 }
 
 export default function RouteDetail({ routeId }: RouteDetailProps) {

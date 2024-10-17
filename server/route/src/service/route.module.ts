@@ -7,13 +7,16 @@ import { RouteController } from './route.controller';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
 import { RouteResolver } from './route.resolver';
+import { Request } from 'src/entities/request.entity';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
 
 @Module({
-  imports: [    
+  imports: [
     ConfigModule.forRoot({
     isGlobal: true,
   }),
-  TypeOrmModule.forFeature([Route]),
+  TypeOrmModule.forFeature([Route, Request]),
 
   GraphQLModule.forRoot<ApolloFederationDriverConfig>({
     driver: ApolloFederationDriver,
@@ -33,15 +36,17 @@ import { RouteResolver } from './route.resolver';
         username: url ? undefined : configService.get<string>('DB_USER'),
         password: url ? undefined : configService.get<string>('DB_PASSWORD'),
         database: url ? undefined : configService.get<string>('DB_NAME'),
-        entities: [Route],
+        entities: [Route, Request],
         synchronize: true,
       };
     },
     inject: [ConfigService],
   }),],
   controllers: [RouteController],
-  providers: [ RoutesService,
-    RouteResolver
+  providers: [
+    RoutesService,
+    RouteResolver,
+    KafkaProducerService
   ],
 })
-export class RouteModule {}
+export class RouteModule { }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useGetRoute, useUpdateRoute } from '../../../hooks/useRoute';
+import { useCreateRequest, useGetRoute, useUpdateRoute } from '../../../hooks/useRoute'; // Ensure the correct path to your hooks
 import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
@@ -10,6 +10,9 @@ import 'leaflet/dist/leaflet.css';
 import Loading from '../../components/Loading';
 import ProfileSidebar from '../../components/pages/admin/ProfileSidebar';
 import Footer from '../../components/Footer';
+import toast from 'react-hot-toast';
+import { useUser } from '@/src/hooks/useUser';
+import { useRouter } from 'next/navigation';
 
 // Custom marker icon
 const customIcon = L.icon({
@@ -28,7 +31,7 @@ interface UpdateRouteForm {
 }
 
 interface UpdateRouteProps {
-  routeId: number;
+  routeId: string;
 }
 
 export default function UpdateRoute({ routeId }: UpdateRouteProps) {
@@ -42,9 +45,11 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   const [coordinates, setCoordinates] = useState<[number, number][]>([]);
   const [message, setMessage] = useState<string>('');
   const [error, setError] = useState<string>('');
-
-  const { route, loading, error: fetchError } = useGetRoute(routeId);
-  const { handleUpdateRoute } = useUpdateRoute();
+  const { user, loading } = useUser(); // Get user and loading state from the useUser hook
+  const { route, loading: routeLoading, error: fetchError } = useGetRoute(routeId);
+  const router = useRouter()
+  // const { handleUpdateRoute } = useUpdateRoute();
+  const createRequest = useCreateRequest();
 
   const OPEN_CAGE_API_KEY = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY;
   const PRICE_PER_KM = 1.5; // Example: price per kilometer
@@ -142,28 +147,38 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
     return R * c; // Distance in kilometers
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();  // Prevent form from submitting the traditional way
     try {
-      await handleUpdateRoute(routeId, {
-        startLocation: form.startLocation,
-        endLocation: form.endLocation,
-        distance: form.distance,
-        price: form.price,
-        status: form.status,
-      });
+      {
+        const userId = user.id;
+        const requestType = "update";
+        const proposedChanges = {
+          startLocation: form.startLocation,
+          endLocation: form.endLocation,
+          distance: form.distance
+        }
 
-      setMessage('Route updated successfully.');
-      setError('');
+        await createRequest(userId, routeId, requestType, proposedChanges)
+
+        setMessage('Request route update successfully.');
+        setError('');
+        await geocodeLocations(form.startLocation, form.endLocation);
+        // useEffect(() => {
+        //   if (typeof window !== 'undefined') {
+        //     router.push(`/api/route/request/${userId}`);
+        //   }
+        // }, []);
+        router.push(`/api/route/request/${userId}`);
+      }
     } catch (err) {
-      setError('Failed to update route.');
+      setError('Failed to make a request route update.');
       setMessage('');
-      console.error('Error updating route:', err);
+      console.error('Error making a request route update:', err);
     }
   };
 
-  if (loading) return <Loading />;
+  if (loading || routeLoading) return <Loading />;
   if (fetchError) return <p>Error: {fetchError.message}</p>;
 
   function AutoZoom() {
@@ -177,10 +192,62 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   }
 
   return (
-    <div className="flex flex-col h-screen">
-      <Header />
-      <div className="flex flex-1">
-        <ProfileSidebar />
+    <div className="flex h-screen bg-gray-50">
+      <ProfileSidebar />
+      <div className="flex flex-col flex-1">
+        <Header />
+        <div className="flex-1 bg-gray-100 dark:bg-gray-600 py-16 px-8">
+          <h4 className="mb-6 text-2xl font-bold text-gray-700 dark:text-gray-300">
+            Update Route
+          </h4>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <label className="block text-lg">
+              <span className="text-gray-900 dark:text-gray-100">Start Location</span>
+              <input
+                type="text"
+                name="startLocation"
+                value={form.startLocation}
+                onChange={handleChange}
+                placeholder="Enter Start Location"
+                required
+                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
+              />
+            </label>
+            <label className="block text-lg">
+              <span className="text-gray-900 dark:text-gray-100">End Location</span>
+              <input
+                type="text"
+                name="endLocation"
+                value={form.endLocation}
+                onChange={handleChange}
+                placeholder="Enter End Location"
+                required
+                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
+              />
+            </label>
+            <label className="block text-lg">
+              <span className="text-gray-900 dark:text-gray-100">Distance (km)</span>
+              <input
+                type="number"
+                name="distance"
+                value={form.distance}
+                onChange={handleChange}
+                placeholder="Enter Distance"
+                required
+                min={0}
+                step={0.01}
+                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
+              />
+            </label>
+            <button
+              type="submit"
+              className="w-full py-4 text-lg font-semibold text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"
+            >
+              Request Update
+            </button>
+            {message && <p className="mt-4 text-lg text-green-500">{message}</p>}
+            {error && <p className="mt-4 text-lg text-red-500">Error: {error}</p>}
+          </form>
 
         <div className="flex flex-1 bg-gray-200 py-16 px-8">
           <div className="w-full flex flex-col space-y-8">
@@ -289,6 +356,7 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
         </div>
       </div>
       <Footer/>
+    </div>
     </div>
   );
 }

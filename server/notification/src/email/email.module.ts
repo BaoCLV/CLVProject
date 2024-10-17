@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { join } from 'path';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 import { KafkaConsumerService } from 'src/kafka/kafka-consumer.service';
+import { KafkaRequestConsumerService } from 'src/kafka/kafka-request-consumer.service';
 
 @Module({
   imports: [
@@ -37,7 +38,7 @@ import { KafkaConsumerService } from 'src/kafka/kafka-consumer.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [EmailService, KafkaConsumerService],
+  providers: [EmailService, KafkaConsumerService, KafkaRequestConsumerService],
   exports: [EmailService],
 })
 export class EmailModule {}

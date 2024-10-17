@@ -28,15 +28,15 @@ export class UsersResolver {
   @Query(() => Number)
   async totalUsers(): Promise<Number> {
     return this.usersService.countUsers();
-    
+
   }
   @Query(() => Number)
-async totalUsersForMonth(
-  @Args('year', { type: () => Int }) year: number,
-  @Args('month', { type: () => Int }) month: number,
-): Promise<number> {
-  return this.usersService.countUsersForMonth(year, month);
-}
+  async totalUsersForMonth(
+    @Args('year', { type: () => Int }) year: number,
+    @Args('month', { type: () => Int }) month: number,
+  ): Promise<number> {
+    return this.usersService.countUsersForMonth(year, month);
+  }
   @Query(() => UserListResponse)
   @UseGuards(AuthGuard)//PermissionsGuard
   @RequirePermissions('admin')
@@ -172,6 +172,13 @@ async totalUsersForMonth(
   async deleteUser(@Args('id', { type: () => String }) id: string): Promise<boolean> {
     await this.usersService.deleteById(id);
     return true;
+  }
+
+  // Query to get all users without pages
+  @Query(() => UserListResponse)
+  async findAllUser(): Promise<UserListResponse> {
+    const result = await this.usersService.findAllUsers();
+    return result; // Return the UserListResponse object
   }
 }
 

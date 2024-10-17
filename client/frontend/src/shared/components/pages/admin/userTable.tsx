@@ -15,7 +15,7 @@ const queryClient = new QueryClient();
 function UserDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const itemsPerPage = 20;
+  const itemsPerPage = 5;
 
   // Fetch roles and users using the respective hooks
   const { loadingRoles, errorRoles, roles } = useRoles(); // Fetch roles here
@@ -33,7 +33,7 @@ function UserDashboard() {
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
-    router.push(`/?page=${newPage}`);
+    router.push(`/admin/userlist/?page=${newPage}`);
   };
 
   const handleFilter = (type: string, query: string) => {
@@ -63,11 +63,13 @@ function UserDashboard() {
     return <Loading />;
   }
 
-  console.log('Fetched roles:', roles); // Debugging: log roles
-  console.log('Fetched users:', allUsers); // Debugging: log users
-
   return (
-    <div>
+    <div className="flex h-screen bg-gray-50">
+      <ProfileSidebar />
+      <div className="flex flex-col flex-1">
+        <Header />
+        <div className="dark p-4 mt-16">
+          <h1 className="text-2xl font-bold mb-4 text-black">User List</h1>
           <div className="w-full overflow-hidden rounded-lg shadow-xs">
             <div className="w-full overflow-x-auto">
               <table className="w-full whitespace-no-wrap border-black bg-white">
@@ -92,9 +94,6 @@ function UserDashboard() {
 
                   {allUsers.length > 0
                     ? allUsers.map((user: any) => {
-                        // Debugging: log user roleId and matched roles
-                        console.log(`User: ${user.name}, RoleId: ${user.roleId}`);
-
                         // Match user's roleId with fetched roles
                         const userRoleName = roles.find((r: { id: any; }) => r.id === user.roleId)?.name || "No role";
 
@@ -163,6 +162,8 @@ function UserDashboard() {
             </div>
           </div>
           </div>
+        </div>
+      </div>
   );
 }
 

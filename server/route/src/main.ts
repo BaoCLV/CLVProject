@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { RouteModule } from './service/route.module';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { ClientKafka, MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 async function bootstrap() {

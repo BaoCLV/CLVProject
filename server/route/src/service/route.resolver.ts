@@ -2,10 +2,14 @@ import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { RoutesService } from './route.service';
 import { CreateRouteDto, UpdateRouteDto } from '../dto/route.dto';
 import { Route } from '../entities/route.entity';
+import { CreateRequestDto } from 'src/dto/request.dto';
+import { Request } from 'src/entities/request.entity';
 
 @Resolver(() => Route)
 export class RouteResolver {
-  constructor(private readonly routesService: RoutesService) {}
+  constructor(
+    private readonly routesService: RoutesService
+  ) { }
 
   // Query to get all routes
   @Query(() => [Route])

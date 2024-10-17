@@ -25,6 +25,14 @@ interface UserData {
   roleId: string;
 }
 
+interface RoleResponse {
+  role: {
+    id: string;
+    name: string;
+    permissions?: any[];
+  };
+}
+
 interface RoleServiceClient {
   GetRoleByName(data: { name: string }): Observable<{ role: {id:string} }>;
 }
@@ -68,7 +76,7 @@ export class UsersService implements OnModuleInit {
     // Apply query filtering if provided
     if (query) {
       usersQuery.where(
-        'user.name LIKE :query OR user.email LIKE :query OR user.address LIKE :query OR user.phone_number LIKE :query',
+        'user.name LIKE :query OR user.email LIKE :query OR user.phone_number LIKE :query',
         {
           query: `%${query}%`,
         },
@@ -86,6 +94,7 @@ export class UsersService implements OnModuleInit {
     }
 
     usersQuery.orderBy('user.id', 'DESC');
+
     const users = await usersQuery.getMany()
 
     if (!users.length) {
@@ -97,11 +106,11 @@ export class UsersService implements OnModuleInit {
   @GrpcMethod('UserService', 'Register')
   async register(registerDto: RegisterDto): Promise<RegisterResponse> {
     const { name, email, password, phone_number, address } = registerDto;
-    
+
     // Check if a user with the same email or phone number exists
     const existingUser = await this.userRepository.findOne({ where: { email } });
     const existingPhone = await this.userRepository.findOne({ where: { phone_number } });
-    
+
     if (existingUser) {
       throw new BadRequestException('User with this email already exists');
     }
@@ -136,7 +145,8 @@ export class UsersService implements OnModuleInit {
       activation_token: activationToken.Token,
       activation_code: activationToken.ActivationCode,
     });
-  
+
+    console.log(activationToken.ActivationCode)
     return {
       activation_token: activationToken.Token,
     };
@@ -393,7 +403,7 @@ export class UsersService implements OnModuleInit {
   async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     // Find the user by ID
     const user = await this.userRepository.findOne({ where: { id } });
-  
+
     if (!user) {
       throw new BadRequestException(`User with ID ${id} not found`);
     }
@@ -403,7 +413,7 @@ export class UsersService implements OnModuleInit {
     if (updateUserDto.roleId !== undefined && updateUserDto.roleId !== null) {
       user.roleId = updateUserDto.roleId;
     }
-  
+
     // Save the updated user
     return await this.userRepository.save(user);
   }
@@ -438,7 +448,7 @@ export class UsersService implements OnModuleInit {
   async countUsersForMonth(year: number, month: number): Promise<number> {
     const startOfMonth = new Date(year, month - 1, 1);
     const endOfMonth = new Date(year, month, 0, 23, 59, 59); // Last day of the month
-  
+
     return this.userRepository.count({
       where: {
         createdAt: Between(startOfMonth, endOfMonth),

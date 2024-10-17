@@ -5,15 +5,15 @@ import { usePathname, useRouter } from "next/navigation";
 import { useUser } from "../../../../hooks/useUser";
 
 const ProfileSidebar = () => {
-  const pathname = usePathname(); 
-  const router = useRouter(); 
-  const { user } = useUser(); 
+  const pathname = usePathname();
+  const router = useRouter();
+  const { user } = useUser();
 
   const handleNavigation = (key: string) => {
     if (key === "dashboard") {
       router.push("/admin/dashboard");
     } else if (key === "profile") {
-      router.push(`/api/profile/${user?.id}`); 
+      router.push(`/api/profile/${user?.id}`);
     } else if (key === "myRoute") {
       router.push(`/api/profile/${user?.id}/route`); 
     } else if (key === "userlist") {
@@ -33,17 +33,15 @@ const ProfileSidebar = () => {
         {/* Dashboard */}
         <li className="relative px-6 py-3">
           <span
-            className={`absolute inset-y-0 left-0 w-1 ${
-              pathname === "/admin/dashboard" ? "bg-blue-600" : ""
-            } rounded-tr-lg rounded-br-lg`}
+            className={`absolute inset-y-0 left-0 w-1 ${pathname === "/admin/dashboard" ? "bg-blue-600" : ""
+              } rounded-tr-lg rounded-br-lg`}
             aria-hidden="true"
           ></span>
           <a
-            className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 cursor-pointer ${
-              pathname === "/admin/dashboard"
+            className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 cursor-pointer ${pathname === "/admin/dashboard"
                 ? "text-blue-600"
                 : "text-gray-800 hover:text-blue-500"
-            }`}
+              }`}
             onClick={() => handleNavigation("dashboard")}
           >
             <span>Dashboard</span>
@@ -105,6 +103,46 @@ const ProfileSidebar = () => {
             onClick={() => handleNavigation("rolelist")}
           >
             <span>Role List</span>
+          </a>
+        </li>
+
+        {/* Pending Request */}
+        <li className="relative px-6 py-3">
+          <span
+            className={`absolute inset-y-0 left-0 w-1 ${pathname === `/admin/pendingRequest`
+                ? "bg-blue-600"
+                : ""
+              } rounded-tr-lg rounded-br-lg`}
+            aria-hidden="true"
+          ></span>
+          <a
+            className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 cursor-pointer ${pathname === `/admin/pendingRequest`
+                ? "text-blue-600"
+                : "text-gray-800 hover:text-blue-500"
+              }`}
+            onClick={() => handleNavigation("pendingRequest")}
+          >
+            <span>Pending Request</span>
+          </a>
+        </li>
+
+        {/* Request */}
+        <li className="relative px-6 py-3">
+          <span
+            className={`absolute inset-y-0 left-0 w-1 ${pathname === `/admin/request`
+                ? "bg-blue-600"
+                : ""
+              } rounded-tr-lg rounded-br-lg`}
+            aria-hidden="true"
+          ></span>
+          <a
+            className={`inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 cursor-pointer ${pathname === `/admin/request`
+                ? "text-blue-600"
+                : "text-gray-800 hover:text-blue-500"
+              }`}
+            onClick={() => handleNavigation("request")}
+          >
+            <span>Request List</span>
           </a>
         </li>
       </ul>
