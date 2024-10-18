@@ -7,6 +7,7 @@ import Header from "../../components/Header";
 import ProfileSidebar from "../../components/pages/admin/ProfileSidebar";
 import { Avatar } from "@nextui-org/react";
 import Sidebar from "../../components/Sidebar";
+import Footer from "../../components/Footer";
 
 interface UpdateProfileProps {
   userId: string;
@@ -112,10 +113,11 @@ export default function UpdateProfile({ userId }: UpdateProfileProps) {
   if (userLoading || loading || avatarLoading) return <p>Loading...</p>;
 
   return (
-    <div className="flex h-screen bg-gray-200">
-      <Sidebar />
-      <div className="flex flex-col flex-1">
-        <Header />
+    <div className="flex flex-col min-h-screen">
+      {/* Main layout container */}
+      <Header/>
+      <div className="flex flex-1">
+        <ProfileSidebar />
         <div className="flex-1 bg-gray-200 py-16 px-8">
           <h4 className="mb-6 text-3xl font-bold text-black">
             Update Profile
@@ -227,6 +229,7 @@ export default function UpdateProfile({ userId }: UpdateProfileProps) {
           </form>
         </div>
       </div>
+      <Footer/>
     </div>
   );
 }

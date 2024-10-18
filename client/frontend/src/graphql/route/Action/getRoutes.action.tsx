@@ -10,6 +10,7 @@ export const GET_ROUTES_QUERY = gql`
       price
       status
       userId
+      createdAt
     }
   }
 `;
