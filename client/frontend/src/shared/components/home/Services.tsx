@@ -1,111 +1,144 @@
-import { useState } from "react";
 import { useInView } from "../../../hooks/useInView";
 import Image from "next/image";
+import Slider from "react-slick"; // Import Slick
+import "slick-carousel/slick/slick.css"; // Import Slick styles
+import "slick-carousel/slick/slick-theme.css";
+import { useState, useEffect } from "react";
 
+// Sample service data
 const services = [
   {
     title: "Air Freight",
     image: "/img/service-1.jpg",
-    description: "Stet stet justo dolor sed duo. Ut clita sea sit ipsum diam lorem diam.",
+    description: "Efficient air transport solutions for global logistics.",
   },
   {
     title: "Ocean Freight",
     image: "/img/service-2.jpg",
-    description: "Stet stet justo dolor sed duo. Ut clita sea sit ipsum diam lorem diam.",
+    description: "Reliable and cost-effective ocean freight services.",
   },
   {
     title: "Road Freight",
     image: "/img/service-3.jpg",
-    description: "Stet stet justo dolor sed duo. Ut clita sea sit ipsum diam lorem diam.",
+    description: "Flexible and scalable road transport solutions.",
   },
   {
     title: "Train Freight",
     image: "/img/service-4.jpg",
-    description: "Stet stet justo dolor sed duo. Ut clita sea sit ipsum diam lorem diam.",
+    description: "Seamless railway logistics for long-distance cargo.",
   },
 ];
 
+// Custom Left Arrow for the Carousel
+const PrevArrow = ({ onClick }: { onClick?: () => void }) => (
+  <button
+    className="absolute left-0 z-20 text-white bg-gradient-to-r from-blue-600 to-indigo-500 p-4 rounded-full hover:scale-110 hover:shadow-lg transition-transform"
+    style={{ top: "45%" }}
+    onClick={onClick}
+  >
+    <span className="text-2xl">&larr;</span>
+  </button>
+);
+
+// Custom Right Arrow for the Carousel
+const NextArrow = ({ onClick }: { onClick?: () => void }) => (
+  <button
+    className="absolute right-0 z-20 text-white bg-gradient-to-r from-blue-600 to-indigo-500 p-4 rounded-full hover:scale-110 hover:shadow-lg transition-transform"
+    style={{ top: "45%" }}
+    onClick={onClick}
+  >
+    <span className="text-2xl">&rarr;</span>
+  </button>
+);
+
 const ServicesSection = () => {
   const [ref, isInView] = useInView(0.1); // To trigger animations
-  const [currentIndex, setCurrentIndex] = useState(0); // Index of first visible item
-  const servicesToShow = 3; // Show 3 services at a time
-  const servicesLength = services.length;
 
-  const handleNext = () => {
-    // Move to the next service, loop back if at the end
-    setCurrentIndex((prevIndex) =>
-      prevIndex + 1 >= servicesLength ? 0 : prevIndex + 1
-    );
+  // Slick carousel settings with custom arrows
+  const settings = {
+    dots: true, // Enable dots navigation
+    infinite: true, // Infinite loop
+    speed: 500,
+    slidesToShow: 3, // Show 3 slides at once
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    nextArrow: <NextArrow />, // Custom right arrow
+    prevArrow: <PrevArrow />, // Custom left arrow
+    responsive: [
+      {
+        breakpoint: 1024, // For medium-sized devices
+        settings: {
+          slidesToShow: 2,
+        },
+      },
+      {
+        breakpoint: 768, // For small devices
+        settings: {
+          slidesToShow: 1,
+        },
+      },
+    ],
   };
 
-  const handlePrev = () => {
-    // Move to the previous service, loop back if at the start
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? servicesLength - 1 : prevIndex - 1
-    );
-  };
+  // Parallax state to track scroll position
+  const [offsetY, setOffsetY] = useState(0);
+  const handleScroll = () => setOffsetY(window.pageYOffset);
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <div className="overflow-hidden bg-red-400 py-16" ref={ref}>
-      <div className="container mx-auto mb-12 text-center">
-        <h6 className="text-black font-bold uppercase text-6xl">Our Services</h6>
+    <div
+      ref={ref}
+      className="relative  overflow-hidden py-24"
+    >
+      {/* Parallax Background */}
+      <div
+        className="absolute inset-0 backdrop-blur-md transform"
+        style={{ transform: `translateY(${offsetY * 0.2}px)` }} // Parallax effect
+      ></div>
+
+      {/* Heading */}
+      <div className="relative z-10 container mx-auto mb-12 text-center">
+        <h6 className="text-6xl font-extrabold uppercase mb-16 tracking-wide animate-fadeIn">
+          Our Services
+        </h6>
       </div>
 
-      {/* Service items container */}
-      <div className="relative w-full flex items-center">
-        {/* Previous Button (occupying 5% of width) */}
-        <button
-          onClick={handlePrev}
-          className="absolute left-0 z-10 h-full w-[5%] bg-transparent hover:bg-red-500 hover:text-white hover:scale-120 transition-all"
-        >
-          <span className="text-white text-4xl absolute left-3 top-1/2 transform -translate-y-1/2">
-            &larr;
-          </span>
-        </button>
-
-        {/* Scrolling container */}
-        <div className="w-[90%] overflow-hidden mx-auto">
-          <div
-            className="flex transition-transform duration-500 ease-in-out transform"
-            style={{
-              transform: `translateX(-${
-                (currentIndex % servicesLength) * (100 / servicesToShow)
-              }%)`,
-            }}
-          >
-            {services.map((service, index) => (
-              <div
-                key={index}
-                className="min-w-[33.33%] p-8" // Set the width to 33.33% to show 3 items at a time
-              >
-                <div className="bg-white min-h-[600px] p-6 shadow-lg rounded-lg">
-                  <div className="overflow-hidden mb-4">
-                    <Image
-                      src={service.image}
-                      alt={service.title}
-                      className="w-full h-100 object-cover transition-transform duration-500 ease-in-out hover:scale-105"
-                    />
-                  </div>
-                  <h4 className="text-xl font-semibold mb-2">{service.title}</h4>
-                  <p className="text-gray-600">{service.description}</p>
-                  <a href="#" className="text-blue-600 mt-4 inline-block">
-                    <i className="fa fa-arrow-right mr-2"></i>Read More
-                  </a>
+      {/* Slick Carousel */}
+      <div className="relative w-full">
+        <Slider {...settings}>
+          {services.map((service, index) => (
+            <div key={index} className="px-4">
+              <div className="bg-white/20 backdrop-blur-md p-8 shadow-lg rounded-xl min-h-[600px] transition-transform duration-300 hover:scale-105 hover:shadow-xl hover:bg-white/40">
+                <div className="overflow-hidden rounded-lg mb-6">
+                  <Image
+                    src={service.image}
+                    alt={service.title}
+                    className="w-full h-72 object-cover transition-transform duration-500 ease-in-out hover:scale-110"
+                    width={600}
+                    height={400}
+                  />
                 </div>
+                <h4 className="text-3xl font-bold mb-4 transition-colors duration-300 group-hover:text-indigo-100">
+                  {service.title}
+                </h4>
+                <p className="text-lg text-indigo-600 leading-relaxed mb-6">
+                  {service.description}
+                </p>
+                <a
+                  href="#"
+                  className=" font-semibold mt-6 inline-block group-hover:scale-105 hover:underline transition-transform duration-300 ease-in-out"
+                >
+                  <i className="fa fa-arrow-right mr-2"></i> Read More
+                </a>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Next Button (occupying 5% of width) */}
-        <button
-          onClick={handleNext}
-          className="absolute right-0 z-10 h-full w-[5%] bg-transparent hover:bg-red-500 hover:text-white transition-all"
-        >
-          <span className="text-white text-4xl absolute right-3 top-1/2 transform -translate-y-1/2">
-            &rarr;
-          </span>
-        </button>
+            </div>
+          ))}
+        </Slider>
       </div>
     </div>
   );

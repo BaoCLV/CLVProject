@@ -46,7 +46,7 @@ export class UsersService implements OnModuleInit {
     options: {
       package: 'role',
       protoPath: join('./src/protos/roles.proto'),
-      url: '0.0.0.0:50053',
+      url: '0.0.0.0:5003',
     },
   })
   private roleClient: ClientGrpc;

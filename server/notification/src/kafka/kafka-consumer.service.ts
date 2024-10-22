@@ -7,7 +7,7 @@ import { EmailService } from '../email/email.service';
 export class KafkaConsumerService implements OnModuleInit {
   private readonly kafka = new Kafka({
     clientId: 'email-service-consumer',
-    brokers: [process.env.KAFKA_BROKER || 'localhost:9092'],
+    brokers: ['localhost:9092'],
   });
 
   private readonly consumer = this.kafka.consumer({ groupId: 'email-service-group' });

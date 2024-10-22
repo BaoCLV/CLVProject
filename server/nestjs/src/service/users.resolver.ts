@@ -175,10 +175,10 @@ export class UsersResolver {
   }
 
   // Query to get all users without pages
-  @Query(() => UserListResponse)
-  async findAllUser(): Promise<UserListResponse> {
-    const result = await this.usersService.findAllUsers();
-    return result; // Return the UserListResponse object
-  }
+  // @Query(() => UserListResponse)
+  // async findAllUser(): Promise<UserListResponse> {
+  //   const result = await this.usersService.findAllUsers();
+  //   return result; // Return the UserListResponse object
+  // }
 }
 

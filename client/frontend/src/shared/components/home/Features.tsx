@@ -1,48 +1,59 @@
-import '@fortawesome/fontawesome-free/css/all.min.css'; // Ensure this is imported for Font Awesome
+import '@fortawesome/fontawesome-free/css/all.min.css'; // FontAwesome for icons
 import Image from 'next/image';
 
 const FeaturesSection = () => {
   return (
-    <div className="flex items-center justify-center overflow-hidden py-8 px-0 bg-blue-300">
-      <div className="container py-16 px-0">
-        <div className="flex flex-wrap mx-0 items-center justify-center">
+    <div className="relative overflow-hidden py-20 ">
+      {/* Animated Background Elements */}
+      <div className="absolute top-10 left-1/4 w-80 h-80 bg-pink-500/20 rounded-full blur-3xl animate-float"></div>
+      <div className="absolute bottom-10 right-1/3 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl animate-float-reverse"></div>
+
+      <div className="container mx-auto relative z-10">
+        <div className="flex flex-wrap items-center justify-between mx-0">
           {/* Text Section */}
-          <div className="w-full lg:w-1/2 px-4 mb-10 lg:mb-0 animate-fadeInUp">
-            <h1 className="font-bold uppercase mb-3 text-4xl text-center lg:text-left text-black">
+          <div className="w-full lg:w-1/2 px-4 mb-10 lg:mb-0 animate-slideInLeft">
+            <h1 className=" bg-clip-text bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 text-6xl font-extrabold uppercase mb-6 tracking-wider drop-shadow-lg">
               Our Features
             </h1>
-            <h1 className="text-4xl font-bold mb-8 text-center lg:text-left text-white">
-              We Are Trusted Logistics Company Since 1990
-            </h1>
-            <div className="flex mb-8 ml-10 animate-fadeInUp delay-300">
-              <i className="fas fa-globe text-red-700 text-3xl flex-shrink-0"></i>
-              <div className="ml-4">
-                <h5 className="text-xl font-semibold text-red-700">Worldwide Service</h5>
+            <h2 className="text-5xl font-bold mb-8 leading-snug">
+              Trusted Logistics Company Since 1990
+            </h2>
+            <div className="space-y-8">
+              {/* Feature 1 */}
+              <div className="flex items-center space-x-4 transition-transform hover:scale-105 hover:translate-x-3 duration-300">
+                <i className="fas fa-globe text-blue-400 text-5xl"></i>
+                <div>
+                  <h5 className="text-2xl font-semibold ">Worldwide Service</h5>
+                </div>
               </div>
-            </div>
-            <div className="flex mb-8 ml-10 animate-fadeIn delay-500">
-              <i className="fas fa-shipping-fast text-red-700 text-3xl flex-shrink-0"></i>
-              <div className="ml-4">
-                <h5 className="text-xl font-semibold text-red-700">On Time Delivery</h5>
+              {/* Feature 2 */}
+              <div className="flex items-center space-x-4 transition-transform hover:scale-105 hover:translate-x-3 duration-300">
+                <i className="fas fa-shipping-fast text-green-400 text-5xl"></i>
+                <div>
+                  <h5 className="text-2xl font-semibold ">On Time Delivery</h5>
+                </div>
               </div>
-            </div>
-            <div className="flex mb-0 ml-10 animate-fadeInUp delay-700">
-              <i className="fas fa-headphones text-red-700 text-3xl flex-shrink-0"></i>
-              <div className="ml-4">
-                <h5 className="text-xl font-semibold text-red-700">24/7 Telephone Support</h5>
+              {/* Feature 3 */}
+              <div className="flex items-center space-x-4 transition-transform hover:scale-105 hover:translate-x-3 duration-300">
+                <i className="fas fa-headphones text-red-400 text-5xl"></i>
+                <div>
+                  <h5 className="text-2xl font-semibold">24/7 Telephone Support</h5>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Image Section */}
-          <div className="w-full lg:w-1/2 relative animate-fadeInRight" style={{ minHeight: '400px' }}>
-            <div className="absolute inset-0">
+          {/* Image Section with Advanced Parallax Hover */}
+          <div className="w-full lg:w-1/2 relative animate-slideInRight" style={{ minHeight: '500px' }}>
+            <div className="absolute inset-0 transition-transform hover:scale-110 hover:rotate-3 transform-gpu duration-700">
               <Image
                 src="/img/feature.jpg"
                 alt="Feature"
-                className="w-full h-full object-cover rounded-lg"
+                className="w-full h-full object-cover rounded-3xl shadow-2xl"
+                layout="fill"
               />
             </div>
+            <div className="absolute inset-0 w-full h-full bg-gradient-to-t from-black/40 via-black/20 to-transparent rounded-3xl"></div> {/* Subtle Gradient Overlay */}
           </div>
         </div>
       </div>

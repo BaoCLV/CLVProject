@@ -13,7 +13,7 @@ import { signIn } from "next-auth/react";
 import { useGraphQLClient } from "../../../hooks/useGraphql";
 import { FcGoogle } from "react-icons/fc";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import img from "next/image";
 
 // Define the form schema using Zod for validation
 const formSchema = z.object({
@@ -72,9 +72,9 @@ const Login = ({
   return (
     <div className="flex-1 h-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-xl border-md">
       <div className="flex flex-col overflow-y-auto md:flex-row">
-        {/* Image Section */}
+        {/* img Section */}
         <div className="h-32 md:h-auto w-1/2">
-          <Image
+          <img
             aria-hidden="true"
             className="object-cover w-full h-full"
             src="/img/login-office.jpeg"

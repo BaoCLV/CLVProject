@@ -3,7 +3,6 @@
 import { useState, useRef } from "react";
 import { usePathname } from "next/navigation";
 import UserDropDown from "../../UserDropdown";
-import Image from "next/image";
 
 const services = [
   {
@@ -49,62 +48,69 @@ const Navbar = () => {
 
   return (
     <div>
-      <nav className="navbar fixed top-0 left-0 w-full bg-white shadow-lg z-50">
-        <div className=" flex mx-auto justify-between items-center p-4">
+      <nav className="navbar fixed top-0 left-0 w-full bg-white/20 backdrop-blur-md shadow-lg z-90 transition-all duration-500 ease-in-out hover:bg-white/50">
+        <div className=" mx-auto flex justify-between items-center py-4 px-8">
           {/* Logo */}
-          <a href="/" className="flex items-left hover:scale-110 transition-transform duration-200">
-            <Image
+          <a
+            href="/"
+            className="flex items-center hover:scale-105 transition-transform duration-300"
+          >
+            <img
               src="https://cyberlogitec.com.vn/wp-content/uploads/2024/09/logo-ngang_3-1.svg"
               alt="Logo"
-              className="h-8 pl-5"
+              className="h-12 drop-shadow-md"
             />
           </a>
 
           {/* Navigation Links */}
-          <div className="flex space-x-10 relative">
+          <div className="flex space-x-16">
             <a
               href="/"
-              className={`text-lg font-bold ${
-                pathname === "/" ? "text-red-600 underline" : "text-gray-700"
-              } hover:text-red-600 hover:underline transition duration-300 ease-in-out`}
+              className={`text-lg font-semibold transition-all duration-300 ${
+                pathname === "/" ? "text-red-500 underline" : "text-black"
+              } hover:text-red-500 hover:scale-110 hover:underline`}
             >
               Home
             </a>
             <a
               href="/Page/About"
-              className={`text-lg font-bold ${
-                pathname === "/Page/About" ? "text-red-600 underline" : "text-gray-700"
-              } hover:text-red-600 hover:underline transition duration-300 ease-in-out`}
+              className={`text-lg font-semibold transition-all duration-300 ${
+                pathname === "/Page/About" ? "text-red-500 underline" : "text-black"
+              } hover:text-red-500 hover:scale-110 hover:underline`}
             >
               About
             </a>
 
             {/* Services Dropdown */}
             <div
-              className="relative"
+              className="relative group"
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
               <button
-                className={`text-lg font-bold ${
-                  pathname === "/services" ? "text-red-600 underline" : "text-gray-700"
-                } hover:text-red-600 hover:underline transition duration-300 ease-in-out`}
+                className={`text-lg font-semibold transition-all duration-300 ${
+                  pathname === "/services" ? "text-red-500 underline" : "text-black"
+                } hover:text-red-500 hover:scale-110 hover:underline`}
               >
                 Services
               </button>
 
-              {/* Dropdown Menu with Smooth Transition */}
+              {/* Dropdown Menu */}
               <div
                 ref={dropdownRef}
-                className={`absolute top-full mt-2 w-48 bg-white border rounded-lg shadow-lg z-50 transition-all duration-300 ease-in-out transform ${
-                  dropdownOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
+                className={`absolute top-full mt-4 w-60 bg-white backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg transition-all duration-500 ease-in-out transform group-hover:translate-y-0 ${
+                  dropdownOpen
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-5 pointer-events-none"
                 }`}
               >
                 {services.map((service) => (
                   <a
                     key={service.title}
-                    href={`/Page/services/${service.title.toLowerCase().replace(/ /g, "-")}`}
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-red-600 transition duration-150 ease-in-out"
+                    href={`/Page/services/${service.title
+                      .toLowerCase()
+                      .replace(/ /g, "-")}`}
+                    className="block px-6 py-4 text-gray-800 hover:bg-gray-200 hover:shadow-md rounded-lg transition-all duration-300"
                   >
                     {service.title}
                   </a>
@@ -114,16 +120,16 @@ const Navbar = () => {
 
             <a
               href="/contact"
-              className={`text-lg font-bold ${
-                pathname === "/contact" ? "text-red-600 underline" : "text-gray-700"
-              } hover:text-red-600 hover:underline transition duration-300 ease-in-out`}
+              className={`text-lg font-semibold transition-all duration-300 ${
+                pathname === "/contact" ? "text-red-500 underline" : "text-black"
+              } hover:text-red-500 hover:scale-110 hover:underline`}
             >
               Contact
             </a>
           </div>
 
           {/* User Dropdown */}
-          <ul className="flex items-center flex-shrink-0 space-x-6">
+          <ul className="flex items-center space-x-8">
             <li>
               <UserDropDown />
             </li>

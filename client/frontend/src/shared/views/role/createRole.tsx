@@ -51,7 +51,7 @@ const CreateRole = ({ onClose }: CreateRoleProps) => {
           type="text"
           value={roleName}
           onChange={(e) => setRoleName(e.target.value)}
-          className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2"
+          className="mt-1 block w-full bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2"
           placeholder="Enter role name"
           required
         />

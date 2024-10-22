@@ -33,7 +33,9 @@ export default function requestDetail({ requestId }: UpdateRequestProps) {
             const routeData = {
                 startLocation: request.proposedChanges?.startLocation,
                 endLocation: request.proposedChanges?.endLocation,
-                distance: request.proposedChanges?.distance
+                distance: request.proposedChanges?.distance,
+                price: request.proposedChanges?.price,
+                status: request.proposedChanges?.status
             }
             await approveRequestStatus(requestId, status);
             await handleUpdateRoute(routeId, routeData)

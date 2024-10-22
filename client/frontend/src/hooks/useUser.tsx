@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { GET_TOTAL_USERS_FOR_MONTH } from "../graphql/auth/Actions/totalMonthUser";
 import { UPLOAD_AVATAR } from "../graphql/auth/Actions/Avatar.action";
 import { GET_AVATAR } from "../graphql/auth/Actions/Avatar";
+import { GET_ALL_USER_NO_QUERY } from "../graphql/auth/Actions/getAllUserNoQuery";
 
 
 //get loggedin user
@@ -316,7 +317,7 @@ export const useGetAvatar = (userId: string) => {
   return {
     avatar: data?.getAvatar, 
     loading,
-    error,  
+    error,  }}
 export const getAllUserNoQuery = () => {
   const authClient = useGraphQLClient('auth');
   const { data: userData, loading: userLoading, error: userError } = useQuery(GET_ALL_USER_NO_QUERY, {client: authClient});

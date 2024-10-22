@@ -13,7 +13,7 @@ import { useMutation } from "@apollo/client";
 import { REGISTER_USER } from "../../../graphql/auth/Actions/register.action";
 import toast from "react-hot-toast";
 import { useGraphQLClient } from "../../../hooks/useGraphql";
-import Image from "next/image";
+import img from "next/image";
 
 // Form schema for validation using Zod
 const formSchema = z.object({
@@ -71,9 +71,9 @@ const Signup = ({
     <div className="flex items-center min-h-full p-6 bg-white">
       <div className="flex-1 h-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-xl border-md">
         <div className="flex flex-col overflow-y-auto md:flex-row">
-          {/* Image Section */}
+          {/* img Section */}
           <div className="h-32 md:h-auto w-1/2">
-            <Image
+            <img
               aria-hidden="true"
               className="object-cover w-full h-full"
               src="/img/login-office.jpeg"

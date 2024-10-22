@@ -1,5 +1,4 @@
 'use client'
-import Image from "next/image";
 import { useInView } from "../../../hooks/useInView";
 import Footer from "../Footer";
 import Navbar from "../home/Navbar";
@@ -20,13 +19,13 @@ const AboutPage = () => {
       {/* About Section */}
       <div ref={refAbout} className="bg-white py-16">
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between">
-          {/* Image Section with Slide-in from Left */}
+          {/* img Section with Slide-in from Left */}
           <div
             className={`w-full md:w-1/2 transition-transform duration-2000 ease-in-out transform ${
               aboutInView ? "translate-x-0 opacity-100" : "-translate-x-10 opacity-0"
             }`}
           >
-            <Image
+            <img
               src="/img/about.jpg"
               alt="About us"
               className="rounded-lg shadow-lg w-full"
@@ -76,13 +75,13 @@ const AboutPage = () => {
             </p>
           </div>
 
-          {/* Image Section with Slide-in from Right */}
+          {/* img Section with Slide-in from Right */}
           <div
             className={`w-full md:w-1/2 mb-8 md:mb-0 md:ml-8 transition-transform duration-2000 ease-in-out transform ${
               missionInView ? "translate-x-0 opacity-100" : "translate-x-10 opacity-0"
             }`}
           >
-            <Image
+            <img
               src="/img/mission.jpg"
               alt="Mission"
               className="rounded-lg shadow-lg w-full"
@@ -94,13 +93,13 @@ const AboutPage = () => {
       {/* Vision Section */}
       <div ref={refVision} className="bg-white py-16">
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between">
-          {/* Image Section with Slide-in from Left */}
+          {/* img Section with Slide-in from Left */}
           <div
             className={`w-full md:w-1/2 transition-transform duration-2000 ease-in-out transform ${
               visionInView ? "translate-x-0 opacity-100" : "-translate-x-10 opacity-0"
             }`}
           >
-            <Image
+            <img
               src="/img/vision.png"
               alt="Vision"
               className="rounded-lg shadow-lg w-full"
@@ -139,7 +138,7 @@ const AboutPage = () => {
                 teamInView ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
               }`}
             >
-              <Image
+              <img
                 src="/img/team-1.jpg"
                 alt="Team Member 1"
                 className="w-full h-64 object-cover rounded-lg mb-4"
@@ -154,7 +153,7 @@ const AboutPage = () => {
                 teamInView ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
               }`}
             >
-              <Image
+              <img
                 src="/img/team-2.jpg"
                 alt="Team Member 2"
                 className="w-full h-64 object-cover rounded-lg mb-4"
@@ -169,7 +168,7 @@ const AboutPage = () => {
                 teamInView ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
               }`}
             >
-              <Image
+              <img
                 src="/img/team-3.jpg"
                 alt="Team Member 3"
                 className="w-full h-64 object-cover rounded-lg mb-4"

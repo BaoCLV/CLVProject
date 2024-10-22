@@ -1,4 +1,4 @@
-import Image from "next/image";
+import img from "next/image";
 
 const TeamSection = () => {
     return (
@@ -12,7 +12,7 @@ const TeamSection = () => {
             {/* Team Member 1 */}
             <div className="team-item p-4 bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
               <div className="overflow-hidden mb-4">
-                <Image
+                <img
                   className="w-full h-72 object-cover rounded-lg transition-transform duration-500 hover:scale-110"
                   src="/img/testimonial-2.jpg"
                   alt="Team Member"
@@ -36,7 +36,7 @@ const TeamSection = () => {
             {/* Team Member 2 */}
             <div className="team-item p-4 bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
               <div className="overflow-hidden mb-4">
-                <Image
+                <img
                   className="w-full h-72 object-cover rounded-lg transition-transform duration-500 hover:scale-110"
                   src="/img/testimonial-2.jpg"
                   alt="Team Member"

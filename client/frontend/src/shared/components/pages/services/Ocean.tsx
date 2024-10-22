@@ -5,7 +5,7 @@ import Player from "lottie-react";
 import oceanAnimation from "@/src/animations/ocean.json";
 import Navbar from "../../home/Navbar";
 import CreateRouteForm from "../../home/createRouteForm";
-import Image from "next/image";
+import img from "next/image";
 
 const OceanFreight = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
@@ -49,7 +49,7 @@ const OceanFreight = () => {
               <li>Wide global port coverage ensuring flexibility.</li>
               <li>Environmentally friendly compared to air freight.</li>
             </ul>
-            <Image
+            <img
               src="/img/ocean-shipping.jpg" // Add ocean freight image
               alt="Ocean Freight"
               className="w-full mt-6 rounded-lg"

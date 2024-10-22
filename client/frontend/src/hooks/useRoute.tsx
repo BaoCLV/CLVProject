@@ -68,7 +68,7 @@ export const useUpdateRoute = () => {
   const routeClient = useGraphQLClient('route');
   const [updateRoute] = useMutation(UPDATE_ROUTE_MUTATION, { client: routeClient });
 
-  const handleUpdateRoute = async (id: number, data: { 
+  const handleUpdateRoute = async (id: string, data: { 
     startLocation: string; 
     endLocation: string; 
     distance: number;

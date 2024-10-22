@@ -18,6 +18,7 @@ import Header from "../../components/Header";
 import ActiveUsersRoutesChart from "../../components/pages/admin/ActiveuserRouteChart";
 import NewUsersChart from "../../components/pages/admin/newUserChart";
 import TopRoutesChart from "../../components/pages/admin/ToprouteChart";
+import EChartsReactCore from "echarts-for-react/lib/core";
 
 const queryClient = new QueryClient();
 
@@ -279,7 +280,7 @@ function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 w-full">
+          {/* <div className="bg-white rounded-lg shadow-md p-6 w-full">
             <h3 className="text-xl font-semibold mb-4">Routes Map</h3>
             <div className="w-full h-[400px]">
             <SalesMappingChart
@@ -292,8 +293,8 @@ function Dashboard() {
           maxZoomLevel={5}
           style={{ height: 400, width: '100%' }}
         />
-            </div>
-          </div>
+            </div> */}
+          {/* </div> */}
         </div>
       </div>
       <Footer />
