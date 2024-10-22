@@ -129,7 +129,9 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   
       geocodeLocations(route.startLocation, route.endLocation);
     }
-  }, [route, geocodeLocations]);
+  }, [route
+    , geocodeLocations
+  ]);
 
   // Haversine formula to calculate distance between two coordinates
   const calculateDistance = (coords1: [number, number], coords2: [number, number]): number => {
@@ -163,11 +165,11 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
         setMessage('Request route update successfully.');
         setError('');
         await geocodeLocations(form.startLocation, form.endLocation);
-        // useEffect(() => {
-        //   if (typeof window !== 'undefined') {
-        //     router.push(`/api/route/request/${userId}`);
-        //   }
-        // }, []);
+        useEffect(() => {
+          if (typeof window !== 'undefined') {
+            router.push(`/api/route/request/${userId}`);
+          }
+        }, []);
         router.push(`/api/route/request/${userId}`);
       }
     } catch (err) {
@@ -191,11 +193,17 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <ProfileSidebar />
-      <div className="flex flex-col flex-1">
-        <Header />
-        <div className="flex-1 bg-gray-100 dark:bg-gray-600 py-16 px-8">
+    <div className="flex flex-col h-screen bg-gradient-to-r from-blue-100 to-blue-300">
+      <Header />
+
+      <div className="flex flex-1">
+        <ProfileSidebar />
+
+        <div className="flex flex-1 bg-gray-50 py-16 px-8">
+          <div className="w-full flex flex-col space-y-8">
+            <div className="flex space-x-8">
+
+              {/* Update Form Section */}
               <div className="w-1/2 bg-white p-6 rounded-lg shadow-md">
                 <h2 className="text-4xl font-bold pb-8 text-blue-600">Update Route</h2>
                 <form onSubmit={handleSubmit} className="space-y-8">
@@ -274,7 +282,7 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
                 {error && <p className="mt-4 text-lg text-red-500">{error}</p>}
               </div>
 
-              {/* Map Display Section */}
+              {/* Map Display Section
               <div className="w-1/2 h-[800px] rounded-lg shadow-lg overflow-hidden">
                 {coordinates.length === 2 && (
                   <MapContainer
@@ -293,11 +301,12 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
                     <AutoZoom />
                   </MapContainer>
                 )}
-              </div>
+              </div> */}
             </div>
           </div>
-      <Footer/>
+        </div>
+      </div>
+      <Footer />
     </div>
-
   );
 }

@@ -8,6 +8,7 @@ import { Avatar } from '@nextui-org/react';
 import Loading from '../../components/Loading';
 import Footer from '../../components/Footer';
 import Sidebar from '../../components/Sidebar';
+import { useActiveUser } from '@/src/hooks/useActivateUser';
 
 interface UserDetailProps {
   userId: string;
@@ -15,17 +16,17 @@ interface UserDetailProps {
 
 export default function UserProfile({ userId }: UserDetailProps) {
   const router = useRouter();
-
-  // Fetch user data using the useUser hook
-  const { loading: userLoading, user } = useUser();
+  const { activeUser, loading: userLoading, GGUserData } = useActiveUser();
   
   // Fetch avatar data using the useGetAvatar hook
   const { loading: avatarLoading, avatar, error: avatarError } = useGetAvatar(userId);
 
   // Fix the avatar string format
-  const fixedAvatarSrc = avatar?.imageDataBase64 
-    ? avatar.imageDataBase64.replace('dataimage/jpegbase64', 'data:image/jpeg;base64,') 
-    : '/img/default-avatar.jpg';
+  const fixedAvatarSrc = GGUserData?.image
+  ? GGUserData.image
+  : avatar?.imageDataBase64
+  ? avatar.imageDataBase64.replace('dataimage/jpegbase64', 'data:image/jpeg;base64,')
+  : '/img/default-avatar.jpg';
 
   // Function to safely format the date by replacing the space with 'T'
   const formatDate = (dateString: string) => {
@@ -39,7 +40,7 @@ export default function UserProfile({ userId }: UserDetailProps) {
   };
 
   if (userLoading || avatarLoading) return <Loading />;
-  if (!user) return <p>User not found</p>;
+  if (!activeUser) return <p>User not found</p>;
   if (avatarError) return <p>Error loading avatar: {avatarError.message}</p>;
 
   return (
@@ -86,38 +87,38 @@ export default function UserProfile({ userId }: UserDetailProps) {
               {/* Static field: User ID */}
               <div className="block text-lg pb-8">
                 <span className="text-gray-700 text-2xl font-bold">User ID</span>
-                <p className="block w-full mt-2 p-4 bg-gray-200 text-lg border-black rounded-lg">{user.id}</p>
+                <p className="block w-full mt-2 p-4 bg-gray-200 text-lg border-black rounded-lg">{activeUser.id}</p>
               </div>
 
               {/* Static field: Email */}
               <div className="block text-lg pb-8">
                 <span className="text-gray-700 text-2xl font-bold">Email</span>
-                <p className="block w-full mt-2 p-4 bg-gray-200 text-lg border-black rounded-lg">{user.email}</p>
+                <p className="block w-full mt-2 p-4 bg-gray-200 text-lg border-black rounded-lg">{activeUser.email}</p>
               </div>
 
               {/* Static field: Name */}
               <div className="block text-lg pb-8">
                 <span className="text-gray-700 text-2xl font-bold">Name</span>
-                <p className="block w-full mt-2 p-4 text-lg border-black bg-gray-200 rounded-lg">{user.name}</p>
+                <p className="block w-full mt-2 p-4 text-lg border-black bg-gray-200 rounded-lg">{activeUser.name}</p>
               </div>
 
               {/* Static field: Phone Number */}
               <div className="block text-lg pb-8">
                 <span className="text-gray-700 text-2xl font-bold">Phone Number</span>
-                <p className="block w-full mt-2 p-4 text-lg border-black bg-gray-200 rounded-lg">{user.phone_number}</p>
+                <p className="block w-full mt-2 p-4 text-lg border-black bg-gray-200 rounded-lg">{activeUser.phone_number? activeUser.phone_number : "No phone number provided"}</p>
               </div>
 
               {/* Static field: Address */}
               <div className="block text-lg pb-8">
                 <span className="text-gray-700 text-2xl font-bold">Address</span>
-                <p className="block w-full mt-2 p-4 text-lg border-black bg-gray-200 rounded-lg">{user.address}</p>
+                <p className="block w-full mt-2 p-4 text-lg border-black bg-gray-200 rounded-lg">{activeUser.address}</p>
               </div>
 
               {/* Static field: Joined Date */}
               <div className="block text-lg pb-8">
                 <span className="text-gray-700 text-2xl font-bold">Joined</span>
                 <p className="block w-full mt-2 p-4 text-lg border-black bg-gray-200 rounded-lg">
-                  {formatDate(user.createdAt)}
+                  {formatDate(activeUser.createdAt)}
                 </p>
               </div>
             </div>

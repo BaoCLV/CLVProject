@@ -34,7 +34,7 @@ interface RoleResponse {
 }
 
 interface RoleServiceClient {
-  GetRoleByName(data: { name: string }): Observable<{ role: {id:string} }>;
+  GetRoleByName(data: { name: string }): Observable<{ role: { id: string } }>;
 }
 
 @Injectable()
@@ -50,14 +50,13 @@ export class UsersService implements OnModuleInit {
     },
   })
   private roleClient: ClientGrpc;
-
   private roleService: RoleServiceClient;
 
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    @InjectRepository(Avatar) 
+    @InjectRepository(Avatar)
     private readonly avatarRepository: Repository<Avatar>,
-    
+
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly kafkaProducerService: KafkaProducerService,
@@ -117,28 +116,39 @@ export class UsersService implements OnModuleInit {
     if (existingPhone) {
       throw new BadRequestException('User with this phone number already exists');
     }
-  
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    
- 
+
+
+    // Fetch the "User" role from the RoleService via gRPC (expecting role IDs as strings)
     const roleResponse = await lastValueFrom(this.roleService.GetRoleByName({ name: 'user' }));
-    
-    if (!roleResponse || !roleResponse.role) {
+    // const roleResponseId = roleResponse.role.id
+    if (!roleResponse || !roleResponse.role.id?.length) {
+
       throw new BadRequestException('Role "user" not found');
     }
     const roleId = roleResponse.role.id;
-    console.log(roleId)
     const user = {
       name,
       email,
       password: hashedPassword,
       phone_number,
       address,
-      roleId,
+      roleId
     };
-  
+
+    // Assign the roleId to the user
+    user.roleId = roleId;
+
+    // Save the new user with the assigned roleId when log in with GG
+    if (user.phone_number === "") {
+      await this.userRepository.save(user);
+    }
+
+    // Create an activation token for the new user
     const activationToken = await this.createActivationToken(user);
-  
+
+    // Produce a Kafka event for user registration
     await this.kafkaProducerService.sendUserRegisteredEvent({
       email: user.email,
       name: user.name,
@@ -238,9 +248,19 @@ export class UsersService implements OnModuleInit {
   async getUserByEmail(email: string): Promise<GetUserByEmailResponse> {
     const user = await this.userRepository.findOne({ where: { email } });
     if (!user) {
-      return { user, error: { message: `user with ${email} not found` } };
+      return { error: { message: `user with ${email} not found` } };
     }
     return { user };
+  }
+
+  async updateTokenForGGUser(email: string): Promise<Boolean> {
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) {
+      return false;
+    }
+    const tokenSender = new TokenSender(this.configService, this.jwtService, this.userRepository);
+    await tokenSender.sendToken(user)
+    return true;
   }
 
   async getUserById(id: string): Promise<GetUserByEmailResponse> {
@@ -353,16 +373,7 @@ export class UsersService implements OnModuleInit {
       throw new BadRequestException("User is not found!");
     }
     if (await this.comparePassword(oldPassword, user.password)) {
-      const changePasswordToken = await this.generateForgotPasswordLink(user);
-      const changePasswordUrl = this.configService.get<string>('CLIENT_SIDE_URI') +
-        `/change-password?verify=${changePasswordToken}`;
-
-      await this.kafkaProducerService.sendUserRequsetChangePasswordEvent({
-        email: user.email,
-        name: user.name,
-        changePasswordToken: changePasswordToken,
-      });
-      return { changePasswordToken, message: `Your change password request was successful!` };
+      return { message: `Your change password request was successful!` };
     } else {
       throw new BadRequestException('Old password does not match!');
     }
@@ -371,33 +382,21 @@ export class UsersService implements OnModuleInit {
   // Change password
   @GrpcMethod('UserService', 'changePassword')
   async changePassword(changePasswordDto: ChangePasswordDto) {
-    const { newPassword, changePasswordToken } = changePasswordDto;
-    let decoded;
-
-    try {
-      decoded = this.jwtService.verify(changePasswordToken, {
-        secret: this.configService.get<string>('CHANGE_PASSWORD_SECRET'),
-      });
-    } catch (error) {
-      throw new BadRequestException('Invalid or expired token!');
-    }
-
-    if (!decoded || !decoded.userId) {
-      throw new BadRequestException('Invalid token payload!');
-    }
-
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await this.userRepository.update(
-      { id: decoded.userId },
-      { password: hashedPassword },
-    );
-
-    const user = await this.userRepository.findOne({ where: { id: decoded.userId } });
+    const { newPassword, oldPassword, userID } = changePasswordDto;
+    const user = await this.userRepository.findOne({ where: { id: userID } });
     if (!user) {
-      throw new Error('User not found');
+      throw new BadRequestException("User is not found!");
     }
-
-    return { user, message: 'Password has been successfully changed.' };
+    if (await this.comparePassword(oldPassword, user.password)) {
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await this.userRepository.update(
+        { id: userID },
+        { password: hashedPassword },
+      );
+      return { user, message: 'Password has been successfully changed.' };
+    } else {
+      throw new BadRequestException('Old password does not match!');
+    }
   }
 
   async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
@@ -407,9 +406,9 @@ export class UsersService implements OnModuleInit {
     if (!user) {
       throw new BadRequestException(`User with ID ${id} not found`);
     }
-  
+
     Object.assign(user, updateUserDto);
-  
+
     if (updateUserDto.roleId !== undefined && updateUserDto.roleId !== null) {
       user.roleId = updateUserDto.roleId;
     }
@@ -420,25 +419,25 @@ export class UsersService implements OnModuleInit {
 
   async createUser(data: RegisterDto): Promise<User> {
     const roleResponse = await lastValueFrom(this.roleService.GetRoleByName({ name: 'user' }));
-    
+
     if (!roleResponse || !roleResponse.role) {
       throw new BadRequestException('Role "user" not found');
     }
-  
+
     const roleId = roleResponse.role.id;
-  
+
     // Hash the password
-    const hashedPassword = await bcrypt.hash(data.password, 10); 
-  
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
     const newUser = this.userRepository.create({
       ...data,
-      password: hashedPassword,  
-      roleId: roleId, 
+      password: hashedPassword,
+      roleId: roleId,
     });
     // Save the new user to the database
     return await this.userRepository.save(newUser);
   }
-  
+
 
   // Count the total number of users
   async countUsers(): Promise<number> {
@@ -456,6 +455,11 @@ export class UsersService implements OnModuleInit {
     });
   }
 
+  //get all users without query
+  async findAllUsers(): Promise<UserListResponse> {
+    const users = await this.userRepository.createQueryBuilder('user').getMany();
+    return { users };
+  }
 
   // Remove a user by name
   async deleteById(id: string): Promise<void> {
@@ -469,14 +473,14 @@ export class UsersService implements OnModuleInit {
   }
   async uploadAvatar(userId: string, imageDataBase64: string): Promise<Avatar> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
-  
+
     if (!user) {
       throw new Error('User not found');
     }
-  
+
     // Check if the user already has an avatar
     let avatar = await this.avatarRepository.findOne({ where: { userId: user.id } });
-  
+
     if (avatar) {
       // Update the existing avatar using the setter
       avatar.imageDataBase64 = imageDataBase64;
@@ -487,11 +491,11 @@ export class UsersService implements OnModuleInit {
         imageDataBase64,  // Use setter to convert base64 to Buffer
       });
     }
-  
+
     // Save (insert or update) the avatar
     return this.avatarRepository.save(avatar);
   }
-  
+
 
   async getAvatar(userId: string): Promise<Avatar> {
     const avatar = await this.avatarRepository.findOne({
@@ -499,7 +503,7 @@ export class UsersService implements OnModuleInit {
       relations: ['user'],
     });
 
-  
+
     return avatar;
   }
 };

@@ -52,6 +52,8 @@ const OceanFreight = () => {
             <img
               src="/img/ocean-shipping.jpg" // Add ocean freight image
               alt="Ocean Freight"
+              width={900} // Adjust to the actual width of the image
+              height={1000} // Adjust to the actual height of the image
               className="w-full mt-6 rounded-lg"
             />
           </section>
@@ -79,7 +81,7 @@ const OceanFreight = () => {
             </p>
             <button
               className="text-white bg-blue-600 px-6 py-3 rounded-lg hover:bg-blue-700"
-            
+
             >
               Order Shipment
             </button>

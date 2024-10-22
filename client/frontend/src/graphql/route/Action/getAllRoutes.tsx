@@ -8,6 +8,7 @@ export const GET_ALL_ROUTES: DocumentNode = gql`
       endLocation
       distance
       userId
+      price
       createdAt
       updatedAt
     }

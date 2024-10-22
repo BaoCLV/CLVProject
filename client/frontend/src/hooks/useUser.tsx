@@ -16,6 +16,9 @@ import { GET_TOTAL_USERS_FOR_MONTH } from "../graphql/auth/Actions/totalMonthUse
 import { UPLOAD_AVATAR } from "../graphql/auth/Actions/Avatar.action";
 import { GET_AVATAR } from "../graphql/auth/Actions/Avatar";
 import { GET_ALL_USER_NO_QUERY } from "../graphql/auth/Actions/getAllUserNoQuery";
+import { randomPassword } from "../utils/randomPassword";
+import { UPDATE_TOKEN_FOR_GG_USER } from "../graphql/auth/Actions/updateTokenGGUser";
+import { CHANGE_PASSWORD } from "../graphql/auth/Actions/changePassword";
 
 
 //get loggedin user
@@ -59,13 +62,14 @@ export const useGetUser = (email: string) => {
   const { data, loading, error } = useQuery(GET_SOCIAL_USER, {
     variables: { email },
     client: authClient,
+    skip: !email, // Skip query if email is undefined or empty
   });
 
   const user = data?.getUserByEmail?.user;
   return {
     loading,
     error,
-    user: user
+    user: user || null
   };
 };
 
@@ -73,40 +77,33 @@ export const useGetUser = (email: string) => {
 export const useCreateUserSocial = (userData: any) => {
   const authClient = useGraphQLClient('auth');
   const [createUser] = useMutation(REGISTER_USER, { client: authClient });
+  const [updateToken] = useMutation(UPDATE_TOKEN_FOR_GG_USER, { client: authClient });
   const isUserExist = useGetUser(userData?.email);
 
-  const randomPassword = () => {
-    const characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()-_=+";
-    const charactersLength = 8;
-
-    const uniqueCharacters = [...Array.from(new Set(characters))];
-
-    let password = "";
-
-    for (let i = 0; i < charactersLength; i++) {
-      const randomIndex = Math.floor(Math.random() * uniqueCharacters.length);
-      password += uniqueCharacters[randomIndex];
-    }
-
-    return password;
-  };
-
-  const handlecreateUserSocial = async () => {
-
-    if (isUserExist) {
+  const handleCreateUserSocial = async (password: string) => {
+    console.log("CALL HANDLE")
+    if (isUserExist.user) {
+      console.log("isUserExist", isUserExist)
       return isUserExist;
     }
+
+    if (!password) {
+      password = randomPassword();
+    }
+
+    console.log("password", password)
 
     const data = {
       name: userData.name,
       email: userData.email,
-      password: randomPassword(),
-      phone_number: userData.phone_number,
+      password: password,
+      phone_number: userData.phone_number || "No phone number provided",
       address: userData.address || 'No address provided',
     }
 
     try {
+      console.log("data", data)
+
       const response = await createUser({
         variables: data,
       });
@@ -114,13 +111,21 @@ export const useCreateUserSocial = (userData: any) => {
         "activation_token",
         response.data.register.activation_token
       );
+
+      const update = await updateToken({
+        variables: { email: data.email }
+      });
+
+      console.log("update", update)
+
       toast.success("Register successfully");
     } catch (error: any) {
       toast.error(error.message);
     }
+
   }
 
-  return { handlecreateUserSocial };
+  return { handleCreateUserSocial };
 };
 
 //create user
@@ -146,10 +151,11 @@ export const useCreateUser = () => {
           address: data.address,
         },
       });
-      // localStorage.setItem(
-      //   "activation_token",
-      //   response.data.register.activation_token
-      // );
+      localStorage.setItem(
+        "activation_token",
+        response.data.register.activation_token
+      );
+
       if (response.errors) {
         throw new Error(response.errors[0].message);
       }
@@ -214,7 +220,7 @@ export const useGetAllUser = (currentPage: number, itemsPerPage: number) => {
         },
       });
 
-      console.log({data})
+      console.log({ data })
 
       if (!data?.getAllUsers) {
         throw new Error('Failed to fetch users');
@@ -236,7 +242,7 @@ export const useGetAllUser = (currentPage: number, itemsPerPage: number) => {
 
 export const useTotalsUser = () => {
   const authClient = useGraphQLClient('auth');
-  const { data, loading, error } = useQuery(GET_TOTALS, {client: authClient});
+  const { data, loading, error } = useQuery(GET_TOTALS, { client: authClient });
 
   // Returning the results along with loading and error states
   return {
@@ -267,7 +273,7 @@ export const useDeleteUser = () => {
 
 export const useTotalsUserForMonth = (year: number, month: number) => {
   const authClient = useGraphQLClient('auth');
-  
+
   const { data, loading, error } = useQuery(GET_TOTAL_USERS_FOR_MONTH, {
     client: authClient,
     variables: { year, month },
@@ -283,7 +289,7 @@ export const useTotalsUserForMonth = (year: number, month: number) => {
 export const useUploadAvatar = () => {
   const authClient = useGraphQLClient('auth');
 
-  const [uploadAvatar, { data, loading, error }] = useMutation(UPLOAD_AVATAR,{client: authClient});
+  const [uploadAvatar, { data, loading, error }] = useMutation(UPLOAD_AVATAR, { client: authClient });
 
   const handleUploadAvatar = async (userId: string, imageDataBase64: string) => {
     try {
@@ -298,29 +304,34 @@ export const useUploadAvatar = () => {
   };
 
   return {
-    handleUploadAvatar, 
-    data,  
-    loading, 
-    error, 
+    handleUploadAvatar,
+    data,
+    loading,
+    error,
   };
 };
 
 export const useGetAvatar = (userId: string) => {
   const authClient = useGraphQLClient('auth');
 
+  const shouldSkip = !userId;
+
   const { data, loading, error } = useQuery(GET_AVATAR, {
     client: authClient,
     variables: { userId },
-    skip: !userId, 
+    skip: shouldSkip,
   });
 
   return {
-    avatar: data?.getAvatar, 
+    avatar: data?.getAvatar || null,
     loading,
-    error,  }}
+    error,
+  }
+}
+
 export const getAllUserNoQuery = () => {
   const authClient = useGraphQLClient('auth');
-  const { data: userData, loading: userLoading, error: userError } = useQuery(GET_ALL_USER_NO_QUERY, {client: authClient});
+  const { data: userData, loading: userLoading, error: userError } = useQuery(GET_ALL_USER_NO_QUERY, { client: authClient });
 
   // Returning the results along with loading and error states
   return {
@@ -328,4 +339,37 @@ export const getAllUserNoQuery = () => {
     userLoading,
     userError
   };
+};
+
+export const useChangePassword = () => {
+  const authClient = useGraphQLClient('auth');  // Use the correct GraphQL client for authentication
+  const [changePassword, { loading, error }] = useMutation(CHANGE_PASSWORD, {
+    client: authClient,  // Use the authenticated client
+  });
+
+  const handleChangePassword = async (newPassword: any, oldPassword: any, userId: any) => {
+    try {
+      const response = await changePassword({
+        variables: {
+          changePasswordDto: {
+            newPassword: newPassword,
+            oldPassword: oldPassword,
+            userID: userId,
+          },
+        },
+      });
+
+      if (response?.data?.changePassword?.user) {
+        toast.success('User updated successfully!');
+        return response.data.changePassword?.user;  // Return updated user object
+      } else {
+        toast.error('Failed change password');
+      }
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`);
+      console.error('Error changing password:', err);
+    }
+  };
+
+  return { handleChangePassword, loading, error };  // Expose loading and error states
 };

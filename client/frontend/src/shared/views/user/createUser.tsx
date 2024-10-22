@@ -8,6 +8,7 @@ import ProfileSidebar from "../../components/pages/admin/ProfileSidebar";
 import Header from "../../components/Header";
 import { toast } from "react-hot-toast";
 import Loading from "../../components/Loading";
+import { useActiveUser } from "@/src/hooks/useActivateUser";
 
 // Define the form state interface
 interface CreateUserForm {
@@ -39,7 +40,7 @@ export default function CreateUser() {
   const [createdUsers, setCreatedUsers] = useState<CreatedUser[]>([]); // Track created users
 
   const { handlecreateUser } = useCreateUser();  // Mutation to create the user
-  const { user, loading: userLoading } = useUser();
+  const { activeUser, loading: userLoading, GGUserData } = useActiveUser();
   const { loadingRoles, roles } = useRoles();
   const router = useRouter(); // Use router for navigation
 
@@ -57,7 +58,7 @@ export default function CreateUser() {
     e.preventDefault();
     setError(null);
 
-    if (!user) {
+    if (!activeUser) {
       setError("User not logged in");
       return;
     }
@@ -95,7 +96,7 @@ export default function CreateUser() {
 
   // Navigate to the user's detail page
   const handleViewDetails = () => {
-    router.push(`/api/profile/${user.id}`); // Navigate to the user's detail page
+    router.push(`/api/profile/${activeUser.id}`); // Navigate to the user's detail page
   };
 
   if (userLoading || loadingRoles) {

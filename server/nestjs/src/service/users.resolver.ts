@@ -88,19 +88,25 @@ export class UsersResolver {
   }
 
   @Query(() => GetUserByEmailResponse)
-  @UseGuards(AuthGuard)//PermissionsGuard
-  @RequirePermissions('admin')
-  @SetMetadata(ROLE_KEY, ['read', 'write', 'delete', 'update'])
+  // @UseGuards(AuthGuard)//PermissionsGuard
+  // @RequirePermissions('admin')
+  // @SetMetadata(ROLE_KEY, ['read', 'write', 'delete', 'update'])
   async getUserByEmail(
     @Args('email', { type: () => String }) email: string
   ): Promise<GetUserByEmailResponse> {
     return await this.usersService.getUserByEmail(email);
   }
 
+  //add token to GG account
+  @Mutation(() => Boolean)
+  async updateTokenForGGUser(@Args('email') email: string): Promise<Boolean> {
+    return await this.usersService.updateTokenForGGUser(email);
+  }
+
   @Query(() => GetUserByEmailResponse)
-  @UseGuards(AuthGuard)//PermissionsGuard
-  @RequirePermissions('admin')
-  @SetMetadata(ROLE_KEY, ['read', 'write', 'delete', 'update'])
+  // @UseGuards(AuthGuard)//PermissionsGuard
+  // @RequirePermissions('admin')
+  // @SetMetadata(ROLE_KEY, ['read', 'write', 'delete', 'update'])
   async getUserById(
     @Args('id', { type: () => String }) id: string
   ): Promise<GetUserByEmailResponse> {
@@ -175,10 +181,10 @@ export class UsersResolver {
   }
 
   // Query to get all users without pages
-  // @Query(() => UserListResponse)
-  // async findAllUser(): Promise<UserListResponse> {
-  //   const result = await this.usersService.findAllUsers();
-  //   return result; // Return the UserListResponse object
-  // }
+  @Query(() => UserListResponse)
+  async findAllUser(): Promise<UserListResponse> {
+    const result = await this.usersService.findAllUsers();
+    return result; // Return the UserListResponse object
+  }
 }
 

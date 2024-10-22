@@ -11,6 +11,7 @@ import ProfileSidebar from '../../components/pages/admin/ProfileSidebar';
 import Footer from '../../components/Footer';
 import SearchBar from "../../components/searchBar"; // Import SearchBar component
 import Header from '../../components/Header';
+import { useActiveUser } from '@/src/hooks/useActivateUser';
 
 const queryClient = new QueryClient();
 
@@ -20,7 +21,7 @@ function UserDashboard() {
   const itemsPerPage = 20;
 
   const { loadingRoles, errorRoles, roles } = useRoles();
-  const { loading: loadingUsers } = useUser();
+  const { loading: loadingUsers } = useActiveUser();
 
   const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
   const [currentPage, setCurrentPage] = useState(pageFromUrl);

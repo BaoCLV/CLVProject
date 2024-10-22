@@ -170,6 +170,7 @@ export const useTotalsRouteForMonth = (year: number, month: number) => {
 export const useGetAllRoute = () => {
   const routeClient = useGraphQLClient('route');
   const { loading: loadingRoutes, error: errorRoutes, data: routesData } = useQuery(GET_ALL_ROUTES, { client: routeClient });
+  console.log(routesData)
 
   return {
     loadingRoutes,

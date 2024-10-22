@@ -13,6 +13,7 @@ import Footer from '../../components/Footer';
 import toast from 'react-hot-toast';
 import { useUser } from '@/src/hooks/useUser';
 import { useRouter } from 'next/navigation';
+import { useActiveUser } from '@/src/hooks/useActivateUser';
 
 // Custom marker icon
 const customIcon = L.icon({
@@ -45,7 +46,7 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   const [coordinates, setCoordinates] = useState<[number, number][]>([]);
   const [message, setMessage] = useState<string>('');
   const [error, setError] = useState<string>('');
-  const { user, loading } = useUser(); // Get user and loading state from the useUser hook
+  const { activeUser, loading, GGUserData } = useActiveUser();
   const { route, loading: routeLoading, error: fetchError } = useGetRoute(routeId);
   const router = useRouter()
   // const { handleUpdateRoute } = useUpdateRoute();
@@ -53,20 +54,6 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
 
   const OPEN_CAGE_API_KEY = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY;
   const PRICE_PER_KM = 1.5; // Example: price per kilometer
-
-  useEffect(() => {
-    if (route) {
-      setForm({
-        startLocation: route.startLocation,
-        endLocation: route.endLocation,
-        distance: 0, // Reset distance for re-calculation
-        price: 0,    // Reset price for re-calculation
-        status: route.status || 'pending',
-      });
-
-      geocodeLocations(route.startLocation, route.endLocation);
-    }
-  }, [route]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -103,10 +90,10 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
       const startCoords = await geocodeLocation(startLocation);
       const endCoords = await geocodeLocation(endLocation);
       setCoordinates([startCoords, endCoords]);
-  
+
       const distance = calculateDistance(startCoords, endCoords);
       const price = distance * PRICE_PER_KM;
-  
+
       setForm((prev) => ({
         ...prev,
         distance,
@@ -117,7 +104,7 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
       setError('Failed to fetch coordinates for locations');
     }
   }, [geocodeLocation]);
-  
+
   useEffect(() => {
     if (route) {
       setForm({
@@ -127,10 +114,13 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
         price: 0,
         status: route.status || 'pending',
       });
-  
+
       geocodeLocations(route.startLocation, route.endLocation);
     }
-  }, [route, geocodeLocations]);
+  }, [route
+    , geocodeLocations
+    
+  ]);
 
   // Haversine formula to calculate distance between two coordinates
   const calculateDistance = (coords1: [number, number], coords2: [number, number]): number => {
@@ -151,7 +141,7 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
     e.preventDefault();  // Prevent form from submitting the traditional way
     try {
       {
-        const userId = user.id;
+        const userId = activeUser.id;
         const requestType = "update";
         const proposedChanges = {
           startLocation: form.startLocation,
@@ -164,11 +154,11 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
         setMessage('Request route update successfully.');
         setError('');
         await geocodeLocations(form.startLocation, form.endLocation);
-        // useEffect(() => {
-        //   if (typeof window !== 'undefined') {
-        //     router.push(`/api/route/request/${userId}`);
-        //   }
-        // }, []);
+        useEffect(() => {
+          if (typeof window !== 'undefined') {
+            router.push(`/api/route/request/${userId}`);
+          }
+        }, []);
         router.push(`/api/route/request/${userId}`);
       }
     } catch (err) {
@@ -192,66 +182,16 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <ProfileSidebar />
-      <div className="flex flex-col flex-1">
-        <Header />
-        <div className="flex-1 bg-gray-100 dark:bg-gray-600 py-16 px-8">
-          <h4 className="mb-6 text-2xl font-bold text-gray-700 dark:text-gray-300">
-            Update Route
-          </h4>
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <label className="block text-lg">
-              <span className="text-gray-900 dark:text-gray-100">Start Location</span>
-              <input
-                type="text"
-                name="startLocation"
-                value={form.startLocation}
-                onChange={handleChange}
-                placeholder="Enter Start Location"
-                required
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
-              />
-            </label>
-            <label className="block text-lg">
-              <span className="text-gray-900 dark:text-gray-100">End Location</span>
-              <input
-                type="text"
-                name="endLocation"
-                value={form.endLocation}
-                onChange={handleChange}
-                placeholder="Enter End Location"
-                required
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
-              />
-            </label>
-            <label className="block text-lg">
-              <span className="text-gray-900 dark:text-gray-100">Distance (km)</span>
-              <input
-                type="number"
-                name="distance"
-                value={form.distance}
-                onChange={handleChange}
-                placeholder="Enter Distance"
-                required
-                min={0}
-                step={0.01}
-                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
-              />
-            </label>
-            <button
-              type="submit"
-              className="w-full py-4 text-lg font-semibold text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"
-            >
-              Request Update
-            </button>
-            {message && <p className="mt-4 text-lg text-green-500">{message}</p>}
-            {error && <p className="mt-4 text-lg text-red-500">Error: {error}</p>}
-          </form>
+    <div className="flex flex-col h-screen bg-gradient-to-r from-blue-100 to-blue-300">
+      <Header />
 
-        <div className="flex flex-1 bg-gray-200 py-16 px-8">
+      <div className="flex flex-1">
+        <Sidebar />
+
+        <div className="flex flex-1 bg-gray-50 py-16 px-8">
           <div className="w-full flex flex-col space-y-8">
             <div className="flex space-x-8">
+
               {/* Update Form Section */}
               <div className="w-1/2 bg-white p-6 rounded-lg shadow-md">
                 <h2 className="text-4xl font-bold pb-8 text-blue-600">Update Route</h2>
@@ -324,7 +264,7 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
                     type="submit"
                     className="w-full py-4 text-lg font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700"
                   >
-                    Update Route
+                    Request Update
                   </button>
                 </form>
                 {message && <p className="mt-4 text-lg text-green-500">{message}</p>}
@@ -355,8 +295,7 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
           </div>
         </div>
       </div>
-      <Footer/>
-    </div>
+      <Footer />
     </div>
   );
 }

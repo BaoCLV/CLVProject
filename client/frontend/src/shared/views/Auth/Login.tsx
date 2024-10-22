@@ -76,8 +76,10 @@ const Login = ({
         <div className="h-32 md:h-auto w-1/2">
           <img
             aria-hidden="true"
-            className="object-cover w-full h-full"
+            className="object-cover"
             src="/img/login-office.jpeg"
+            layout="fill"
+            objectFit="cover"
             alt="Office"
           />
         </div>

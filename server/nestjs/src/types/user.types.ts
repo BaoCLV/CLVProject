@@ -75,7 +75,7 @@ export class ResetPasswordResponse {
 
 @ObjectType()
 export class GetUserByEmailResponse {
-  @Field(() => User)
+  @Field(() => User, { nullable: true })
   user?: User;
 
   @Field(() => ErrorType, { nullable: true })

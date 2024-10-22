@@ -63,4 +63,54 @@ export class RouteResolver {
   ): Promise<number> {
     return this.routesService.countRoutesForMonth(year, month);
   }
+
+  // Query to get all routes without pages
+  @Query(() => [Route])
+  async getAllRoutes(): Promise<Route[]> {
+    const result = await this.routesService.findAllRoutes();
+    return result.routes; // Return the 'routes' array
+  }
+
+
+  @Mutation(() => Request)
+  createRequest(@Args('createRequestDto') createRequestDto: CreateRequestDto) {
+    return this.routesService.createRequest(createRequestDto);
+  }
+
+  @Mutation(() => Boolean)
+  async approveRequest(@Args('id') id: string): Promise<boolean> {
+    const result = await this.routesService.approveRequest(id);
+    return result.affected > 0;  // Return a Boolean value
+  }
+
+  @Mutation(() => Boolean)
+  async rejectRequest(@Args('id') id: string): Promise<boolean> {
+    const result = await this.routesService.rejectRequest(id);
+    return result.affected > 0;  // Return a Boolean value
+  }
+
+  @Query(() => [Request])
+  async requests(
+    @Args('query', { type: () => String, nullable: true }) query?: string,
+    @Args('limit', { type: () => Number, nullable: true }) limit?: number,
+    @Args('offset', { type: () => Number, nullable: true }) offset?: number,
+  ): Promise<Request[]> {
+    return this.routesService.getAllRequest({ query, limit, offset });
+  }
+
+  // Query to get a specific request by user id
+  @Query(() => [Request])
+  async allRequestByUserId(
+    @Args('userId') userId: string,
+    @Args('query', { type: () => String, nullable: true }) query?: string,
+    @Args('limit', { type: () => Number, nullable: true }) limit?: number,
+    @Args('offset', { type: () => Number, nullable: true }) offset?: number,
+  ): Promise<Request[]> {
+    return this.routesService.getAllRequestByUserId({ userId, query, limit, offset });
+  }
+
+  @Query(() => Request)
+  async findOneRequestById(@Args('id', { type: () => String }) id: string): Promise<Request> {
+    return this.routesService.findOneRequestById(id);
+  }
 }

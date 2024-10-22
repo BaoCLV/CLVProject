@@ -16,24 +16,27 @@ import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { randomPassword } from "../utils/randomPassword";
+import Loading from "./components/Loading";
+import { useActiveUser } from "../hooks/useActivateUser";
 
 const UserDropDown = () => {
+  const [signedIn, setSignedIn] = useState(false);
   const [open, setOpen] = useState(false);
-  const { user, loading: userLoading } = useUser();
-  const { data: sessionData } = useSession();
   const router = useRouter();
-  const { handlecreateUserSocial } = useCreateUserSocial(sessionData?.user);
+  const storedPassword = localStorage.getItem('generatedPassword') || '';
+  const [password, setPassword] = useState(storedPassword);
 
-  // Fetch the avatar for the logged-in user
-  const { loading: avatarLoading, avatar } = useGetAvatar(user?.id);
-
-  // Fetch all roles and compare the user's roleId with the role.id
+  const { activeUser, loading, GGUserData } = useActiveUser();
   const { loadingRoles, roles } = useRoles();
+
+    // Fetch the avatar for the logged-in user
+  const { loading: avatarLoading, avatar } = useGetAvatar(activeUser?.id || '')
 
   // Find the user's role based on user.roleId (Memoized for optimization)
   const userRole = useMemo(
-    () => roles.find((role: any) => role.id === user?.roleId),
-    [roles, user?.roleId]
+    () => roles.find((role: any) => role.id === activeUser?.roleId),
+    [roles, activeUser?.roleId]
   );
 
   // Check if the user is admin or superadmin (Memoized to avoid redundant calculations)
@@ -50,26 +53,53 @@ const UserDropDown = () => {
         "data:image/jpeg;base64,"
       );
     }
-    return "/img/default-avatar.jpg"; // Default avatar fallback
-  }, [avatar]);
-
-  // Handle user session and creation of social user
-  useEffect(() => {
-    if (user && sessionData?.user) {
-      handlecreateUserSocial();
+    if (GGUserData) {
+      return GGUserData.image
     }
-  }, [user, sessionData?.user, handlecreateUserSocial]);
+    return "/img/default-avatar.jpg"; // Default avatar fallback
+  }, [avatar, GGUserData]);
+
+
+  const { handleCreateUserSocial } = useCreateUserSocial(GGUserData);
+  const userCreated = localStorage.getItem('userCreated') === 'true'; // Check if user is already created
+
+  useEffect(() => {
+    if (!password) {
+      const newPassword = randomPassword();
+      localStorage.setItem('generatedPassword', newPassword);
+      setPassword(newPassword);
+    }
+    if (!loading) {
+      setSignedIn(!!activeUser);
+    }
+    if (!userCreated && GGUserData.email !== "" && signedIn === true) {
+      handleCreateUserSocial(password).then(() => {
+        localStorage.setItem('userCreated', 'true'); // Set the flag after user is created
+      });
+    }
+  }, [loading, activeUser, open, password, userCreated, signedIn, GGUserData]);
 
   const logoutHandler = () => {
-    if (sessionData?.user) {
+    if (GGUserData.email !== "") {
       signOut();
+      console.log(GGUserData)
+      router.push("/");
     } else {
-      Cookies.remove("access_token");
-      Cookies.remove("refresh_token");
-      toast.success("Log out successful!");
+      Cookies.remove("access_token", { path: '' });
+      Cookies.remove("refresh_token", { path: '' });
+      console.log(activeUser)
+      router.push("/");
+      window.location.reload();
     }
-    router.push("/");
+    // Clear localStorage and sessionStorage
+    localStorage.removeItem('generatedPassword');
+    localStorage.removeItem('userCreated');
+    sessionStorage.clear();
+
+    toast.success("Log out successfully!");
+    setSignedIn(false); // Reset the signedIn state
   };
+
 
   const handleNavigation = (key: any) => {
     switch (key) {
@@ -77,7 +107,7 @@ const UserDropDown = () => {
         router.push("/");
         break;
       case "settings":
-        router.push(`/api/profile/${user?.id}`);
+        router.push(`/api/profile/${activeUser?.id}`);
         break;
       case "dashboard":
         router.push(`/admin/dashboard`);
@@ -89,7 +119,7 @@ const UserDropDown = () => {
 
   return (
     <div className="flex items-center z-50 gap-4 ml-auto">
-      {user ? (
+      {activeUser ? (
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
             <Avatar
@@ -107,9 +137,9 @@ const UserDropDown = () => {
             <DropdownItem key="settings" className="h-14 gap-2">
               <p className="font-semibold text-white">Signed in as</p>
               <p className="font-semibold text-white">
-                {sessionData?.user?.email || user?.email}
-              </p>
-            </DropdownItem>
+                {GGUserData?.email || activeUser?.email}
+              </p >
+            </DropdownItem >
             {!loadingRoles && isAdmin ? (
               <DropdownItem
                 className="font-semibold text-white"
@@ -129,8 +159,8 @@ const UserDropDown = () => {
             >
               Log Out
             </DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
+          </DropdownMenu >
+        </Dropdown >
       ) : (
         <CgProfile
           className="text-2xl cursor-pointer"
@@ -138,7 +168,7 @@ const UserDropDown = () => {
         />
       )}
       {open && <AuthScreen setOpen={setOpen} />}
-    </div>
+    </div >
   );
 };
 

@@ -81,13 +81,19 @@ export class RequestChangePasswordDto {
 @InputType()
 export class ChangePasswordDto {
   @Field()
+  @IsNotEmpty({ message: 'user ID is required.' })
+  @IsUUID("4", { message: "user must be a valid UUID." })
+  userID: string;
+
+  @Field()
+  @IsNotEmpty({ message: 'Password is required.' })
+  @MinLength(8, { message: 'Password must be at least 8 characters.' })
+  oldPassword: string;
+
+  @Field()
   @IsNotEmpty({ message: 'Password is required.' })
   @MinLength(8, { message: 'Password must be at least 8 characters.' })
   newPassword: string;
-
-  @Field()
-  @IsNotEmpty({ message: 'Change Password Token is required.' })
-  changePasswordToken: string;
 }
 
 @InputType()

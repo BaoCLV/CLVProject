@@ -9,6 +9,7 @@ import AuthScreen from "../../screens/AuthScreen";
 import { toast, ToastContainer } from "react-toastify"; 
 import "react-toastify/dist/ReactToastify.css"; 
 import { useUser } from "../../../hooks/useUser"; 
+import { useActiveUser } from "@/src/hooks/useActivateUser";
 
 const customIcon = L.icon({
   iconUrl: "/img/map-marker.png", 
@@ -29,7 +30,7 @@ const CreateRouteForm = ({ onSubmit }: CreateRouteFormProps) => {
   const [error, setError] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  const { user, loading } = useUser(); 
+  const { activeUser, loading } = useActiveUser(); 
 
   const OPEN_CAGE_API_KEY = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY;
 
@@ -96,7 +97,7 @@ const CreateRouteForm = ({ onSubmit }: CreateRouteFormProps) => {
     }
 
     // Check if the user is logged in
-    if (!user) {
+    if (!activeUser) {
       toast.info("Please login or sign up to continue.");
       setShowAuthModal(true); 
     } else if (distance !== null) {

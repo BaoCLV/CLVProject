@@ -46,6 +46,8 @@ const AirFreight = () => {
                 <img
                   src="/img/air-freight-features.jpg"
                   alt="Air Freight Features"
+                  width={900} // Adjust to the actual width of the image
+                  height={1000} // Adjust to the actual height of the image
                   className="rounded-lg shadow-lg w-full"
                 />
               </div>
@@ -80,6 +82,8 @@ const AirFreight = () => {
                 <img
                   src="/img/how-it-works-air-freight.jpg"
                   alt="How Air Freight Works"
+                  width={900} // Adjust to the actual width of the image
+                  height={1000} // Adjust to the actual height of the image
                   className="rounded-lg shadow-lg w-full"
                 />
               </div>
@@ -93,6 +97,8 @@ const AirFreight = () => {
                 <img
                   src="/img/contact-air-freight.jpg"
                   alt="Contact Us"
+                  width={900} // Adjust to the actual width of the image
+                  height={1000} // Adjust to the actual height of the image
                   className="rounded-lg shadow-lg w-full"
                 />
               </div>

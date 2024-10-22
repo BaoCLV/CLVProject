@@ -11,6 +11,8 @@ import ProfileSidebar from '../../components/pages/admin/ProfileSidebar';
 import Loading from '../../components/Loading';
 import { io } from 'socket.io-client';
 import { useGetAllRoute, useGetRequests, useGetRoute, useGetRoutes } from '@/src/hooks/useRoute';
+import { useActiveUser } from '@/src/hooks/useActivateUser';
+import SearchBar from '../../components/searchBar';
 
 const queryClient = new QueryClient();
 
@@ -20,7 +22,7 @@ function Request() {
     const itemsPerPage = 10;
 
     // Fetch roles and requests using the respective hooks
-    const { loading: loadingUsers } = useUser();
+    const { loading: loadingUser } = useActiveUser();
     const { loadingRoutes, errorRoutes, routes } = useGetAllRoute(); // Fetch routes here
     const { user, userLoading, userError } = getAllUserNoQuery(); // Fetch users here
 
@@ -29,6 +31,7 @@ function Request() {
     const [currentPage, setCurrentPage] = useState(pageFromUrl);
     const [filterType, setFilterType] = useState<string>("name");
     const [filterQuery, setFilterQuery] = useState<string>("");
+    const [searchResults, setSearchResults] = useState<any[]>([]); // State for search results
 
     useEffect(() => {
         setCurrentPage(pageFromUrl);
@@ -68,7 +71,22 @@ function Request() {
     const allRequests = data?.pages.flatMap((page) => page) ?? [];
     const allUser = user.users
 
-    if (loadingUsers || loadingRoutes || userLoading) {
+    // Search Handler
+    const handleSearch = (query: string) => {
+        if (query) {
+            const filteredUsers = allUser.filter((user: any) => {
+                return (
+                    user.name.toLowerCase().includes(query.toLowerCase()) ||
+                    user.email.toLowerCase().includes(query.toLowerCase())
+                );
+            });
+            setSearchResults(filteredUsers);
+        } else {
+            setSearchResults(allUser); // Reset search results if query is empty
+        }
+    };
+
+    if (loadingUser || loadingRoutes || userLoading) {
         return <Loading />;
     }
 
@@ -77,30 +95,42 @@ function Request() {
     console.log('Fetched users:', allUser); // Debugging: log requests
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
-            <ProfileSidebar />
-            <div className="flex flex-col flex-1">
-                <Header />
-                <div className="dark p-4 mt-16">
-                    <h1 className="text-2xl font-bold mb-4 text-black">Pending Request</h1>
-                    <div className="w-full overflow-hidden rounded-lg shadow-xs">
+        <div className="flex flex-col min-h-screen">
+            {/* Main layout container */}
+            <Header />
+            <div className="flex flex-1">
+                <ProfileSidebar />
+
+                {/* Content */}
+                <div className="flex flex-col flex-1 bg-gray-200 py-16 px-8 relative">
+                    {/* Header with Search Bar and Create User Button */}
+                    <div className="flex flex-wrap justify-between items-center mb-6">
+                        <h1 className="text-3xl font-bold text-blue-600">My Request</h1>
+
+                        {/* Search Bar */}
+                        <div className="flex items-center gap-4">
+                            <SearchBar getSearchResults={handleSearch} />
+                        </div>
+                    </div>
+
+                    <div className="w-full">
                         <div className="w-full overflow-x-auto">
-                            <table className="w-full whitespace-no-wrap border-black bg-white">
+                            <table className="w-full whitespace-no-wrap table-auto bg-white shadow-lg rounded-lg overflow-hidden">
                                 <thead>
-                                    <tr className="text-xs font-semibold tracking-wide text-left bg-white text-purple-700 uppercase border-b dark:border-black">
-                                        <th className="px-4 py-3">User Name</th>
-                                        <th className="px-4 py-3">Route Start</th>
-                                        <th className="px-4 py-3">Route End</th>
-                                        <th className="px-4 py-3">Request Type</th>
-                                        <th className="px-4 py-3">Status</th>
-                                        <th className="px-4 py-3">Created At</th>
-                                        <th className="px-4 py-3">Updated At</th>
+                                    <tr className="text-xs font-semibold tracking-wide text-left text-blue-600 uppercase border-b border-gray-200 bg-gray-50">
+                                        <th className="px-6 py-4">User Name</th>
+                                        <th className="px-6 py-4">Start Location</th>
+                                        <th className="px-6 py-4">End Location</th>
+                                        <th className="px-6 py-4">Request</th>
+                                        <th className="px-6 py-4">Status</th>
+                                        <th className="px-6 py-4">Created At</th>
+                                        <th className="px-6 py-4">Updated At</th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y dark:divide-gray-700 dark:bg-white">
+                                <tbody className="bg-white divide-y divide-gray-100">
                                     {isFetching && (
                                         <tr>
-                                            <td colSpan={8} className="text-center py-4">
+                                            <td colSpan={8} className="text-center py-6">
                                                 <Spinner label="Loading..." />
                                             </td>
                                         </tr>
@@ -108,35 +138,34 @@ function Request() {
 
                                     {allRequests.length > 0
                                         ? allRequests.map((request: any) => {
-                                            // Match request's routeId with fetched roles
-                                            const matchedRoute = routes.find((r: any) => r.id === request.routeId);
-                                            const requestRouteId = matchedRoute ? matchedRoute.id : "No route";
+                                                // Match request's routeId with fetched routes
+                                                const matchedRoute = routes.find((r: any) => r.id === request.routeId);
 
-                                            const routeStart = matchedRoute ? matchedRoute.startLocation : "Unknown start";
-                                            const routeEnd = matchedRoute ? matchedRoute.endLocation : "Unknown end";
+                                                const routeStart = matchedRoute ? matchedRoute.startLocation : "Unknown start";
+                                                const routeEnd = matchedRoute ? matchedRoute.endLocation : "Unknown end";
 
-                                            // Match request's routeId with fetched roles
-                                            const matchedUser = allUser.find((u: any) => {
-                                                return u.id === request.userId;
-                                            });
-                                            const username = matchedUser ? matchedUser.name : "No user";
+                                                // Match request's routeId with fetched roles
+                                                const matchedUser = allUser.find((u: any) => {
+                                                    return u.id === request.userId;
+                                                });
+                                                const username = matchedUser ? matchedUser.name : "No user";
 
-                                            return (
-                                                <tr key={request.id} className="text-blue-700 dark:text-black">
-                                                    <td className="px-4 py-3 text-sm">{username}</td>
-                                                    <td className="px-4 py-3 text-sm">{routeStart}</td>
-                                                    <td className="px-4 py-3 text-sm">{routeEnd}</td>
-                                                    <td className="px-4 py-3 text-sm">{request.requestType}</td>
-                                                    <td className="px-4 py-3 text-sm">{request.status}</td>
-                                                    <td className="px-4 py-3 text-sm">{request.createdAt}</td>
-                                                    <td className="px-4 py-3 text-sm">{request.updatedAt}</td>
-                                                </tr>
-                                            );
-                                        })
+                                                return (
+                                                    <tr key={request.id} className="hover:bg-blue-50 text-black transition-colors">
+                                                        <td className="px-6 py-4 text-sm">{username}</td>
+                                                        <td className="px-6 py-4 text-sm">{routeStart}</td>
+                                                        <td className="px-6 py-4 text-sm">{routeEnd}</td>
+                                                        <td className="px-6 py-4 text-sm">{request.requestType}</td>
+                                                        <td className="px-6 py-4 text-sm">{request.status}</td>
+                                                        <td className="px-6 py-4 text-sm">{request.createdAt}</td>
+                                                        <td className="px-6 py-4 text-sm">{request.updatedAt}</td>
+                                                    </tr>
+                                                );
+                                            })
                                         : !isFetching && (
                                             <tr>
-                                                <td colSpan={6} className="text-center py-4">
-                                                    No users available
+                                                <td colSpan={6} className="text-center py-6 text-gray-600">
+                                                    No Request Available
                                                 </td>
                                             </tr>
                                         )}
@@ -145,35 +174,28 @@ function Request() {
                         </div>
 
                         {/* Pagination Controls */}
-                        <div className="flex justify-between px-4 py-3 text-xs font-semibold tracking-wide text-purple-700 uppercase border-t">
+                        <div className="flex justify-between items-center py-6 px-4 mt-4 border-t border-gray-200">
+                            {/* Previous Button */}
                             <button
                                 onClick={() => handlePageChange(currentPage - 1)}
                                 disabled={currentPage <= 1 || isFetchingPreviousPage}
-                                className="px-3 py-1 bg-purple-500 text-white rounded disabled:opacity-50 flex items-center"
+                                className={`px-4 py-2 text-white rounded-lg bg-blue-600 hover:bg-blue-700 transition disabled:opacity-50 ${isFetchingPreviousPage ? "cursor-wait" : ""
+                                    }`}
                             >
-                                {isFetchingPreviousPage ? (
-                                    <>
-                                        <Spinner className="mr-2" /> Loading...
-                                    </>
-                                ) : (
-                                    "Previous"
-                                )}
+                                {isFetchingPreviousPage ? "Loading..." : "Previous"}
                             </button>
 
-                            <span>Showing page {currentPage}</span>
+                            {/* Current Page Display */}
+                            <span className="text-gray-600">Page {currentPage}</span>
 
+                            {/* Next Button */}
                             <button
                                 onClick={() => handlePageChange(currentPage + 1)}
                                 disabled={!hasNextPage || isFetchingNextPage}
-                                className="px-3 py-1 bg-purple-500 text-white rounded disabled:opacity-50 flex items-center"
+                                className={`px-4 py-2 text-white rounded-lg bg-blue-600 hover:bg-blue-700 transition disabled:opacity-50 ${isFetchingNextPage ? "cursor-wait" : ""
+                                    }`}
                             >
-                                {isFetchingNextPage ? (
-                                    <>
-                                        <Spinner className="mr-2" /> Loading...
-                                    </>
-                                ) : (
-                                    "Next"
-                                )}
+                                {isFetchingNextPage ? "Loading..." : "Next"}
                             </button>
                         </div>
                     </div>

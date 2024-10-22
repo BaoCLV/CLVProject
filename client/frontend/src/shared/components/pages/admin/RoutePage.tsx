@@ -11,6 +11,7 @@ import ProfileSidebar from "./ProfileSidebar";
 import Footer from "../../Footer";
 import SearchBar from "../../searchBar";
 import Header from "../../Header";
+import { useActiveUser } from "@/src/hooks/useActivateUser";
 
 const queryClient = new QueryClient();
 
@@ -19,7 +20,7 @@ function RoutePage() {
   const searchParams = useSearchParams();
   const itemsPerPage = 20.0;
 
-  const { user, loading: userLoading } = useUser();
+  const { activeUser, loading: userLoading, GGUserData } = useActiveUser();
 
   const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
   const [currentPage, setCurrentPage] = useState(pageFromUrl);
@@ -54,7 +55,7 @@ function RoutePage() {
     isFetchingPreviousPage,
   } = useGetRoutes(currentPage, itemsPerPage);
 
-  if (userLoading || !user) {
+  if (userLoading || !activeUser) {
     return (
       <div className="flex h-screen bg-gray-100 items-center justify-center">
         <Spinner label="Loading User Data..." />
@@ -245,7 +246,7 @@ function RoutePage() {
 
                           <td className="px-6 py-4 text-sm">
                             <a
-                              href={`/api/route/${route.id}`}
+                              href={`/admin/route/${route.id}`}
                               className="text-blue-600 hover:text-blue-500 hover:underline transition"
                             >
                               View Details

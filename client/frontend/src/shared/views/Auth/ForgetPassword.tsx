@@ -24,7 +24,7 @@ const ForgotPassword = ({
     client: unauthClient,
   });
 
-  const useRoute = useRouter();
+  const router = useRouter();
 
   const {
     register,

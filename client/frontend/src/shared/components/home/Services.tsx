@@ -1,6 +1,6 @@
 import { useInView } from "../../../hooks/useInView";
 import Image from "next/image";
-import Slider from "react-slick"; // Import Slick
+import Slider from "react-slick";
 import "slick-carousel/slick/slick.css"; // Import Slick styles
 import "slick-carousel/slick/slick-theme.css";
 import { useState, useEffect } from "react";

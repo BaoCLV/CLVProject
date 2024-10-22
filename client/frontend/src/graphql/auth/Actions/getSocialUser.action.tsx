@@ -11,6 +11,7 @@ export const GET_SOCIAL_USER: DocumentNode = gql`
         email
         phone_number
         address
+        roleId
       }
       error {
         message

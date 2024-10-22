@@ -6,9 +6,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Spinner } from "@nextui-org/react";
 import { useGetAllUser, useUser } from '@/src/hooks/useUser';
 import { useRoles } from '@/src/hooks/useRole'; // Import useRoles hook
-import Header from '../../Header';
+
+import { useActiveUser } from '@/src/hooks/useActivateUser';
+import Loading from '@/src/app/loading';
 import ProfileSidebar from './ProfileSidebar';
-import Loading from '../../Loading';
+import Header from '../../Header';
 
 const queryClient = new QueryClient();
 
@@ -19,7 +21,8 @@ function UserDashboard() {
 
   // Fetch roles and users using the respective hooks
   const { loadingRoles, errorRoles, roles } = useRoles(); // Fetch roles here
-  const { loading: loadingUsers } = useUser();
+  const { loading: loadingUsers } = useActiveUser();
+  console.log()
 
   // Handle pagination and filtering for users
   const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);

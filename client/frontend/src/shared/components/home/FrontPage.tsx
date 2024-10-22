@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import AuthScreen from "../../screens/AuthScreen";
@@ -8,6 +8,9 @@ import { useUser } from "../../../hooks/useUser";
 import Player from "lottie-react";
 import logisticsAnimation from "@/src/animations/home.json";
 import { useRoles } from "@/src/hooks/useRole";
+import Loading from '../../components/Loading';
+import { useSession } from "next-auth/react";
+import { useActiveUser } from "@/src/hooks/useActivateUser";
 
 // Dynamic import for the CreateRouteForm
 const CreateRouteForm = dynamic(() => import("./createRouteForm"), {
@@ -24,7 +27,7 @@ const logisticsAdSentences = [
 ];
 
 const getRandomLogisticsAd = () => {
-  const randomIndex = Math.floor(Math.random() * logisticsAdSentences.length);
+  const randomIndex = Math.floor(Math.random() * logisticsAdSentences?.length);
   return logisticsAdSentences[randomIndex];
 };
 
@@ -34,23 +37,28 @@ const FrontPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [successNotification, setSuccessNotification] = useState(false);
+  const [roleName, setRoleName] = useState("");
   const [randomSlogan, setRandomSlogan] = useState(getRandomLogisticsAd);
   const router = useRouter();
+  const { handleCreateRoute } = useCreateRoute(); // Hook to create a route
 
-  const { handleCreateRoute } = useCreateRoute();
-  console.log("useCreateRoute:", handleCreateRoute);
+  const { activeUser, loading, GGUserData } = useActiveUser();
+  const { loadingRoles, errorRoles, roles } = useRoles(); // Fetch roles here
 
-  const { user, loading } = useUser();
-  console.log("useUser:", user);
+  useEffect(() => {
+    if (activeUser && roles) {
+      console.log(roles)
+      console.log(activeUser)
+      setRoleName(roles.find((r: { id: any }) => r.id === activeUser.roleId)?.name || "No role")
+    }
+  }, [activeUser, roles]);
 
-  const { loadingRoles, errorRoles, roles } = useRoles();
-  console.log("useRoles:", roles);
-
-  const roleName =
-    roles.find((r: any) => r.id === user?.roleId)?.name || "No role";
+  if (loading || loadingRoles) {
+    return <Loading />;
+  }
 
   const handleUpdate = () => {
-    router.push(`/api/profile/${user.id}/route`);
+    router.push(`/api/profile/${activeUser.id}/route`);
   };
 
   const createRouteHandler = () => {
@@ -61,20 +69,19 @@ const FrontPage = () => {
     startLocation: string,
     endLocation: string,
     distance: number,
-    price: number
   ) => {
-    if (!user || !user.id) {
+    if (!activeUser || !activeUser.id) {
       setFeedback("Error: User not logged in.");
       return;
     }
 
     try {
       const routeData = {
-        userId: user.id,
+        userId: activeUser.id, // Now pulling the userId from the logged-in user
         startLocation,
         endLocation,
         distance,
-        price,
+        price: distance * 1.5
       };
       const newRoute = await handleCreateRoute(routeData);
       setModalOpen(false);
@@ -111,7 +118,7 @@ const FrontPage = () => {
             Create Route
           </button>
 
-          {!user && (
+          {!activeUser && (
             <button
               onClick={() => setOpen(true)}
               className="px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white font-bold rounded-lg shadow-lg transform transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-neon"
@@ -119,7 +126,6 @@ const FrontPage = () => {
               Login / Sign Up
             </button>
           )}
-
           {roleName === "user" && (
             <button
               onClick={handleUpdate}

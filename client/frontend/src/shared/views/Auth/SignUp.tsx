@@ -77,6 +77,8 @@ const Signup = ({
               aria-hidden="true"
               className="object-cover w-full h-full"
               src="/img/login-office.jpeg"
+              width={900} // Adjust to the actual width of the image
+              height={1000} // Adjust to the actual height of the image
               alt="Office"
             />
           </div>

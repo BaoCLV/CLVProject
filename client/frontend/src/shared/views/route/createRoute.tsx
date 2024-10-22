@@ -9,6 +9,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Footer from "../../components/Footer"; 
 import dynamic from "next/dynamic";
+import { useActiveUser } from "@/src/hooks/useActivateUser";
 
 // Define the form state interface
 interface CreateRouteForm {
@@ -33,8 +34,8 @@ export default function CreateRoute() {
   const [routeDetails, setRouteDetails] = useState<CreateRouteForm | null>(null); // Store created route details
   const [coordinates, setCoordinates] = useState<[number, number][]>([]); // For LeafletMap
   const [error, setError] = useState<string | null>(null);
-  const { handleCreateRoute } = useCreateRoute();
-  const { user, loading } = useUser();
+  const { handleCreateRoute } = useCreateRoute(); // Mutation to create the route
+  const { activeUser, loading, GGUserData } = useActiveUser();
 
   const OPEN_CAGE_API_KEY = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY;
 
@@ -119,7 +120,7 @@ export default function CreateRoute() {
     e.preventDefault();
     setError(null);
 
-    if (!user) {
+    if (!activeUser) {
       setError("User not logged in");
       return;
     }
@@ -131,7 +132,7 @@ export default function CreateRoute() {
 
     try {
       const createdRoute = await handleCreateRoute({
-        userId: user.id,
+        userId: activeUser.id,
         startLocation: form.startLocation,
         endLocation: form.endLocation,
         distance: form.distance,
