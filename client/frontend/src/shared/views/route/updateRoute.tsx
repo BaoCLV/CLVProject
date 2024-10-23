@@ -72,23 +72,31 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   };
 
   const geocodeLocation = async (location: string): Promise<[number, number]> => {
+    if (!OPEN_CAGE_API_KEY) {
+      throw new Error("OpenCage API key is missing");
+    }
+
     const response = await fetch(
-      `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(location)}&key=${OPEN_CAGE_API_KEY}`
+      `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(
+        location
+      )}&key=${OPEN_CAGE_API_KEY}`
     );
     const data = await response.json();
 
     if (data.results.length === 0) {
-      throw new Error('Location not found');
+      throw new Error("Location not found");
     }
 
     const { lat, lng } = data.results[0].geometry;
     return [lat, lng];
   };
 
-  const geocodeLocations = useCallback(async (startLocation: string, endLocation: string) => {
+  // Geocode both locations and calculate distance and price
+  const geocodeLocations = async (startLocation: string, endLocation: string) => {
     try {
       const startCoords = await geocodeLocation(startLocation);
       const endCoords = await geocodeLocation(endLocation);
+
       setCoordinates([startCoords, endCoords]);
 
       const distance = calculateDistance(startCoords, endCoords);
@@ -96,13 +104,13 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
 
       setForm((prev) => ({
         ...prev,
-        distance,
-        price,
+        distance: Math.round(distance), // round to nearest km
+        price: Math.round(price), // round to nearest unit
       }));
     } catch (err) {
-      console.error('Error geocoding locations:', err);
-      setError('Failed to fetch coordinates for locations');
+      setError("Error fetching coordinates or calculating distance");
     }
+<<<<<<< Updated upstream
   }, [geocodeLocation]);
 
   useEffect(() => {
@@ -121,6 +129,9 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
     , geocodeLocations
     
   ]);
+=======
+  };
+>>>>>>> Stashed changes
 
   // Haversine formula to calculate distance between two coordinates
   const calculateDistance = (coords1: [number, number], coords2: [number, number]): number => {
@@ -136,6 +147,20 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c; // Distance in kilometers
   };
+  
+  useEffect(() => {
+    if (route) {
+      setForm({
+        startLocation: route.startLocation,
+        endLocation: route.endLocation,
+        distance: 0,
+        price: 0,
+        status: route.status || 'pending',
+      });
+  
+      geocodeLocations(route.startLocation, route.endLocation);
+    }
+  }, [route, geocodeLocations]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();  // Prevent form from submitting the traditional way
@@ -182,8 +207,69 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   }
 
   return (
+<<<<<<< Updated upstream
     <div className="flex flex-col h-screen bg-gradient-to-r from-blue-100 to-blue-300">
       <Header />
+=======
+    <div className="flex flex-col h-screen">
+      <Header />
+
+      <div className="flex flex-1">
+        <ProfileSidebar />
+
+        <div className="flex flex-1 bg-gray-50 py-16 px-8">
+          <h4 className="mb-6 text-2xl font-bold text-gray-700 dark:text-gray-300">
+            Update Route
+          </h4>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <label className="block text-lg">
+              <span className="text-gray-900 dark:text-gray-100">Start Location</span>
+              <input
+                type="text"
+                name="startLocation"
+                value={form.startLocation}
+                onChange={handleChange}
+                placeholder="Enter Start Location"
+                required
+                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
+              />
+            </label>
+            <label className="block text-lg">
+              <span className="text-gray-900 dark:text-gray-100">End Location</span>
+              <input
+                type="text"
+                name="endLocation"
+                value={form.endLocation}
+                onChange={handleChange}
+                placeholder="Enter End Location"
+                required
+                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
+              />
+            </label>
+            <label className="block text-lg">
+              <span className="text-gray-900 dark:text-gray-100">Distance (km)</span>
+              <input
+                type="number"
+                name="distance"
+                value={form.distance}
+                onChange={handleChange}
+                placeholder="Enter Distance"
+                required
+                min={0}
+                step={0.01}
+                className="block w-full mt-2 p-4 text-lg dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-100 dark:focus:shadow-outline-gray form-input"
+              />
+            </label>
+            <button
+              type="submit"
+              className="w-full py-4 text-lg font-semibold text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"
+            >
+              Request Update
+            </button>
+            {message && <p className="mt-4 text-lg text-green-500">{message}</p>}
+            {error && <p className="mt-4 text-lg text-red-500">Error: {error}</p>}
+          </form>
+>>>>>>> Stashed changes
 
       <div className="flex flex-1">
         <Sidebar />
@@ -295,7 +381,13 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
           </div>
         </div>
       </div>
+<<<<<<< Updated upstream
       <Footer />
+=======
+
+    </div>
+    <Footer/>
+>>>>>>> Stashed changes
     </div>
   );
 }

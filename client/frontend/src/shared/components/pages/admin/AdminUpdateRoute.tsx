@@ -84,13 +84,19 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   };
 
   const geocodeLocation = async (location: string): Promise<[number, number]> => {
+    if (!OPEN_CAGE_API_KEY) {
+      throw new Error("OpenCage API key is missing");
+    }
+
     const response = await fetch(
-      `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(location)}&key=${OPEN_CAGE_API_KEY}`
+      `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(
+        location
+      )}&key=${OPEN_CAGE_API_KEY}`
     );
     const data = await response.json();
 
     if (data.results.length === 0) {
-      throw new Error('Location not found');
+      throw new Error("Location not found");
     }
 
     const { lat, lng } = data.results[0].geometry;
@@ -101,20 +107,21 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
     try {
       const startCoords = await geocodeLocation(startLocation);
       const endCoords = await geocodeLocation(endLocation);
+
       setCoordinates([startCoords, endCoords]);
-  
+
       const distance = calculateDistance(startCoords, endCoords);
       const price = distance * PRICE_PER_KM;
-  
+
       setForm((prev) => ({
         ...prev,
-        distance,
-        price,
+        distance: Math.round(distance), // round to nearest km
+        price: Math.round(price), // round to nearest unit
       }));
     } catch (err) {
-      console.error('Error geocoding locations:', err);
-      setError('Failed to fetch coordinates for locations');
+      setError("Error fetching coordinates or calculating distance");
     }
+<<<<<<< Updated upstream
   }, [geocodeLocation]);
   
   useEffect(() => {
@@ -132,6 +139,9 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   }, [route
     , geocodeLocations
   ]);
+=======
+  };
+>>>>>>> Stashed changes
 
   // Haversine formula to calculate distance between two coordinates
   const calculateDistance = (coords1: [number, number], coords2: [number, number]): number => {
@@ -147,6 +157,22 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c; // Distance in kilometers
   };
+  
+  useEffect(() => {
+    if (route) {
+      setForm({
+        startLocation: route.startLocation,
+        endLocation: route.endLocation,
+        distance: 0,
+        price: 0,
+        status: route.status || 'pending',
+      });
+  
+      geocodeLocations(route.startLocation, route.endLocation);
+    }
+  }, [route, geocodeLocations]);
+
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();  // Prevent form from submitting the traditional way
@@ -193,17 +219,24 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
   }
 
   return (
+<<<<<<< Updated upstream
     <div className="flex flex-col h-screen bg-gradient-to-r from-blue-100 to-blue-300">
+=======
+    <div className="flex flex-col h-screen ">
+>>>>>>> Stashed changes
       <Header />
 
       <div className="flex flex-1">
         <ProfileSidebar />
 
         <div className="flex flex-1 bg-gray-50 py-16 px-8">
+<<<<<<< Updated upstream
           <div className="w-full flex flex-col space-y-8">
             <div className="flex space-x-8">
 
               {/* Update Form Section */}
+=======
+>>>>>>> Stashed changes
               <div className="w-1/2 bg-white p-6 rounded-lg shadow-md">
                 <h2 className="text-4xl font-bold pb-8 text-blue-600">Update Route</h2>
                 <form onSubmit={handleSubmit} className="space-y-8">

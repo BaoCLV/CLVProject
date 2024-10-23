@@ -34,7 +34,7 @@ const customIcon = L.icon({
 });
 
 interface RouteDetailProps {
-  routeId: string
+  routeId: string;
 }
 
 export default function RouteDetail({ routeId }: RouteDetailProps) {
@@ -130,12 +130,20 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
       if (coordinates.length === 2) {
         map.fitBounds(coordinates);
       }
+<<<<<<< Updated upstream
     }, [map]);
+=======
+    }, [coordinates, map]);
+>>>>>>> Stashed changes
     return null;
   }
 
   return (
+<<<<<<< Updated upstream
     <div className="flex flex-col h-screen bg-gradient-to-r from-blue-100 to-blue-300">
+=======
+    <div className="flex flex-col h-screen ">
+>>>>>>> Stashed changes
       <Header />
 
       <div className="flex flex-1">
@@ -143,9 +151,16 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
 
         <div className="flex flex-1 bg-gray-50 py-16 px-8">
           <div className="w-full flex flex-col space-y-8">
+<<<<<<< Updated upstream
             <div className="flex space-x-8">
               <div className="w-1/2 bg-white p-8 rounded-lg shadow-lg">
                 <h2 className="text-4xl font-bold pb-8 text-blue-700 text-center border-b-4 border-blue-500">
+=======
+            {/* Route Details Card */}
+            <div className="flex space-x-8">
+              <div className="w-1/2 bg-white bg-opacity-60 backdrop-blur-lg p-8 rounded-xl shadow-2xl border border-gray-200">
+                <h2 className="text-4xl font-extrabold pb-8 text-blue-700 text-center border-b-4 border-blue-500">
+>>>>>>> Stashed changes
                   Route Details
                 </h2>
                 <div className="grid grid-cols-1 gap-8 mt-4">
@@ -157,7 +172,11 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
                     { label: "Price", value: `${route.price.toFixed(2)} $` },
                     { label: "Status", value: route.status },
                   ].map(({ label, value }) => (
+<<<<<<< Updated upstream
                     <div key={label} className="p-4 bg-gray-100 rounded-lg transition hover:shadow-xl">
+=======
+                    <div key={label} className="p-4 bg-white bg-opacity-30 backdrop-blur-md rounded-lg transition hover:shadow-lg">
+>>>>>>> Stashed changes
                       <span className="block text-gray-800 text-lg font-semibold">
                         {label}
                       </span>
@@ -169,13 +188,22 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
                 </div>
               </div>
 
+<<<<<<< Updated upstream
               <div className="w-1/2 h-[800px] rounded-lg shadow-lg overflow-hidden">
+=======
+              {/* Map Container */}
+              <div className="w-1/2 h-[800px] rounded-xl shadow-lg overflow-hidden">
+>>>>>>> Stashed changes
                 {coordinates.length === 2 && (
                   <MapContainer
                     center={coordinates[0]}
                     zoom={10}
                     scrollWheelZoom={false}
+<<<<<<< Updated upstream
                     className="h-full w-full"
+=======
+                    className="h-full w-full rounded-xl"
+>>>>>>> Stashed changes
                   >
                     <TileLayer
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -190,11 +218,19 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
               </div>
             </div>
 
+<<<<<<< Updated upstream
+=======
+            {/* Action Buttons */}
+>>>>>>> Stashed changes
             <div className="flex justify-end items-center mt-8 space-x-4">
               {hasUpdatePermission && (
                 <button
                   onClick={handleUpdate}
+<<<<<<< Updated upstream
                   className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition duration-300 transform hover:scale-105"
+=======
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-blue-700 transition duration-300 transform hover:scale-105"
+>>>>>>> Stashed changes
                 >
                   Update Route
                 </button>
@@ -203,7 +239,11 @@ export default function RouteDetail({ routeId }: RouteDetailProps) {
               {hasDeletePermission && (
                 <button
                   onClick={handleDelete}
+<<<<<<< Updated upstream
                   className="bg-red-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-red-700 transition duration-300 transform hover:scale-105"
+=======
+                  className="bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-red-700 transition duration-300 transform hover:scale-105"
+>>>>>>> Stashed changes
                 >
                   Delete Route
                 </button>
