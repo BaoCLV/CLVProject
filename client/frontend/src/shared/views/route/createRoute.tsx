@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect, useState } from "react";
 import { useUser } from "../../../hooks/useUser";
@@ -10,6 +10,22 @@ import "react-toastify/dist/ReactToastify.css";
 import Footer from "../../components/Footer"; 
 import dynamic from "next/dynamic";
 import { useActiveUser } from "@/src/hooks/useActivateUser";
+import L from 'leaflet';
+import { useMap } from "react-leaflet";
+
+// Dynamically import react-leaflet components to avoid SSR issues
+const MapContainer = dynamic(() => import('react-leaflet').then((module) => module.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import('react-leaflet').then((module) => module.TileLayer), { ssr: false });
+const Marker = dynamic(() => import('react-leaflet').then((module) => module.Marker), { ssr: false });
+const Polyline = dynamic(() => import('react-leaflet').then((module) => module.Polyline), { ssr: false });
+
+// Custom marker icon
+const customIcon = L.icon({
+  iconUrl: '/img/map-marker.png',
+  iconSize: [38, 38],
+  iconAnchor: [19, 38],
+  popupAnchor: [0, -30],
+});
 
 // Define the form state interface
 interface CreateRouteForm {
@@ -21,7 +37,7 @@ interface CreateRouteForm {
 }
 
 const PRICE_PER_KM = 1.5; // Price per kilometer
-const LeafletMap = dynamic(() => import('../../components/leafletMap'), { ssr: false });
+
 export default function CreateRoute() {
   const [form, setForm] = useState<CreateRouteForm>({
     startLocation: "",
@@ -38,9 +54,6 @@ export default function CreateRoute() {
   const { activeUser, loading, GGUserData } = useActiveUser();
 
   const OPEN_CAGE_API_KEY = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY;
-
-  // Default map center when no coordinates are provided (e.g., New York)
-  const defaultCenter: [number, number] = [40.7128, -74.006];
 
   // Handle input field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,46 +167,23 @@ export default function CreateRoute() {
       setError(error.message || "Error creating route");
     }
   };
-  const getStatusLabel = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "pending":
-        return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-            Pending
-          </span>
-        );
-      case "delivering":
-        return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-            Delivering
-          </span>
-        );
-      case "success":
-        return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-            Success
-          </span>
-        );
-      case "cancel":
-        return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-            Canceled
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-            Unknown
-          </span>
-        );
-    }
-  };
+
+  function AutoZoom() {
+    const map = useMap();
+    useEffect(() => {
+      if (coordinates.length === 2) {
+        map.fitBounds(coordinates);
+      }
+    }, [map, coordinates]);
+    return null;
+  }
+
   return (
     <div className="flex flex-col h-screen">
       <Header />
       <div className="flex flex-1">
         <ProfileSidebar />
-        <div className="flex-1 bg-gray-200 py-16 px-6">
+        <div className="flex-1 bg-gray-200 py-28 px-6">
           <h4 className="mb-6 text-3xl font-bold text-blue-600">Create Route</h4>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -249,46 +239,27 @@ export default function CreateRoute() {
             </form>
 
             {/* Always Show the Map using LeafletMap component */}
-            <LeafletMap coordinates={coordinates.length ? coordinates : [defaultCenter]} />
-          </div>
-
-          {/* Display the created route as a table */}
-          {routeDetails && (
-            <div className="mt-8">
-              <h5 className="text-xl font-semibold text-gray-800 mb-4">Created Route</h5>
-              <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-lg">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                      Start Location
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                      End Location
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                      Distance (km)
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                      Price ($)
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="px-6 py-4 text-sm text-gray-900">{routeDetails.startLocation}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{routeDetails.endLocation}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{routeDetails.distance}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(routeDetails.price)}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                            {getStatusLabel(routeDetails.status)}
-                          </td>
-                  </tr>
-                </tbody>
-              </table>
+            {/* Map Display Section */}
+            <div className="w-full h-[800px] rounded-lg shadow-lg overflow-hidden">
+              {coordinates.length === 2 && (
+                <MapContainer
+                center={coordinates.length === 2 ? coordinates[0] : [51.505, -0.09]}
+                  zoom={10}
+                  scrollWheelZoom={false}
+                  className="h-full w-full"
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  />
+                  <Marker position={coordinates[0]} icon={customIcon} />
+                  <Marker position={coordinates[1]} icon={customIcon} />
+                  <Polyline positions={coordinates} />
+                  <AutoZoom />
+                </MapContainer>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
       <ToastContainer />

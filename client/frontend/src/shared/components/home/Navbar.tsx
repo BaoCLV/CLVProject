@@ -48,7 +48,7 @@ const Navbar = () => {
 
   return (
     <div>
-      <nav className="navbar fixed top-0 left-0 w-full bg-white/20 backdrop-blur-md shadow-lg z-90 transition-all duration-500 ease-in-out hover:bg-white/50">
+      <nav className="navbar fixed top-0 left-0 w-full bg-white/20 backdrop-blur-md shadow-lg z-[1000] transition-all duration-500 ease-in-out hover:bg-white/50">
         <div className=" mx-auto flex justify-between items-center py-4 px-8">
           {/* Logo */}
           <a

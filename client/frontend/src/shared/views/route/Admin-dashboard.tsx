@@ -186,7 +186,7 @@ function Dashboard() {
       <Header />
       <div className="flex flex-1">
         <ProfileSidebar />
-        <div className="flex flex-col flex-1 bg-gray-100 py-8 px-6">
+        <div className="flex flex-col flex-1 bg-gray-100 py-28 px-6">
           <h2 className="text-3xl font-bold mb-6 text-left text-gray-800">Overview</h2>
           <div className="grid gap-6 grid-cols-2 md:grid-cols-2 xl:grid-cols-4 mb-8 bg-white rounded-lg shadow-md py-6 px-4">
             {loadingUsers ? (
@@ -280,7 +280,7 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* <div className="bg-white rounded-lg shadow-md p-6 w-full">
+          <div className="bg-white rounded-lg shadow-md p-6 w-full">
             <h3 className="text-xl font-semibold mb-4">Routes Map</h3>
             <div className="w-full h-[400px]">
             <SalesMappingChart
@@ -293,8 +293,8 @@ function Dashboard() {
           maxZoomLevel={5}
           style={{ height: 400, width: '100%' }}
         />
-            </div> */}
-          {/* </div> */}
+            </div>
+          </div>
         </div>
       </div>
       <Footer />

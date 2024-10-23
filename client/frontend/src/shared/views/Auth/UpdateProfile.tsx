@@ -123,7 +123,7 @@ export default function UpdateProfile({ userId }: UpdateProfileProps) {
 
         <Sidebar />
         <div className="flex flex-col flex-1">
-          <div className="flex-1 bg-gray-200 py-16 px-8">
+          <div className="flex-1 bg-gray-200 py-28 px-8">
             <h4 className="mb-6 text-3xl font-bold text-black">
               Update Profile
             </h4>

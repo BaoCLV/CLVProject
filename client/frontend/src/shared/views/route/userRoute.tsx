@@ -168,29 +168,11 @@ function UserRoutesDashboard() {
         <Sidebar />
 
         {/* Content */}
-        <div className="flex flex-col flex-1 bg-gray-200 py-16 px-8 relative">
+        <div className="flex flex-col flex-1 bg-gray-200 py-28 px-8 relative">
           {/* Header with Search Bar and Create Route Button */}
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-blue-600">Route Page</h1>
+            <h1 className="text-3xl font-bold text-blue-600">My Route</h1>
           </div>
-
-          {/* Search Bar and Create Route Button Wrapper */}
-          <div className="flex items-center mb-6 space-x-4">
-            {/* Search Bar */}
-            <div className="flex-1">
-              <SearchBar getSearchResults={handleSearchResults} />
-            </div>
-
-            {/* Create Route Button */}
-            <button
-              onClick={() => router.push("/admin/createRoute")} // Redirect to create-route page
-              className="flex items-center gap-2 px-6 py-3 text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition"
-            >
-              <FaPlus className="text-white" /> {/* Plus icon */}
-              Create Route
-            </button>
-          </div>
-
           <div className="w-full">
             <div className="w-full overflow-x-auto">
               <table className="w-full whitespace-no-wrap table-auto bg-white shadow-lg rounded-lg overflow-hidden">

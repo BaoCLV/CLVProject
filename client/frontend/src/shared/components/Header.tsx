@@ -8,7 +8,7 @@ const Header = () => {
 
 
   return (
-    <header className="z-10 py-4 bg-white">
+    <header className="sticky top-0 z-[9999] bg-white shadow-md">
       <div className=" flex items-center justify-between px-6 mx-auto text-purple-600 dark:text-purple-300">
         {/* Mobile hamburger */}
         <button

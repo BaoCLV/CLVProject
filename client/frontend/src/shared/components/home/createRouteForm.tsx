@@ -6,8 +6,6 @@ import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import AuthScreen from "../../screens/AuthScreen"; 
-import { toast, ToastContainer } from "react-toastify"; 
-import "react-toastify/dist/ReactToastify.css"; 
 import { useUser } from "../../../hooks/useUser"; 
 import { useActiveUser } from "@/src/hooks/useActivateUser";
 
@@ -29,11 +27,13 @@ const CreateRouteForm = ({ onSubmit }: CreateRouteFormProps) => {
   const [coordinates, setCoordinates] = useState<[number, number][]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [successNotification, setSuccessNotification] = useState(false); // Success notification state
+  const [loadingNotification, setLoadingNotification] = useState(false); // Loading notification state
+  const [inactiveUserNotification, setInactiveUserNotification] = useState(false); // Inactive user notification state
 
   const { activeUser, loading } = useActiveUser(); 
 
   const OPEN_CAGE_API_KEY = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY;
-
 
   const geocodeLocation = async (location: string): Promise<[number, number] | null> => {
     if (!location) return null;
@@ -50,14 +50,12 @@ const CreateRouteForm = ({ onSubmit }: CreateRouteFormProps) => {
     return [lat, lng];
   };
 
-  // Calculate distance using Turf.js
   const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
     const point1 = turf.point([lng1, lat1]);
     const point2 = turf.point([lng2, lat2]);
     return turf.distance(point1, point2, { units: "kilometers" });
   };
 
-  // Update map and calculate distance dynamically
   const updateMapAndDistance = async () => {
     try {
       const [lat1, lng1] = (await geocodeLocation(startLocation)) || [null, null];
@@ -92,16 +90,16 @@ const CreateRouteForm = ({ onSubmit }: CreateRouteFormProps) => {
     e.preventDefault();
 
     if (loading) {
-      toast.info("Please wait, checking authentication...");
+      setLoadingNotification(true); // Show loading notification when checking authentication
       return;
     }
 
-    // Check if the user is logged in
     if (!activeUser) {
-      toast.info("Please login or sign up to continue.");
+      setInactiveUserNotification(true); // Show inactive user notification if user not logged in
       setShowAuthModal(true); 
     } else if (distance !== null) {
       onSubmit(startLocation, endLocation, distance);
+      setSuccessNotification(true); // Show success notification after submission
     }
   };
 
@@ -182,15 +180,12 @@ const CreateRouteForm = ({ onSubmit }: CreateRouteFormProps) => {
 
       {/* Auth Modal for Login/Signup */}
       {showAuthModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="relative z-50 p-8 rounded-lg shadow-lg max-w-lg w-full">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">
+          <div className="relative p-8 rounded-lg shadow-lg max-w-lg w-full">
             <AuthScreen setOpen={setShowAuthModal} /> {/* Login/Signup form */}
           </div>
         </div>
       )}
-
-      {/* Toast Notification Container */}
-      <ToastContainer />
     </div>
   );
 };

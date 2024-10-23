@@ -84,7 +84,7 @@ function UserDashboard() {
         <ProfileSidebar />
 
         {/* Content */}
-        <div className="flex flex-col flex-1 bg-gray-200 py-16 px-8 relative">
+        <div className="flex flex-col flex-1 bg-gray-200 py-28 px-8 relative">
           {/* Header with Search Bar and Create User Button */}
           <div className="flex flex-wrap justify-between items-center mb-6">
             <h1 className="text-3xl font-bold text-blue-600">User List</h1>

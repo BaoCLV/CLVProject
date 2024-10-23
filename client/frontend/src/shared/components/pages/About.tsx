@@ -27,8 +27,8 @@ const AboutPage = () => {
             <img
               src="/img/about.jpg"
               alt="About us"
-              width={900} // Adjust to the actual width of the image
-              height={1000} // Adjust to the actual height of the image
+              width={900}
+              height={1000} 
               className="rounded-lg shadow-lg w-full"
             />
           </div>
@@ -131,7 +131,7 @@ const AboutPage = () => {
       <div ref={refTeam} className="bg-gray-100 py-16">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-gray-800 mb-12 text-center">Meet Our Team</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Team Member 1 */}
             <div
               className={`bg-white p-6 rounded-lg shadow-lg transition-transform duration-2000 ease-in-out transform ${teamInView ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
@@ -140,8 +140,8 @@ const AboutPage = () => {
               <img
                 src="/img/team-1.jpg"
                 alt="Team Member 1"
-                width={900} // Adjust to the actual width of the image
-                height={1000} // Adjust to the actual height of the image
+                width={900} 
+                height={1000}
                 className="w-full h-64 object-cover rounded-lg mb-4"
               />
               <h3 className="text-xl font-bold text-gray-800">John Doe</h3>
@@ -162,22 +162,6 @@ const AboutPage = () => {
               />
               <h3 className="text-xl font-bold text-gray-800">Jane Smith</h3>
               <p className="text-lg text-gray-600">Chief Operating Officer</p>
-            </div>
-
-            {/* Team Member 3 */}
-            <div
-              className={`bg-white p-6 rounded-lg shadow-lg transition-transform duration-2000 ease-in-out transform ${teamInView ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-                }`}
-            >
-              <img
-                src="/img/team-3.jpg"
-                alt="Team Member 3"
-                width={900} // Adjust to the actual width of the image
-                height={1000} // Adjust to the actual height of the image
-                className="w-full h-64 object-cover rounded-lg mb-4"
-              />
-              <h3 className="text-xl font-bold text-gray-800">Emily Johnson</h3>
-              <p className="text-lg text-gray-600">Head of Logistics</p>
             </div>
           </div>
         </div>

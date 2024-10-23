@@ -3,17 +3,16 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  AiFillGithub,
   AiOutlineEye,
   AiOutlineEyeInvisible,
 } from "react-icons/ai";
-import { FcGoogle } from "react-icons/fc";
 import { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { REGISTER_USER } from "../../../graphql/auth/Actions/register.action";
 import toast from "react-hot-toast";
 import { useGraphQLClient } from "../../../hooks/useGraphql";
-import img from "next/image";
+import Image from "next/image";
+import { useUploadAvatar } from "@/src/hooks/useUser";
 
 // Form schema for validation using Zod
 const formSchema = z.object({
@@ -29,15 +28,12 @@ const formSchema = z.object({
 
 type SignUpSchema = z.infer<typeof formSchema>;
 
-const Signup = ({
-  setActiveState,
-}: {
-  setActiveState: (e: string) => void;
-}) => {
+const Signup = ({ setActiveState }: { setActiveState: (e: string) => void }) => {
   const authClient = useGraphQLClient("auth");
   const [registerUserMutation, { loading }] = useMutation(REGISTER_USER, {
     client: authClient,
   });
+  const { handleUploadAvatar, loading: avatarLoading } = useUploadAvatar(); // Hook for uploading avatar (even if null)
 
   const {
     register,
@@ -52,14 +48,26 @@ const Signup = ({
 
   const onSubmit = async (data: SignUpSchema) => {
     try {
+      // Register the user
       const response = await registerUserMutation({
         variables: data,
       });
+
+      const userId = response.data.register.id;
       localStorage.setItem(
         "activation_token",
         response.data.register.activation_token
       );
       toast.success("Please check your email to activate your account!");
+
+      // Create a null avatar after registration
+      try {
+        await handleUploadAvatar(userId, 'null'); // Uploading null imageData
+        toast.success("Default avatar set.");
+      } catch (error) {
+        toast.error("Failed to set default avatar.");
+      }
+
       reset();
       setActiveState("Verification");
     } catch (error: any) {
@@ -68,17 +76,17 @@ const Signup = ({
   };
 
   return (
-    <div className="flex items-center min-h-full p-6 bg-white">
+    <div className="flex items-center min-h-full p-6 bg-white z-[1000]">
       <div className="flex-1 h-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-xl border-md">
         <div className="flex flex-col overflow-y-auto md:flex-row">
           {/* img Section */}
           <div className="h-32 md:h-auto w-1/2">
-            <img
+            <Image
               aria-hidden="true"
               className="object-cover w-full h-full"
               src="/img/login-office.jpeg"
-              width={900} // Adjust to the actual width of the image
-              height={1000} // Adjust to the actual height of the image
+              width={900}
+              height={1000}
               alt="Office"
             />
           </div>
@@ -189,10 +197,10 @@ const Signup = ({
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isSubmitting || loading}
+                  disabled={isSubmitting || loading || avatarLoading}
                   className="block w-full px-4 py-2 mt-6 text-sm font-medium leading-5 text-white bg-blue-600 border border-transparent rounded-lg active:bg-blue-600 hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue"
                 >
-                  Sign Up
+                  {isSubmitting || loading || avatarLoading ? "Signing Up..." : "Sign Up"}
                 </button>
               </form>
 

@@ -24,14 +24,13 @@ const UserDropDown = () => {
   const [signedIn, setSignedIn] = useState(false);
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const storedPassword = localStorage.getItem('generatedPassword') || '';
-  const [password, setPassword] = useState(storedPassword);
+  const [password, setPassword] = useState("");
 
   const { activeUser, loading, GGUserData } = useActiveUser();
   const { loadingRoles, roles } = useRoles();
 
-    // Fetch the avatar for the logged-in user
-  const { loading: avatarLoading, avatar } = useGetAvatar(activeUser?.id || '')
+  // Fetch the avatar for the logged-in user
+  const { loading: avatarLoading, avatar } = useGetAvatar(activeUser?.id || '');
 
   // Find the user's role based on user.roleId (Memoized for optimization)
   const userRole = useMemo(
@@ -54,24 +53,30 @@ const UserDropDown = () => {
       );
     }
     if (GGUserData) {
-      return GGUserData.image
+      return GGUserData.image;
     }
     return "/img/default-avatar.jpg"; // Default avatar fallback
   }, [avatar, GGUserData]);
 
-
   const { handleCreateUserSocial } = useCreateUserSocial(GGUserData);
-  const userCreated = localStorage.getItem('userCreated') === 'true'; // Check if user is already created
+  const userCreated = typeof window !== 'undefined' && localStorage.getItem('userCreated') === 'true'; // Check if user is already created
 
   useEffect(() => {
-    if (!password) {
-      const newPassword = randomPassword();
-      localStorage.setItem('generatedPassword', newPassword);
-      setPassword(newPassword);
+    if (typeof window !== 'undefined') {
+      const storedPassword = localStorage.getItem('generatedPassword') || '';
+      setPassword(storedPassword);
+
+      if (!storedPassword) {
+        const newPassword = randomPassword();
+        localStorage.setItem('generatedPassword', newPassword);
+        setPassword(newPassword);
+      }
     }
+
     if (!loading) {
       setSignedIn(!!activeUser);
     }
+
     if (!userCreated && GGUserData.email !== "" && signedIn === true) {
       handleCreateUserSocial(password).then(() => {
         localStorage.setItem('userCreated', 'true'); // Set the flag after user is created
@@ -82,12 +87,12 @@ const UserDropDown = () => {
   const logoutHandler = () => {
     if (GGUserData.email !== "") {
       signOut();
-      console.log(GGUserData)
+      console.log(GGUserData);
       router.push("/");
     } else {
       Cookies.remove("access_token", { path: '' });
       Cookies.remove("refresh_token", { path: '' });
-      console.log(activeUser)
+      console.log(activeUser);
       router.push("/");
       window.location.reload();
     }
@@ -99,7 +104,6 @@ const UserDropDown = () => {
     toast.success("Log out successfully!");
     setSignedIn(false); // Reset the signedIn state
   };
-
 
   const handleNavigation = (key: any) => {
     switch (key) {

@@ -54,7 +54,7 @@ export default function UserProfile({ userId }: UserDetailProps) {
         <Sidebar />
 
         {/* Content */}
-        <div className="flex flex-col flex-1 bg-gray-200 py-16 px-8 relative">
+        <div className="flex flex-col flex-1 bg-gray-200 py-28 px-8 relative">
           <h4 className="mb-6 text-3xl font-bold text-black">Profile Details</h4>
 
           <div className="space-y-8 bg-white px-8 pb-8 rounded-lg shadow-lg h-full overflow-y-auto">
@@ -68,7 +68,7 @@ export default function UserProfile({ userId }: UserDetailProps) {
             </div>
 
             {/* Buttons: Positioned to the right */}
-            <div className="absolute pt-10 top-24 right-20 flex flex-col space-y-4">
+            <div className="absolute pt-10 top-32 right-20 flex flex-col space-y-4">
               <button
                 onClick={() => router.push(`/api/profile/${userId}/update`)}
                 className="py-4 text-lg font-semibold text-white transition-colors duration-150 bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700"
@@ -84,11 +84,6 @@ export default function UserProfile({ userId }: UserDetailProps) {
             </div>
 
             <div>
-              {/* Static field: User ID */}
-              <div className="block text-lg pb-8">
-                <span className="text-gray-700 text-2xl font-bold">User ID</span>
-                <p className="block w-full mt-2 p-4 bg-gray-200 text-lg border-black rounded-lg">{activeUser.id}</p>
-              </div>
 
               {/* Static field: Email */}
               <div className="block text-lg pb-8">

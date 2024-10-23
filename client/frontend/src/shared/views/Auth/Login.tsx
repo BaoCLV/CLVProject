@@ -70,7 +70,7 @@ const Login = ({
   };
 
   return (
-    <div className="flex-1 h-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-xl border-md">
+    <div className="flex-1 h-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-xl border-md z-[1000]">
       <div className="flex flex-col overflow-y-auto md:flex-row">
         {/* img Section */}
         <div className="h-32 md:h-auto w-1/2">
