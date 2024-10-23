@@ -103,7 +103,6 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
     return [lat, lng];
   };
 
-  const geocodeLocations = useCallback(async (startLocation: string, endLocation: string) => {
     try {
       const startCoords = await geocodeLocation(startLocation);
       const endCoords = await geocodeLocation(endLocation);
