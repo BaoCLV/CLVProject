@@ -103,6 +103,8 @@ export default function UpdateRoute({ routeId }: UpdateRouteProps) {
     return [lat, lng];
   };
 
+  // Geocode both locations and calculate distance and price
+  const geocodeLocations = async (startLocation: string, endLocation: string) => {
     try {
       const startCoords = await geocodeLocation(startLocation);
       const endCoords = await geocodeLocation(endLocation);
